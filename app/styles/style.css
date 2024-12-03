@@ -1,0 +1,98 @@
+.sd-pb-card-flex {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  column-gap: 20px;
+}
+
+
+.sd-pb-card-flex .Polaris-ShadowBevel {
+  min-width: 250px;
+}
+
+.sd-pb-card-flex .Polaris-ShadowBevel .Polaris-Box {
+  padding: 0;
+}
+
+.sd-pb-card-template .sd-pb-card-Image_Wrapper {
+  min-height: 300px;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.sd-pb-card-template .sd-pb-card-section {
+  padding: 20px;
+}
+
+.sd-pb-dropzone {
+  padding: 20px;
+}
+
+.sd-pb-builder-modal-layout {
+  display: flex;
+}
+
+.sd-pb-builder-modal-layout .sd-pb-builder-modal-menu {
+  width: 4%;
+  background-color: brown;
+}
+
+.sd-pb-builder-modal-layout .sd-pb-builder-modal-items,
+.sd-pb-builder-modal-layout .sd-pb-builder-modal-settings {
+  width: 18%;
+  background-color: red;
+}
+
+.sd-pb-builder-modal-layout .sd-pb-builder-modal-editor {
+  width: 60%;
+  background-color: antiquewhite;
+}
+
+.sd-pb-builder-footer,
+.sd-pb-builder-header {
+  text-align: center;
+  background: #f1f1f1;
+}
+
+.sd-pb-builder-editor .Polaris-FullscreenBar .Polaris-FullscreenBar__BackAction .Polaris-Text--bodyLg {
+  display: none;
+}
+
+.sd-pb-editor-content-wrapper .Polaris-InlineGrid .Polaris-Box .Polaris-BlockStack:first-child {
+  height: 100%;
+}
+
+.sd-pb-editor-content-wrapper .Polaris-InlineGrid .Polaris-Box#sd-pb-sidebar .Polaris-BlockStack {
+  height: auto;
+}
+
+.sd-pb-editor-content-wrapper main {
+  width: 80%;
+  flex: 1 1 0%;
+  background-color: rgb(240, 239, 239);
+}
+
+.sd-pb-editor-area>.Polaris-InlineStack {
+  justify-content: center;
+  background-color: rgb(240, 239, 239);
+}
+
+.sd-pb-theme-editor {
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.slick-slide {
+  width: 100px;
+}
+
+.sd-pb-product-grid-slider .slick-list .slick-track {
+  display: flex;
+}
+
+.contract-header {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+  padding: .5rem;
+}

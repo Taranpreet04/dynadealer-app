@@ -1,0 +1,38 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "1023162f9de0c65b5e4e2174b7268c0b"
+name = "HashtagLuck Subscription"
+handle = "hashtagluck-subscription"
+application_url = "https://modes-chassis-limited-atom.trycloudflare.com"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_orders,read_products,write_own_subscription_contracts,write_products,write_purchase_options"
+
+[auth]
+redirect_urls = [
+  "https://modes-chassis-limited-atom.trycloudflare.com/auth/callback",
+  "https://modes-chassis-limited-atom.trycloudflare.com/auth/shopify/callback",
+  "https://modes-chassis-limited-atom.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-10"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+[app_proxy]
+url = "https://modes-chassis-limited-atom.trycloudflare.com/api/subscription"
+subpath = "subscription"
+prefix = "apps"
+
+[pos]
+embedded = false
+
+[build]
+dev_store_url = "hashtagluck-test.myshopify.com"
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
