@@ -7,7 +7,6 @@ export const createPlan = async (admin, newPlanDetail) => {
         ...newPlanDetail,
         shop: shop
     };
-    console.log("newPlanDetail==", newPlanDetail)
     try {
         let allOptions = [];
         newPlanDetails?.plans?.map((item) => {
@@ -114,32 +113,12 @@ export const createPlan = async (admin, newPlanDetail) => {
         );
 
         const data = await response.json();
-        // const dataString = typeof data === "string" ? data : JSON.stringify(data);
-        // fs.writeFile("checkkkk.txt", dataString, (err) => {
-        //     if (err) {
-        //         console.error("Error writing to file:", err);
-        //     } else {
-        //         console.log("Data written to file successfully!");
-        //     }
-        // });
-
-
-
         if (data?.data?.sellingPlanGroupCreate?.userErrors.length < 1) {
-            console.log(
-                data?.data?.sellingPlanGroupCreate?.sellingPlanGroup.sellingPlans
-                    .edges,
-                "ggghhhhh"
-            );
-
             let planGroupId =
                 data?.data?.sellingPlanGroupCreate?.sellingPlanGroup?.id;
             let planIds =
                 data?.data?.sellingPlanGroupCreate?.sellingPlanGroup?.sellingPlans
                     .edges;
-
-
-
             let plansWids = []
             if (newPlanDetails?.plans && planIds) {
                 newPlanDetails.plans.map((plan) => {
@@ -409,15 +388,6 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
 
         const resData = await response.json();
 
-        // const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
-        // fs.writeFile("checkkkk.txt", dataString, (err) => {
-        //     if (err) {
-        //         console.error("Error writing to file:", err);
-        //     } else {
-        //         console.log("Data written to file successfully!");
-        //     }
-        // });
-
         let planIds = resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans?.edges
         if (planIds) {
 
@@ -567,14 +537,7 @@ export const cancelContract = async (admin, data) => {
         );
 
         const result = await response.json();
-        const dataString = typeof result === "string" ? result : JSON.stringify(result);
-        fs.writeFile("checkkkk.txt", dataString, (err) => {
-            if (err) {
-                console.error("Error checkwriting to file:", err);
-            } else {
-                console.log("Data written to file check successfully!");
-            }
-        });
+
         // Check for errors in the response
         if (result.data?.subscriptionContractCancel?.userErrors?.length > 0) {
             return {
@@ -719,7 +682,6 @@ export const getConstractDetailById = async (admin, id) => {
           `;
     const contractResponse = await admin.graphql(query);
     const contractResult = await contractResponse.json();
-    console.log("Contract Details:", contractResult);
     if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
         return {
             message: "error",
@@ -823,7 +785,6 @@ export const getCustomerDataByContractId = async (admin, id) => {
             }`;
     const contractResponse = await admin.graphql(query);
     const contractResult = await contractResponse.json();
-    console.log("Contract Details:", contractResult);
     if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
         return {
             message: "error",
@@ -840,19 +801,8 @@ export const getCustomerDataByContractId = async (admin, id) => {
 
 export const getExportData = async (admin, data, date) => {
     try {
-        console.log("getExportData== controller", data)
-        console.log("date==++++-", date)
-        // let start =new Date(date.start).setUTCHours(0, 0, 0, 0);
-        // let end=new Date(date.end).setUTCHours(23, 59, 59, 999)   
-        //    let dateRange = {
-        //       $gte: new Date(date.start),
-        //       $lte: new Date(date.end),
-        //     };
         const startIST = toIST(date.start);
         let endIST = toIST(date.end);
-
-        // Adjust start to 00:00 and end to 23:59:59 in IST
-        // startIST.setHours(0, 0, 0, 0);
         endIST.setHours(23, 59, 59, 999);
         endIST = toIST(endIST);
 
@@ -868,7 +818,6 @@ export const getExportData = async (admin, data, date) => {
             status: "done"
         })
 
-        console.log("matchingDocuments==", matchingDocuments)
         const dataString = typeof matchingDocuments === "string" ? matchingDocuments : JSON.stringify(matchingDocuments);
         fs.writeFile("checkkkk.txt", dataString, (err) => {
             if (err) {
@@ -877,7 +826,6 @@ export const getExportData = async (admin, data, date) => {
                 console.log("Data written to file successfully!");
             }
         });
-        //  matchingDocuments= {...matchingDocuments, entries: 20}
         return { success: true, data: matchingDocuments };
     } catch (error) {
         console.error("Error processing POST request:", error);
@@ -892,7 +840,6 @@ const toIST = (dateString) => {
 };
 
 export const checkMincycleComplete = async (contractId) => {
-    console.log("contractId==", contractId)
     try {
         let data = await billingModel.find({ contractId: contractId, status: "done" })
         return { message: "success", data }

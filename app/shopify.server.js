@@ -11,16 +11,16 @@ import dbConnect from "./db.server";
 import { credentialModel } from "./schema";
 import dotenv from 'dotenv';
 import cron from 'node-cron';
-import {recurringOrderCron }from './controllers/cron.js'
+import { recurringOrderCron } from './controllers/cron.js'
 dotenv.config()
 
 
 dbConnect();
 
 let scheduledJobs = cron.getTasks();
-scheduledJobs.forEach((job) => job.stop()); 
+scheduledJobs.forEach((job) => job.stop());
 
-const cronTimeEvery1hr= '0 * * * *' //"0 * * * *"---1hrs
+const cronTimeEvery1hr = '0 * * * *' //"0 * * * *"---1hrs
 var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });
@@ -53,75 +53,16 @@ const shopify = shopifyApp({
       deliveryMethod: DeliveryMethod.Http,
       callbackUrl: "/webhooks",
     },
-    //   CUSTOMERS_DATA_REQUEST: {
-    //   deliveryMethod: DeliveryMethod.Http,
-    //   callbackUrl: "/webhooks"
-    // },
-
-    // CUSTOMERS_REDACT: {
-    //   deliveryMethod: DeliveryMethod.Http,
-    //   callbackUrl: "/webhooks"
-    // },
-
-    // SHOP_REDACT: {
-    //   deliveryMethod: DeliveryMethod.Http,
-    //   callbackUrl: "/webhooks",
-    // },
-
-    //   // PRODUCTS_DELETE : {
-    //   //   deliveryMethod : DeliveryMethod.Http,
-    //   //   callbackUrl : "/webhooks",
-    //   // },
-
-    //   // PRODUCTS_UPDATE : {
-    //   //   deliveryMethod: DeliveryMethod.Http,
-    //   //   callbackUrl: "/webhooks",
-    //   // },
-
-    //   // COLLECTIONS_DELETE : {
-    //   //   deliveryMethod: DeliveryMethod.Http,
-    //   //   callbackUrl: "/webhooks",
-    //   // },
-
-    //   // COLLECTIONS_UPDATE : {
-    //   //   deliveryMethod: DeliveryMethod.Http,
-    //   //   callbackUrl: "/webhooks",
-    //   // },
   },
   hooks: {
     afterAuth: async ({ session, admin }) => {
       try {
         shopify.registerWebhooks({ session });
         const { shop, accessToken, scope } = session;
-          const credentials = credentialModel.create({
-            shop,
-            accessToken,
-            // scope
-          });
-        //       // const storeData = merchantModel.create({
-        //       //   shop,
-        //       //   email : shopDetails.email,
-        //       //   country_name : shopDetails.country_name,
-        //       //   shop_owner : shopDetails.shop_owner,
-        //       //   iana_timezone : shopDetails.iana_timezone,
-        //       //   checkout_api_supported : shopDetails.checkout_api_supported,
-        //       //   country : shopDetails.country,
-        //       //   currency : shopDetails.currency,
-        //       //   eligible_for_payments : shopDetails.eligible_for_payments,
-        //       //   password_enabled : shopDetails.password_enabled,
-        //       //   plan_name : shopDetails.plan_name,
-        //       //   primary_locale : shopDetails.primary_locale,
-        //       //   password : ''
-        //       // });
-        //       // const subscription = billingModel.create({
-        //       //   shop,
-        //       //   interval : "EVERY_30_DAYS",
-        //       //   price : "0",
-        //       //   plan : "FREE",
-        //       //   charge_id: "",
-        //       //   activated_on : new Date().toISOString().slice(0, 10),
-        //       //   billing_on : "",
-        //       // });
+        const credentials = credentialModel.create({
+          shop,
+          accessToken,
+        });
         await Promise.all([credentials]);
       } catch (error) {
         console.log("Error in Installing", error)

@@ -14,7 +14,6 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || '';
   const page = url.searchParams.get("page") || 1;
-  console.log(new Date())
   const planDetails = await getAllSubscriptions(admin, page, search);
   if (planDetails?.status == 200) {
     return json({ planDetails: planDetails })
@@ -41,8 +40,8 @@ export default function ContractData() {
   const currentYear = currentDate.getFullYear();
   const [{ month, year }, setDate] = useState({ month: currentMonth - 1, year: currentYear });
   const resetToMidnight = (date) => {
-    const newDate = new Date(date); 
-    newDate.setHours(0, 0, 0, 0); 
+    const newDate = new Date(date);
+    newDate.setHours(0, 0, 0, 0);
     return newDate;
   };
   const [selectedDates, setSelectedDates] = useState({
@@ -50,9 +49,7 @@ export default function ContractData() {
     end: resetToMidnight(new Date()), // Today, reset to midnight
   });
 
-  console.log(new Date(), "selectedDates--", selectedDates)
   const handleMonthChange = (month, year) => {
-    console.log("hjds", month, year)
     setDate({ month, year })
   }
   useEffect(() => {
@@ -79,11 +76,8 @@ export default function ContractData() {
   }, [])
 
   useEffect(() => {
-    console.log("actionData=", actionData?.data)
     if (actionData?.status) {
-      // shopify.toast.show("check response", { duration: 5000 })
       let detail = actionData?.data
-      console.log("export==detail=",detail)
       if (detail?.length > 0) {
         let data = [
           {
@@ -272,7 +266,6 @@ export default function ContractData() {
                       products: JSON.stringify(products),
                       selectedDates: JSON.stringify(selectedDates)
                     }
-                    console.log(formData, "sendData==", products);
                     submit(formData, {
                       method: "post",
                     })
@@ -316,8 +309,6 @@ export const action = async ({ request }) => {
   let products = JSON.parse(data.products)
   let date = JSON.parse(data.selectedDates)
   try {
-    console.log("data in action==", products, date)
-    // const res = await deletePlanById(admin, data);
     const res = await getExportData(admin, products, date);
     if (res?.success) {
       return json({ status: true, data: res?.data });

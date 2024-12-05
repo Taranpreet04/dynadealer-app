@@ -18,7 +18,6 @@ export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
 
   const planDetails = await getAllPlans(admin);
-  // console.log(session, "session in plan")
   return json(planDetails)
 }
 
@@ -43,9 +42,7 @@ export default function PlanData() {
     shopify.loading(true)
     setTableSkel(true)
     loaderData?.planDetails ? setData(loaderData?.planDetails) : ''
-    console.log("loaderData?.planDetails", loaderData?.planDetails)
     let table = loaderData?.planDetails?.slice(skip, limit)
-    console.log("table", table)
     setTableData(table)
     let total = loaderData?.planDetails.length;
     setTotalRows(loaderData?.planDetails.length)
@@ -54,12 +51,10 @@ export default function PlanData() {
       docs = docs + 1;
     }
     setTotaldocs(docs)
-    console.log(docs, "total % 10", total % limit, page)
     shopify.loading(false)
     setTableSkel(false)
   }, [loaderData])
 
-  console.log("tableData=", tableData)
   useEffect(() => {
     actionData?.status ? shopify.toast.show("Plan deleted", { duration: 5000 }) : ''
     shopify.loading(false)
@@ -129,7 +124,6 @@ export default function PlanData() {
     setPage(page - 1);
     if ((page - 1) > 1) {
       let skip = (page - 1) * limit
-      console.log("(page-1)*limit", page, (page - 1) * limit)
       setSkip(skip)
     } else {
       setSkip(0)

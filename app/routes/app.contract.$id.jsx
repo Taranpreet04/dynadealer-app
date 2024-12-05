@@ -16,7 +16,6 @@ export default function ContractDetails() {
     const loaderData = useLoaderData();
     const submit = useSubmit();
     const params = useParams()
-    console.log("params=", params)
     const actionData = useActionData();
     const [tableData, setTableData] = useState([])
     const [data, setData] = useState()
@@ -28,12 +27,10 @@ export default function ContractDetails() {
         shopify.loading(true)
         setLoading(true)
         loaderData?.data ? setData(loaderData?.data) : ''
-        console.log("loaderData?.data==", loaderData?.data)
         let products = []
         loaderData?.data?.lines?.edges.map((itm) => {
             products.push(itm?.node)
         })
-        console.log("products==", products)
         setCurrency(products[0]?.currentPrice?.currencyCode)
         setTableData(products)
         shopify.loading(false)
@@ -41,13 +38,12 @@ export default function ContractDetails() {
     }, [loaderData])
 
 
-    useEffect(()=>{
+    useEffect(() => {
         setBtnLoader(false)
-        console.log("actionData==", actionData)
-        if(actionData?.message=="success"){
+        if (actionData?.message == "success") {
             shopify.toast.show("Contract cancel successfully.", { duration: 5000 })
         }
-        if(actionData?.message=="failed"){
+        if (actionData?.message == "failed") {
             shopify.toast.show("Fail to cancel contract.", { duration: 5000 })
         }
     }, [actionData])
@@ -75,18 +71,18 @@ export default function ContractDetails() {
                         onAction: () => { shopify.loading(true), setLoading(true) }
                     }}
                     primaryAction={
-                        data?.status!=="CANCELLED" ? (
-                          <Button
-                            primary
-                            loading={btnLoader}
-                            onClick={() => {
-                              setReCheck(true);
-                            }}
-                          >
-                            Cancel
-                          </Button>
+                        data?.status !== "CANCELLED" ? (
+                            <Button
+                                primary
+                                loading={btnLoader}
+                                onClick={() => {
+                                    setReCheck(true);
+                                }}
+                            >
+                                Cancel
+                            </Button>
                         ) : null
-                      }>
+                    }>
                     <Card>
                         <div className="contract-header">
                             <Badge tone={(data?.status == "ACTIVE" || data?.billingPolicy?.interval == 'YEAR') ? 'success' : 'critical'}>{data?.billingPolicy?.interval == 'YEAR' ? 'ONETIME' : data?.status}</Badge>
@@ -170,9 +166,7 @@ export default function ContractDetails() {
                                 onAction: () => {
                                     setReCheck(false)
                                     setBtnLoader(true)
-                                    //   deletePlan(deleteId);
-                                    console.log("data we have",data)
-                                    let formData={...data,status: "CANCELLED", contractDbID: params?.id}
+                                    let formData = { ...data, status: "CANCELLED", contractDbID: params?.id }
                                     submit(formData, {
                                         method: "post"
                                     })
@@ -207,13 +201,11 @@ export const action = async ({ request }) => {
     const { admin } = await authenticate.admin(request)
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
-    console.log("formData=",data)
-    const res = await cancelContract(admin,data)
-    console.log("res-----", res.success)
-    if(res.success){
-        return json({message: "success", data: res?.data});
-    }else{
-        return json({message: "failed", data: res?.data});
+    const res = await cancelContract(admin, data)
+    if (res.success) {
+        return json({ message: "success", data: res?.data });
+    } else {
+        return json({ message: "failed", data: res?.data });
     }
-    
+
 }

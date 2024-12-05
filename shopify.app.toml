@@ -3,7 +3,7 @@
 client_id = "1023162f9de0c65b5e4e2174b7268c0b"
 name = "HashtagLuck Subscription"
 handle = "hashtagluck-subscription"
-application_url = "https://modes-chassis-limited-atom.trycloudflare.com"
+application_url = "https://porcelain-gradually-nc-battery.trycloudflare.com"
 embedded = true
 
 [access_scopes]
@@ -12,9 +12,9 @@ scopes = "read_customers,read_orders,read_products,write_own_subscription_contra
 
 [auth]
 redirect_urls = [
-  "https://modes-chassis-limited-atom.trycloudflare.com/auth/callback",
-  "https://modes-chassis-limited-atom.trycloudflare.com/auth/shopify/callback",
-  "https://modes-chassis-limited-atom.trycloudflare.com/api/auth/callback"
+  "https://porcelain-gradually-nc-battery.trycloudflare.com/auth/callback",
+  "https://porcelain-gradually-nc-battery.trycloudflare.com/auth/shopify/callback",
+  "https://porcelain-gradually-nc-battery.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -25,7 +25,7 @@ api_version = "2024-10"
   uri = "/webhooks/app/uninstalled"
 
 [app_proxy]
-url = "https://modes-chassis-limited-atom.trycloudflare.com/api/subscription"
+url = "https://porcelain-gradually-nc-battery.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

@@ -8,8 +8,7 @@
   var selectedVariant= {{product.selected_or_first_available_variant.id}} ;
   var selectedVariantPrice={{ product.selected_or_first_available_variant.price }}
      let productJson = {{ product | json }};
-      console.log("oKKKk-snippet");
-              let Revlytic =  {};
+    let Revlytic =  {};
                 Revlytic.shop = "{{shop.permanent_domain}}";
                 {% if product %}
                 Revlytic.product = {{ product | json }};
@@ -17,8 +16,7 @@
                 Revlytic.selling_plans.list ={};
                Revlytic.variant  = {};
               {% assign filtered_selling_plan_group = product.selling_plan_groups | where: "app_id", "SubscriptionApp2k24" %}
-                  console.log("Revlytic-check", Revlytic, {{ filtered_selling_plan_group | json }});
-                let filtered_selling_plan_groups = {{ filtered_selling_plan_group | json }};
+              let filtered_selling_plan_groups = {{ filtered_selling_plan_group | json }};
                 {% for selling_plan_group  in filtered_selling_plan_group %}
                      {% assign rev_selling_plan_group = selling_plan_group.id %}
                     {% assign filterGroupIds = filterGroupIds | append: selling_plan_group.id %}

@@ -127,7 +127,6 @@ export default function CreateUpdatePlan() {
                     deletePlans: JSON.stringify(deletePlans),
                     dbProducts: JSON.stringify(dbProducts),
                 }
-                console.log("formData--", formData)
                 shopify.loading(true)
                 setBtnLoader(true)
                 submit(formData, {
@@ -280,7 +279,6 @@ export default function CreateUpdatePlan() {
 
 
     const handleAddPlan = () => {
-        console.log(updatePlanIndex, "newPlan==in add", newPlan)
         if (editSellingPlan) {
             let plans = [];
             let nameExist = 0
@@ -301,17 +299,15 @@ export default function CreateUpdatePlan() {
             } else {
                 setAddPlanModal(false)
                 setEditSellingPlan(false)
-                console.log("planDetail?.plans=", planDetail?.plans)
                 planDetail?.plans?.map((item, index) => {
                     if (index == updatePlanIndex) {
-                        if(newPlan?.name?.includes('-entries-')){
+                        if (newPlan?.name?.includes('-entries-')) {
                             plans?.push(newPlan)
-                        }else{
+                        } else {
                             let editPlanName = { ...newPlan, name: newPlan?.name + "-entries-" + newPlan?.entries }
-                            console.log("editPlanName=", editPlanName)
                             plans?.push(editPlanName)
                         }
-                        
+
                     } else {
                         plans?.push(item)
                     }
@@ -349,9 +345,7 @@ export default function CreateUpdatePlan() {
                 setPriceErr(false)
                 setAddPlanModal(false)
                 setEditSellingPlan(false)
-                console.log("newPlan== on add", newPlan)
                 let editPlanName = { ...newPlan, name: newPlan?.name + "-entries-" + newPlan?.entries }
-                console.log("editPlanName=", editPlanName)
                 let newPlans = [...planDetail?.plans, editPlanName]
                 setPlanDetail({ ...planDetail, plans: newPlans })
                 setNewPlan({
@@ -365,8 +359,6 @@ export default function CreateUpdatePlan() {
             }
         }
     }
-
-    console.log("planDetail?.plans==", planDetail?.plans)
     return (
         <>
             {tableSkel ? <TableSkeleton /> :
@@ -448,16 +440,16 @@ export default function CreateUpdatePlan() {
                                                         <Text tone="critical">Value should be greater than or equal to 1.</Text>
                                                     }
                                                 </Grid.Cell>
-                                               {newPlan?.purchaseType !== "year" ?
-                                                 <Grid.Cell columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }} gap="800">
-                                                 <Text>Add exclusive draw</Text>
-                                                 <Checkbox
-                                                     label=" "
-                                                     checked={newPlan?.exclusiveDraw}
-                                                     onChange={(value) => handleModalValChange(value, 'exclusiveDraw')}
-                                                 />
-                                             </Grid.Cell>: ''
-                                               }
+                                                {newPlan?.purchaseType !== "year" ?
+                                                    <Grid.Cell columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }} gap="800">
+                                                        <Text>Add exclusive draw</Text>
+                                                        <Checkbox
+                                                            label=" "
+                                                            checked={newPlan?.exclusiveDraw}
+                                                            onChange={(value) => handleModalValChange(value, 'exclusiveDraw')}
+                                                        />
+                                                    </Grid.Cell> : ''
+                                                }
                                             </Grid>
                                             <Button onClick={handleAddPlan}>{editSellingPlan ? "Update" : "Add"} plan</Button>
                                             <ResourceList
@@ -476,7 +468,6 @@ export default function CreateUpdatePlan() {
                                                                 setMinCycleErr(false)
                                                                 setNewPlan({ ...item })
                                                                 setUpdatePlanIndex(index)
-                                                                console.log(index)
                                                             }
                                                         },
                                                         {

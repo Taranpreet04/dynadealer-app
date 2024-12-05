@@ -9,7 +9,7 @@ import { unauthenticated } from '../shopify.server';
 
 
 export async function recurringOrderCron() {
-    console.log('You will see this message every hour*******');
+    console.log('You will see this message every hour*******', new Date());
     const currentDate = new Date().toISOString();
     const targetDate = new Date(currentDate);
 
@@ -37,7 +37,6 @@ export async function recurringOrderCron() {
     if (data.length > 0) {
         const { admin } = await unauthenticated.admin('37ac69-e0.myshopify.com');
         for (let i = 0; i < data.length; i++) {
-            console.log("i++++", i, data[i])
             const uniqueId = i + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 
             let id = `gid://shopify/SubscriptionContract/${data[i].contractId}`
@@ -65,14 +64,7 @@ export async function recurringOrderCron() {
             );
 
             const billingAttempt = await response.json();
-            // const dataString = typeof billingAttempt === "string" ? billingAttempt : JSON.stringify(billingAttempt);
-            // fs.appendFile("checkkkk.txt", dataString, (err) => {
-            //     if (err) {
-            //         console.error("Error writing to file:", err);
-            //     } else {
-            //         console.log("Data written to file successfully!");
-            //     }
-            // });
+
 
             if (billingAttempt.data.subscriptionBillingAttemptCreate.userErrors.length < 1) {
                 const currentDate = new Date().toISOString();
@@ -114,7 +106,7 @@ export async function recurringOrderCron() {
                     }
                 );
 
-                console.log("updateNextBillingDate==", updateNextBillingDate)
+                console.log("updateNextBillingDate==contractId", updateNextBillingDate?.contractId)
             }
         }
     }

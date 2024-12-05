@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://modes-chassis-limited-atom.trycloudflare.com";
+    let serverPath = "https://porcelain-gradually-nc-battery.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let subscriptionDetails = []

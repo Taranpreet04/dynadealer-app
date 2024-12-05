@@ -2,18 +2,13 @@ import { credentialModel } from "../schema";
 
 
 export const action = async ({ request }) => {
-  console.log("get subscriptions action");
   try {
-
     const data = await request.json();
-    console.log("data==", data);
     const shop = data?.shop;
     const contractId = data?.contractId;
 
     const res = await credentialModel.findOne({ shop: shop })
-    console.log("rres=", res)
     const accessToken = res?.accessToken
-    console.log("accessToken=", accessToken)
     const fetchDetail = await fetch(
       `https://${shop}/admin/api/2023-10/graphql.json`,
       {
@@ -121,7 +116,6 @@ export const action = async ({ request }) => {
     }
 
     const responseJSON = await fetchDetail.json();
-    console.log("responseJSON==", responseJSON);
 
     return new Response(JSON.stringify({ message: "success", data: responseJSON.data }), {
       status: 200,
