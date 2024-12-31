@@ -1,5 +1,5 @@
 import { cancelContract } from "../controllers/planController";
-import { shopify, unauthenticated } from '../shopify.server';
+import { unauthenticated } from '../shopify.server';
 
 export const action = async ({ request }) => {
     const data = await request.json();

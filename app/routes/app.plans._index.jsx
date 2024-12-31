@@ -139,6 +139,7 @@ export default function PlanData() {
             setContentSkel(true)
           }
           }>Create new</Button>}>
+            
             <Card>
               {tableData.length > 0 ? (
                 <>

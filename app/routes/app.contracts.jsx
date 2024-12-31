@@ -86,20 +86,18 @@ export default function ContractData() {
               { label: "Public info (username)", value: "customerId" },
               { label: "Private info", value: "customerName" },
               { label: "Weight", value: "entries" },
-              // { label: "Weight", value: (row) => (row.matchedContracts[0]?.plans[0]?.entries ? row.matchedContracts[0]?.plans[0]?.entries || "" : "20") }, // Top level data
-
             ],
             content: detail
           },
         ]
         let settings = {
-          fileName: "MyTickets", // Name of the resulting spreadsheet
-          extraLength: 3, // A bigger number means that columns will be wider
-          writeMode: "writeFile", // The available parameters are 'WriteFile' and 'write'. This setting is optional. Useful in such cases https://docs.sheetjs.com/docs/solutions/output#example-remote-file
-          writeOptions: {}, // Style options from https://docs.sheetjs.com/docs/api/write-options
-          RTL: false, // Display the columns from right-to-left (the default value is false)
+          fileName: "MyTickets", 
+          extraLength: 3, 
+          writeMode: "writeFile", 
+          writeOptions: {}, 
+          RTL: false, 
         }
-        xlsx(data, settings) // Will download the excel file
+        xlsx(data, settings) 
       } else {
         shopify.toast.show("No data found", { duration: 5000 })
       }
@@ -145,18 +143,18 @@ export default function ContractData() {
       method: "get"
     })
   };
-  const handleSearchForm = async (e) => {
-    shopify.loading(true)
-    setPage(1);
-    const search_val = e;
-    setSearchValue(e);
-    const params = new URLSearchParams();
-    params.set("search", search_val);
-    params.set("page", 1);
-    submit(params, {
-      method: "get"
-    })
-  };
+  // const handleSearchForm = async (e) => {
+  //   shopify.loading(true)
+  //   setPage(1);
+  //   const search_val = e;
+  //   setSearchValue(e);
+  //   const params = new URLSearchParams();
+  //   params.set("search", search_val);
+  //   params.set("page", 1);
+  //   submit(params, {
+  //     method: "get"
+  //   })
+  // };
 
   const handleResourcePicker = async () => {
     const productPickerData = await shopify.resourcePicker({

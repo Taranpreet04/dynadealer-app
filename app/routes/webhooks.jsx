@@ -135,8 +135,6 @@ export const action = async ({ request }) => {
     case "SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE":
       try {
         console.log("subscription_billing_attempts/failure webhook works= payload", payload)
-        const contractId = payload?.subscription_contract_id;
-        const uniqueId = payload?.idempotency_key;
         let data = await billingModel.findOneAndUpdate(
           {
             contractId: payload?.subscription_contract_id,
