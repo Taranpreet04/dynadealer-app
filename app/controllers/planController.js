@@ -57,7 +57,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                 deliveryPolicy: {
                     recurring: {
                         intent: "FULFILLMENT_BEGIN",
-                        // anchors: draftAnchors,
+                        // anchors: draftAnchors ,
                         preAnchorBehavior: "ASAP",
                         interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1
