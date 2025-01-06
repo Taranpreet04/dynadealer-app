@@ -1,12 +1,7 @@
 
 
-
-// firstJob.start()
-
 import { billingModel, subscriptionContractModel } from "../schema";
 import { unauthenticated } from '../shopify.server';
-// import fs from "fs";
-
 
 export async function recurringOrderCron() {
     console.log('You will see this message every hour*******', new Date());
