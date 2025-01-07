@@ -3,8 +3,8 @@ import { useActionData, useLoaderData, useSubmit, useNavigate, useParams } from 
 import { useEffect, useState } from "react";
 import { createPlan, getPlanById, updatePlanById } from "../controllers/planController";
 import { authenticate } from "../shopify.server";
-import { PlusCircleIcon, DeleteIcon, EditIcon } from "@shopify/polaris-icons"
-import { Button, Page, Card, ResourceList, Avatar, ResourceItem, Text, Icon, TextField, BlockStack, Grid, Listbox, Select, Modal, Box, Checkbox, InlineStack } from "@shopify/polaris";
+import { DeleteIcon, EditIcon } from "@shopify/polaris-icons"
+import { Button, Page, Card, ResourceList, Avatar, ResourceItem, Text, Icon, TextField, BlockStack, Grid, Select, Modal, Box, Checkbox, InlineStack, DatePicker } from "@shopify/polaris";
 import planStyles from '../styles/planCreate.css?url';
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
@@ -92,6 +92,28 @@ export default function CreateUpdatePlan() {
         plans: [],
         products: []
     })
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    console.log("v==", currentMonth)
+    const [{ month, year }, setDate] = useState({ 
+        month: currentMonth == 0 ? 11 : currentMonth - 1, 
+        year: currentMonth == 0 ? currentYear - 1 : currentYear 
+    });
+    const resetToMidnight = (date) => {
+        const newDate = new Date(date);
+        newDate.setHours(0, 0, 0, 0);
+        return newDate;
+    };
+    const [selectedDates, setSelectedDates] = useState({
+        start: resetToMidnight(new Date((new Date()).getTime() - 10 * 24 * 60 * 60 * 1000)), // Ten days before, reset to midnight
+        end: resetToMidnight(new Date()), // Today, reset to midnight
+    });
+
+    const handleMonthChange = (month, year) => {
+        setDate({ month, year })
+    }
 
     useEffect(() => {
         shopify.loading(true)
@@ -359,6 +381,7 @@ export default function CreateUpdatePlan() {
             }
         }
     }
+    console.log("seleted dates==", selectedDates)
     return (
         <>
             {tableSkel ? <TableSkeleton /> :
@@ -506,49 +529,71 @@ export default function CreateUpdatePlan() {
                                 </BlockStack>
                             </Grid.Cell>
                             <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
-                                <Card>
-                                    <Grid>
-                                        <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 9, lg: 9, xl: 9 }}>
-                                            <Text as="h2" variant="headingSm">
-                                                Products
-                                            </Text>
-                                        </Grid.Cell>
-                                        <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}>
-                                            <Box paddingBlockStart="200">
-                                                <Button onClick={handleResourcePicker}>Add Product</Button>
-                                            </Box>
-                                        </Grid.Cell>
-                                    </Grid>
-                                    <ResourceList
-                                        resourceName={{ singular: 'prduct', plural: 'products' }}
-                                        items={planDetail?.products}
-                                        renderItem={(item) => {
-                                            const { product_id, product_image, product_name } = item;
-                                            const media = <Avatar customer size="md" name={product_name} source={product_image} />;
-                                            const shortcutActions = [
-                                                {
-                                                    content: <Icon source={DeleteIcon} />,
-                                                    accessibilityLabel: <Icon source={DeleteIcon} />,
-                                                    onAction: () => handleDeleteProduct(product_id)
-                                                },
-                                            ]
-                                            return (
-                                                <ResourceItem
-                                                    id={product_id}
-                                                    url={product_image}
-                                                    media={media}
-                                                    accessibilityLabel={`View details for ${product_name}`}
-                                                    shortcutActions={shortcutActions}
-                                                    persistActions
-                                                >
-                                                    <Text variant="bodyMd" fontWeight="bold" as="h3">
-                                                        {product_name}
-                                                    </Text>
-                                                </ResourceItem>
-                                            );
-                                        }}
-                                    />
-                                </Card>
+                                <BlockStack gap="200">
+                                    <Card>
+                                        <Grid>
+                                            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 9, lg: 9, xl: 9 }}>
+                                                <Text as="h2" variant="headingSm">
+                                                    Select Time Period
+                                                </Text>
+                                            </Grid.Cell>
+                                            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}>
+                                                <Box paddingBlockStart="200">
+                                                    <Button onClick={() => {
+                                                        console.log("handle date")
+                                                        setShowDatePicker(true)
+                                                    }}>Select Date</Button>
+                                                </Box>
+                                            </Grid.Cell>
+                                        </Grid>
+                                        <Text as="h2" variant="headingSm">
+                                            10 may 2024 to 10 june 2024
+                                        </Text>
+                                    </Card>
+                                    <Card>
+                                        <Grid>
+                                            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 9, lg: 9, xl: 9 }}>
+                                                <Text as="h2" variant="headingSm">
+                                                    Products
+                                                </Text>
+                                            </Grid.Cell>
+                                            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}>
+                                                <Box paddingBlockStart="200">
+                                                    <Button onClick={handleResourcePicker}>Add Product</Button>
+                                                </Box>
+                                            </Grid.Cell>
+                                        </Grid>
+                                        <ResourceList
+                                            resourceName={{ singular: 'prduct', plural: 'products' }}
+                                            items={planDetail?.products}
+                                            renderItem={(item) => {
+                                                const { product_id, product_image, product_name } = item;
+                                                const media = <Avatar customer size="md" name={product_name} source={product_image} />;
+                                                const shortcutActions = [
+                                                    {
+                                                        content: <Icon source={DeleteIcon} />,
+                                                        accessibilityLabel: <Icon source={DeleteIcon} />,
+                                                        onAction: () => handleDeleteProduct(product_id)
+                                                    },
+                                                ]
+                                                return (
+                                                    <ResourceItem
+                                                        id={product_id}
+                                                        url={product_image}
+                                                        media={media}
+                                                        accessibilityLabel={`View details for ${product_name}`}
+                                                        shortcutActions={shortcutActions}
+                                                        persistActions
+                                                    >
+                                                        <Text variant="bodyMd" fontWeight="bold" as="h3">
+                                                            {product_name}
+                                                        </Text>
+                                                    </ResourceItem>
+                                                );
+                                            }}
+                                        />
+                                    </Card>
+                                </BlockStack>
                             </Grid.Cell>
                         </Grid>
 
@@ -590,6 +635,48 @@ export default function CreateUpdatePlan() {
                                             Are you sure you want to delete this selling plan? This can't
                                             be restored.
                                         </p>
+                                    </BlockStack>
+                                </Modal.Section>
+                            </Modal>
+                        </div>
+                        <div className="sd-ultimate-option-AlertModal">
+                            <Modal
+                                open={showDatePicker}
+                                onClose={() => { setShowDatePicker(false) }}
+                                title={"Select Date Range"}
+                                primaryAction={{
+                                    content: "Ok",
+                                    onAction: () => {
+                                        setShowDatePicker(false)
+                                        // let formData = {
+                                        //     products: JSON.stringify(products),
+                                        //     selectedDates: JSON.stringify(selectedDates)
+                                        // }
+                                        // submit(formData, {
+                                        //     method: "post",
+                                        // })
+                                    },
+                                }}
+                                secondaryActions={[
+                                    {
+                                        content: "Cancel",
+                                        onAction: () => {
+                                            setShowDatePicker(false)
+                                        },
+                                    },
+                                ]}
+                            >
+                                <Modal.Section>
+                                    <BlockStack gap={5}>
+                                        <DatePicker
+                                            month={month}
+                                            year={year}
+                                            onChange={setSelectedDates}
+                                            onMonthChange={handleMonthChange}
+                                            selected={selectedDates}
+                                            multiMonth
+                                            allowRange
+                                        />
                                     </BlockStack>
                                 </Modal.Section>
                             </Modal>

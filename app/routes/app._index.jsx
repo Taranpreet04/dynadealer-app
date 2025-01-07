@@ -1,6 +1,4 @@
-
 import { authenticate } from "../shopify.server";
-import { Button } from "@shopify/polaris";
 import { useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 

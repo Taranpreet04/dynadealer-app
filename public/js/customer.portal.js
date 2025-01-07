@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let totalPlans = 0
     let totalPages = 0
     let currentPage = 1
-    let canCancelSubscription= false;
+    let canCancelSubscription = false;
     let mainDIv = document.getElementById('subscription-main-body')
     let contentDiv = document.createElement('div');
     contentDiv.id = 'main-content'
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-      }
+    }
     let tableStructure = `<table>
         <thead class='sub-table-head'>
             <tr>
@@ -129,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    // body: JSON.stringify({ contractId: 13496779046, shop: shop }),
                     body: JSON.stringify({ contractId: `gid://shopify/SubscriptionContract/${id}`, shop: shop }),
                 }
             );
@@ -198,10 +197,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (result.message == "success") {
-                if(result?.details?.length>=selectedSubscription?.billing_policy?.min_cycles){
-                    canCancelSubscription= true;
-                }else{
-                    canCancelSubscription= false;
+                if (result?.details?.length >= selectedSubscription?.billing_policy?.min_cycles) {
+                    canCancelSubscription = true;
+                } else {
+                    canCancelSubscription = false;
                 }
             }
         } catch (error) {
@@ -211,7 +210,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const generateRows = () => {
-        // let tbody = document.getElementsByTagName('tbody')[0]
         let tbody = document.getElementById("sub-row")
         tbody.innerHTML = ''
         tableData?.map((item, index) => {
@@ -220,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
             tbody.appendChild(tr)
             let planIdCell = document.createElement('td');
             planIdCell.innerText = item.contractId;
-            // planIdCell.innerText = item?._id
             let nameCell = document.createElement('td');
             nameCell.innerText = capitalize(item.customerName);
             let purchaseTypeCell = document.createElement('td');
@@ -236,10 +233,9 @@ document.addEventListener("DOMContentLoaded", () => {
 </svg>`;
             link.onclick = async () => {
                 selectedSubscription = item;
-                // loaderStart()
                 await checkCancelPossible()
                 await getContractDetails(item?.contractId)
-            }; // set onclick directly
+            };
             actionCell.appendChild(link);
             tbody.appendChild(tr)
             tr.appendChild(planIdCell)
@@ -249,16 +245,16 @@ document.addEventListener("DOMContentLoaded", () => {
             tr.appendChild(actionCell)
         })
     }
-    const updateTableData=()=>{
+    const updateTableData = () => {
         let skip = (currentPage - 1) * 10
-            tableData = subscriptionDetails.slice(skip, parseInt(10) + skip)
-            generateRows()
-            let footer = document.getElementById('subscription-footer')
-            if (footer) {
-                manageFooterBtns();
-                let pageDetail = document.getElementById('pagination-detail')
-                pageDetail.innerText = `Showing ${currentPage} page of ${totalPages} page`
-            }
+        tableData = subscriptionDetails.slice(skip, parseInt(10) + skip)
+        generateRows()
+        let footer = document.getElementById('subscription-footer')
+        if (footer) {
+            manageFooterBtns();
+            let pageDetail = document.getElementById('pagination-detail')
+            pageDetail.innerText = `Showing ${currentPage} page of ${totalPages} page`
+        }
     }
     const handleNextBtn = () => {
         if (currentPage != totalPages) {
@@ -285,15 +281,12 @@ document.addEventListener("DOMContentLoaded", () => {
             priceCell.innerText = `$${item?.node?.currentPrice?.amount}`
             let entriesCell = document.createElement('td');
             entriesCell.innerText = `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
-            // let quantityCell = document.createElement('td');
-            // quantityCell.innerText = item?.node?.quantity
             let totalCell = document.createElement('td');
             totalCell.innerText = `$${(item?.node?.currentPrice?.amount * item?.node?.quantity).toFixed(2)}`
             tbody.appendChild(tr)
             tr.appendChild(productCell)
             tr.appendChild(priceCell)
             tr.appendChild(entriesCell)
-            // tr.appendChild(quantityCell)
             tr.appendChild(totalCell)
             let imgDiv = document.createElement('img');
             imgDiv.src = item?.node?.variantImage?.url
@@ -314,7 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.innerText = "cancel"
             btn.id = "cancelBtn"
             btn.className = "btn"
-            // btn.onclick = () => cancelStatus("cancel")
             btnDiv.appendChild(btn)
             footer.appendChild(btnDiv)
 
@@ -322,13 +314,12 @@ document.addEventListener("DOMContentLoaded", () => {
             let modal = document.createElement('div');
             modal.id = "myModal";
             modal.className = "modal"
-            if(canCancelSubscription){
+            if (canCancelSubscription) {
 
                 modal.innerHTML = modalContentToCancel
-            }else{
+            } else {
                 modal.innerHTML = modalContentToAlert
             }
-
 
             footer.appendChild(modal)
 
@@ -346,24 +337,24 @@ document.addEventListener("DOMContentLoaded", () => {
             let closeBtn = document.getElementById("closeBtn")
             let okBtn = document.getElementById("okBtn")
 
-            if(okBtn){
+            if (okBtn) {
                 okBtn.onclick = function () {
                     modal.style.display = "none";
                 }
             }
-            if(closeBtn){
+            if (closeBtn) {
                 closeBtn.onclick = function () {
                     modal.style.display = "none";
                 }
             }
-            if(yesBtn){
+            if (yesBtn) {
                 yesBtn.onclick = function () {
                     modal.style.display = "none";
                     cancelStatus()
                 }
             }
-           
-            
+
+
 
         } else {
             footer.remove()
@@ -434,7 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         </div>
         <div id="card">
-            <p class='left-div'>Billing Frequency: <b>${contractDetail?.billingPolicy?.interval?.toLowerCase()=='year'? 'Onetime': capitalize(contractDetail?.billingPolicy?.interval)}</b></p>
+            <p class='left-div'>Billing Frequency: <b>${contractDetail?.billingPolicy?.interval?.toLowerCase() == 'year' ? 'Onetime' : capitalize(contractDetail?.billingPolicy?.interval)}</b></p>
             
             <p class='right-div' id='billingCycle'>Minimum billing cycles: <b>${contractDetail?.billingPolicy?.minCycles}</b></p>
         </div>
@@ -443,9 +434,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <thead class='sub-table-head'>
                     <tr>
                         <td>Product</td>
-                        <td>Price (${contractDetail?.lines?.edges[0]?.node?.currentPrice.currencyCode})</td>
+                        <td>Price (${contractDetail?.lines?.edges[0]?.node?.currentPrice?.currencyCode})</td>
                         <td>Entries</td>
-                        <td>Total (${contractDetail?.lines?.edges[0]?.node?.currentPrice.currencyCode})</td>
+                        <td>Total (${contractDetail?.lines?.edges[0]?.node?.currentPrice?.currencyCode})</td>
                     </tr>
                 </thead>
                 <tbody id="product-row">
@@ -457,12 +448,12 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         </div>`
             let backBtn = document.getElementById("backBtn")
-            
+
             backBtn.onclick = () => main();
             backBtn.onclick = () => main();
             let pTag = document.getElementById("billingCycle")
-            if(contractDetail?.billingPolicy?.interval?.toLowerCase()=='year'){
-                pTag.style.display='none'
+            if (contractDetail?.billingPolicy?.interval?.toLowerCase() == 'year') {
+                pTag.style.display = 'none'
             }
             generateProductRows()
         }

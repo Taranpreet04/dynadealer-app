@@ -3,7 +3,6 @@ import { Page, Filters, ChoiceList, Modal, BlockStack, DatePicker, Button, Text,
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
-import { SearchIcon, ArrowUpIcon } from "@shopify/polaris-icons"
 import { getAllSubscriptions, getExportData } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
