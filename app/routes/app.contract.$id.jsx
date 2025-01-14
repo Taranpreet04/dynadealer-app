@@ -9,6 +9,7 @@ import TableSkeleton from "../components/tableSkeleton";
 export const loader = async ({ params, request }) => {
     const { admin } = await authenticate.admin(request)
     const res = await getConstractDetailById(admin, params?.id)
+
     return json({ data: res?.data });
 }
 
@@ -23,6 +24,7 @@ export default function ContractDetails() {
     const [reCheck, setReCheck] = useState(false);
     const [currency, setCurrency] = useState('USD');
     const [btnLoader, setBtnLoader] = useState(false);
+
     useEffect(() => {
         shopify.loading(true)
         setLoading(true)
@@ -85,7 +87,7 @@ export default function ContractDetails() {
                     }>
                     <Card>
                         <div className="contract-header">
-                            <Badge tone={(data?.status == "ACTIVE" || data?.billingPolicy?.interval == 'YEAR') ? 'success' : 'critical'}>{data?.billingPolicy?.interval == 'YEAR' ? 'ONETIME' : data?.status}</Badge>
+                            <Badge tone={(data?.status == "ACTIVE" || data?.billingPolicy?.interval == 'DAY') ? 'success' : 'critical'}>{data?.billingPolicy?.interval == 'DAY' ? 'ONETIME' : data?.status}</Badge>
                         </div>
                         <Grid>
                             <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 4, xl: 4 }}>
@@ -107,7 +109,7 @@ export default function ContractDetails() {
                                     </Text>
                                     <Box paddingBlockStart="200">
                                         <Text as="p" variant="bodyMd">
-                                            {data?.billingPolicy?.interval == 'YEAR' ? 'ONETIME' : data?.billingPolicy?.interval}
+                                            {data?.billingPolicy?.interval == 'DAY' ? 'ONETIME' : data?.billingPolicy?.interval}
                                         </Text>
                                     </Box>
                                 </Card>
@@ -172,7 +174,7 @@ export default function ContractDetails() {
                                     })
                                 },
                             }}
-                            secondaryActions={[
+                           secondaryActions={[
                                 {
                                     content: "No",
                                     onAction: () => {

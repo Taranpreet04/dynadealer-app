@@ -81,7 +81,7 @@ export async function recurringOrderCron() {
                 let nextDate;
                 if (data[i].billing_policy.interval.toLowerCase() === "day") {
                     nextDate = new Date(originalDate);
-                    nextDate.setDate(nextDate.getDate() + 1);
+                    nextDate.setDate(nextDate.getDate() ); /* become i want it onetime only*/
                 } else if (data[i].billing_policy.interval.toLowerCase() === "month") {
                     nextDate = new Date(originalDate);
                     nextDate.setMonth(nextDate.getMonth() + 1);

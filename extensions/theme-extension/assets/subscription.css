@@ -50,6 +50,7 @@
     right: 0;
     bottom: 0;
     top: 0;
+    z-index: -1;
 }
 
 .best-deal-label {
@@ -259,7 +260,7 @@ div#subscription-plans {
     display: grid;
     gap: 20px;
     margin-top: 40px;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
 }
 
 .onetime-selling-plan label input {
@@ -623,4 +624,9 @@ span.var-entries {
 
 .subscription-body .subscription-selling-plan ul#widget-list li#description:before {
     background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Frame_523.png?v=1735898031);
+}
+.selectTime{
+    width: 100%;
+    border-radius: 10px;
+    padding: 5px;
 }

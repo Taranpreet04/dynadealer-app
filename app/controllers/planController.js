@@ -8,6 +8,19 @@ export const createPlan = async (admin, newPlanDetail) => {
         shop: shop
     };
     try {
+        const date= newPlanDetails?.offerValidity
+        console.log("newPlanDetails==", newPlanDetails?.offerValidity)
+        const startIST = toIST(date.since);
+        let endIST = toIST(date.until);
+        endIST.setHours(23, 59, 59, 999);
+        endIST = toIST(endIST);
+
+        let dateRange = {
+            start: startIST,
+            end: endIST,
+        };
+
+        console.log("dateRange-----------", dateRange)
         let allOptions = [];
         newPlanDetails?.plans?.map((item) => {
             let unique =
@@ -131,7 +144,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                     }
                 });
             }
-            let newData = { ...newPlanDetails, plans: plansWids, plan_group_id: planGroupId }
+            let newData = { ...newPlanDetails, plans: plansWids, plan_group_id: planGroupId,  offerValidity: dateRange }
             const planDetails = await planDetailsModel.create(newData);
             return { success: true, planDetails };
         }
@@ -218,6 +231,20 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     try {
         const { shop } = admin.rest.session;
         let dbproductlist = data?.dbProducts
+        const date= newPlanDetails?.offerValidity
+        console.log("newPlanDetails==", newPlanDetails?.offerValidity)
+        const startIST = toIST(date.since);
+        let endIST = toIST(date.until);
+        endIST.setHours(23, 59, 59, 999);
+        endIST = toIST(endIST);
+
+        let dateRange = {
+            start: startIST,
+            end: endIST,
+        };
+
+        console.log("dateRange-----------", dateRange)
+
 
         const allVariants = newPlanDetails?.products.reduce((acc, product) => {
             return acc.concat(product.variants);
@@ -402,7 +429,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     }
                 });
             }
-            let newData = { ...newPlanDetails, plans: plansWids }
+            let newData = { ...newPlanDetails, plans: plansWids , offerValidity: dateRange}
             if (variantsToDelete?.length > 0) {
                 const delVariantresponse = await admin.graphql(
                     `#graphql

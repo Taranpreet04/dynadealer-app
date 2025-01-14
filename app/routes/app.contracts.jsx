@@ -7,6 +7,7 @@ import { getAllSubscriptions, getExportData } from "../controllers/planControlle
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx"
+// import { sendEmail } from "../controllers/mail";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -77,16 +78,28 @@ export default function ContractData() {
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data
-      if (detail?.length > 0) {
+      let dataToExport=[]
+       detail?.map((detail)=>{
+          detail?.drawIds?.map((id) =>{
+            dataToExport.push({
+              drawId: id,
+              customerId: detail?.customerId,
+              customerName: detail?.customerName,
+              orderId: detail?.orderId
+            })
+          })
+      })
+      if (dataToExport?.length > 0) {
         let data = [
           {
             sheet: "tickets",
             columns: [
-              { label: "Public info (username)", value: "customerId" },
-              { label: "Private info", value: "customerName" },
-              { label: "Weight", value: "entries" },
+              { label: "Public info (username)", value: "customerName" },
+              { label: "Private info", value: "customerId" },
+              { label: "Order ID", value: "orderId" },
+              { label: "Draw ID", value: "drawId" },
             ],
-            content: detail
+            content: dataToExport
           },
         ]
         let settings = {
@@ -142,18 +155,6 @@ export default function ContractData() {
       method: "get"
     })
   };
-  // const handleSearchForm = async (e) => {
-  //   shopify.loading(true)
-  //   setPage(1);
-  //   const search_val = e;
-  //   setSearchValue(e);
-  //   const params = new URLSearchParams();
-  //   params.set("search", search_val);
-  //   params.set("page", 1);
-  //   submit(params, {
-  //     method: "get"
-  //   })
-  // };
 
   const handleResourcePicker = async () => {
     const productPickerData = await shopify.resourcePicker({
@@ -162,22 +163,18 @@ export default function ContractData() {
         draft: false,
         variants: false,
       },
-      // multiple: true,
     });
     let sendData = [];
     if (productPickerData !== undefined) {
       productPickerData?.map((item) => {
         let p_id = item.id;
-
         sendData.push(p_id);
-
       });
       setProducts(sendData)
       setShowDatePicker(true)
 
     }
   }
-
 
   return (
     <>
@@ -191,16 +188,6 @@ export default function ContractData() {
             >Export</Button>}
           >
             <Card>
-              {/* <div style={{ marginBottom: "10px" }}>
-                <TextField
-                  placeholder="Search here..."
-                  value={searchValue}
-                  onChange={handleSearchForm}
-                  prefix={<Icon source={SearchIcon} />}
-                >
-                  {" "}
-                </TextField>
-              </div> */}
               {tableData.length > 0 ? (
                 <Card>
                   <DataTable

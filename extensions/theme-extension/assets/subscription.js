@@ -7,6 +7,7 @@ let otherPlans = []
 
 let shop = Shopify.shop;
 let currentUrl = window.location.href;
+let selectedTimePlans = []
 let selectedPlan;
 if (currentUrl.includes("account")) {
     console.log("hello from account page")
@@ -46,7 +47,6 @@ if (currentUrl.includes("account")) {
 }
 console.log("subscription_page_type--", subscription_page_type)
 if (subscription_page_type == "product") {
-
     if (filtered_selling_plan_groups?.length > 0) {
         filtered_selling_plan_groups?.forEach((item) => {
             allSellingPlans?.push(...item?.selling_plans)
@@ -55,19 +55,18 @@ if (subscription_page_type == "product") {
             console.log("item?.options[0]?.value=", item)
             let interval = item?.options[0]?.value?.split(' ')?.[0]
             console.log("interval=", interval)
-            if (interval == 'year') {
+            if (interval == 'day') {
+
                 oneTimePlans?.push(item)
             } else {
                 otherPlans?.push(item)
             }
         })
     }
-
     console.log("productJson====", productJson)
     console.log("allSellingPlans====", allSellingPlans)
     console.log("otherPlans====", otherPlans)
     console.log("oneTimePlans====", oneTimePlans)
-    // otherPlans = allSellingPlans;
 
     oneTimePlans?.length > 0 ? selectedPlan = oneTimePlans[0] : selectedPlan = otherPlans[0]
     const sendDataToCart = (plan) => {
@@ -90,7 +89,6 @@ if (subscription_page_type == "product") {
             }
         });
     }
-    sendDataToCart(selectedPlan)
 
 
 
@@ -107,37 +105,54 @@ if (subscription_page_type == "product") {
         console.log("data==", data)
         return data.entries;
     }
-    const checkExclusiveDraw = (str) => {
-        console.log("str==", typeof str)
-        let data = JSON.parse(str);
-        console.log("data==", data)
-        return data.exclusiveDraw;
-    }
-    const calDiscountedPrice = (discount) => {
-        console.log("alert(discount", discount)
-        let productPrice = productJson?.price / 100;
-        console.log("productPrice=", productPrice)
-        let newPrice = productPrice;
-        let discountAmt = 0
-        if (discount > 0 || discount != undefined) {
-            discountAmt = (productPrice * discount) / 100;
+
+    const createDiv = (selectedTimePlans, flag = false) => {
+
+        const otherPlansDiv = document.getElementById('subscription-plans')
+        otherPlansDiv.innerHTML = ''
+        selectedTimePlans?.map((item, index) => {
+            let planDiv = document.createElement('div');
+            planDiv.className = (item?.id == selectedPlan?.id) ? "subscription-selling-plan active" : `subscription-selling-plan`;
+            let cls = index == 0 ? "first-plan" : index == 1 ? "second-plan" : index == 2 ? "third-plan" : '';
+            planDiv.classList.add(cls);
+            planDiv.id = `${item?.id}`;
+            otherPlansDiv?.appendChild(planDiv)
+            let content = `
+           <label for="plan-${item?.id}">
+           <div class="plan-radio">
+            <div class="radio-wrapper-27">
+              <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? 'checked' : ''} />
+                <span class="var-price">${getCurrencySymbol(activeCurrency)}${(item?.price_adjustments[0]?.value) / 100}<sub id="purchase-type">/${item.options[0].value.split(' ')[0]}</sub></span>
+            </div>
+            <span class="var-entries mobile-entries">${getEntries(item?.description)} Entries</span>
+            ${((item?.price_adjustments[0]?.value) / 100) >= 50 ? `<p class="gradiant-text-value">Biggest Value!</p>`
+                    : ((item?.price_adjustments[0]?.value) / 100) >= 25 ? `<p class="gradiant-text-value">Most Popular!</p>` : ``}
+            </div>
+         </label>`
+            planDiv.innerHTML = content;
+            planDiv.querySelector(`#plan-${item?.id}`).addEventListener('change', () => handlePlanChange(item));
+        })
+        if (flag) {
+            if (selectedTimePlans?.length > 0) {
+                console.log('fla--g=selectedTimePlans', flag, selectedTimePlans)
+                handlePlanChange(selectedTimePlans[0])
+            } else {
+                console.log('fla--g==oneTimePlans', flag, oneTimePlans)
+                oneTimePlans?.length > 0 ?
+                    handlePlanChange(oneTimePlans[0]) : cartClear()
+            }
         }
-        console.log(discountAmt, typeof discountAmt, parseFloat((newPrice - parseFloat(discountAmt)).toFixed(2)))
-        return parseFloat((newPrice - parseFloat(discountAmt)).toFixed(2));
     }
-
-
-    const generatePlans = () => {
+    const generatePlans = (time) => {
         let oneTimePlansDiv;
-        let otherPlansDiv;
         if (oneTimePlans?.length > 0) {
             oneTimePlansDiv = document.getElementById('oneTime-plans')
+            oneTimePlansDiv.innerHTML = ''
             oneTimePlans?.map((item) => {
                 let planDiv = document.createElement('div');
                 planDiv.className = (item?.id == selectedPlan?.id) ? "onetime-selling-plan active" : "onetime-selling-plan";
                 planDiv.id = `${item?.id}`;
                 oneTimePlansDiv?.appendChild(planDiv)
-                // <span class='checkmark'></span>
                 let content = `
               <label for="plan-${item?.id}" class="radio-wrapper-27">
                 <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? 'checked' : ''} />
@@ -148,59 +163,22 @@ if (subscription_page_type == "product") {
                     <span class="var-entries">${getEntries(item?.description)} Entries</span>
                 </label>`
                 planDiv.innerHTML = content;
-                planDiv.querySelector(`#plan-${item?.id}`).addEventListener('change', () => handlePlanChange(item));
+                planDiv.querySelector(`#plan-${item?.id}`).addEventListener('change', () => {
+                    handlePlanChange(item)
+                });
             })
         } else {
             let parent = document.getElementById('oneTime');
-            console.log("oneTime==", parent)
             if (parent) {
                 parent.remove();
             }
         }
 
         if (otherPlans?.length > 0) {
-            console.log("otherplans=", otherPlans)
-            otherPlansDiv = document.getElementById('subscription-plans')
-            otherPlans?.map((item, index) => {
-                let planDiv = document.createElement('div');
-                planDiv.className = (item?.id == selectedPlan?.id) ? "subscription-selling-plan active" : `subscription-selling-plan`;
-                let cls = index == 0 ? "first-plan" : index == 1 ? "second-plan" : index == 2 ? "third-plan" : '';
-                planDiv.classList.add(cls);
-                planDiv.id = `${item?.id}`;
-                otherPlansDiv?.appendChild(planDiv)
-                // <span class='checkmark'></span>
-                let content = `
-               <label for="plan-${item?.id}">
-               <div class="plan-radio">
-                <div class="radio-wrapper-27">
-                  <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? 'checked' : ''} />
-                    <span class="var-price">${getCurrencySymbol(activeCurrency)}${(item?.price_adjustments[0]?.value) / 100}<sub id="purchase-type">/${item.options[0].value.split(' ')[0]}</sub></span>
-                </div>
-                <span class="var-entries mobile-entries">${getEntries(item?.description)} Entries</span>
-                ${((item?.price_adjustments[0]?.value) / 100) >= 50 ? `<p class="gradiant-text-value">Biggest Value!</p>`
-                        : ((item?.price_adjustments[0]?.value) / 100) >= 25 ? `<p class="gradiant-text-value">Most Popular!</p>` : ``}
-               
-               </div>
-                <div class='ticket-details'>
-                  
-                  <div class="selected-widget-Plan">
-                          <div id="right-side-widget">
-                            <ul id="widget-list">
-                                <li><b>${getEntries(item?.description)} Entries</b> for This Draw</li>
-                                <li id="description"><b>${getEntries(item?.description)} Bonus Entries</b> Every Month for All ${productJson.type}’s Draws</li>
-                            </ul>
-                          </div>
-                        </div>
-                </div>
-             </label>`
-                planDiv.innerHTML = content;
-                //   let widgetDiv = document.createElement('div');
-                // let widget= ``
-                // widgetDiv.innerHTML= widget;
-
-                // planDiv?.appendChild(widgetDiv)
-                planDiv.querySelector(`#plan-${item?.id}`).addEventListener('change', () => handlePlanChange(item));
-            })
+            const selectedTimePlans = otherPlans?.filter((item) => item.options[0].value.split(' ')[0] == time)
+            if (selectedTimePlans) {
+                createDiv(selectedTimePlans)
+            }
         } else {
             let parent = document.getElementById('subscription');
             if (parent) {
@@ -208,6 +186,7 @@ if (subscription_page_type == "product") {
             }
         }
     }
+
 
     const showVariantPlans = () => {
         if (subscription_page_type == "product" && otherPlans?.length > 0) {
@@ -233,19 +212,27 @@ if (subscription_page_type == "product") {
               </div>
                 <div id="subscription-widget-box" class="subscription-widget-box">
                         <h3>Subscribe for More Chances to Win Every Month!</h3>
-                        <p>Get bonus entries every month and join all women’s luxury draws—like Chanel bags and stunning watches. More entries mean more chances to win multiple prizes, all for less than buying individual entries.</p>
+                        <p>Get bonus entries every plan and join draws. More entries mean more chances to win multiple prizes, all for less than buying individual entries.</p>
+                        <select id="timePeriod" name="timePeriod" class='selectTime'>
+                            <option value="week" class='timePeriodList'>Weekly</option>
+                            <option value="month" class='timePeriodList'>Monthly</option>
+                            <option value="year" class='timePeriodList'>Yearly</option>
+                        </select>
                         <div id="subscription-plans">
-                           
                         </div>
                 </div>
-             
             </div>
         </div>`
 
             let subscriptionBlock = document.getElementById('subscription-app-block')
             subscriptionBlock.innerHTML = mainWidget;
+            document.getElementById("timePeriod").addEventListener("change", (e) => {
+                selectedTimePlans = otherPlans?.filter((item) => item.options[0].value.split(' ')[0] == e.target.value)
+                console.log("after change=selectedTimePlans", selectedTimePlans)
+                createDiv(selectedTimePlans, true);
 
-            generatePlans();
+            });
+            generatePlans("week");
         }
     }
 
@@ -269,58 +256,28 @@ if (subscription_page_type == "product") {
         console.log("newPlan===", newPlan)
         let hasActive = document.getElementsByClassName('active');
         console.log("hasActive==", hasActive);
-
-        // Convert the HTMLCollection to an array to use map or forEach
         Array.from(hasActive).forEach(itm => {
             itm.classList.remove('active');
         });
 
-        let nowActive = document.getElementById(`${newPlan.id}`);
+        let nowActive = document.getElementById(`${newPlan?.id}`);
+        console.log("nowActive=", nowActive)
         if (nowActive) {
             nowActive.classList.add('active');
             console.log("nowActive==", nowActive);
         }
-        let checkOnetime = newPlan?.options[0]?.value?.split(' ')[0] == 'year'
+        let checkOnetime = newPlan?.options[0]?.value?.split(' ')[0] == 'day'
         console.log("checkOnetime==", checkOnetime)
-        let dealWidget = document.getElementById('main-widget')
         selectedPlan = newPlan
         sendDataToCart(selectedPlan)
-        if (checkOnetime) {
-            dealWidget.style.display = 'none';
-        } else {
-            dealWidget.style.display = 'block';
-            changeWidgetData()
-        }
     }
 
-
-    const changeWidgetData = () => {
-        let priceDiv = document.getElementById('product-price')
-        let typeDiv = document.getElementById('purchase-type')
-        let descriptionDiv = document.getElementById('description')
-        const planValue = selectedPlan.options?.[0]?.value?.trim() || '';
-        typeDiv.innerText = planValue ? `/${planValue.split(' ')[0]}` : '---';
-        priceDiv.innerText = `${getCurrencySymbol(activeCurrency)}${(selectedPlan?.price_adjustments[0]?.value) / 100}`
-        priceDiv.appendChild(typeDiv);
-
-        if (selectedPlan.description == null) {
-            descriptionDiv.innerText = "Your description is here";
-            // descriptionDiv.style.display="none"
-        } else {
-            descriptionDiv.style.display = "block"
-            descriptionDiv.innerText = selectedPlan.description;
-        }
-        console.log("selectedPlan in widget", selectedPlan)
-        console.log("priceDiv=", priceDiv, typeDiv)
-    }
-
+    sendDataToCart(selectedPlan)
     if (otherPlans?.length > 0 || oneTimePlans?.length > 0) {
         showVariantPlans();
     } else {
         let subscriptionBlock = document.getElementById('subscription-app-block')
         subscriptionBlock.innerHTML = '';
     }
-    console.log("otherPlans====", otherPlans)
-
-
 }
+

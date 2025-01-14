@@ -1,3 +1,4 @@
+import { sendEmail } from "../controllers/mail";
 import { getCustomerDataByContractId } from "../controllers/planController";
 import { credentialModel, subscriptionContractModel, billingModel } from "../schema";
 import { authenticate } from "../shopify.server";
@@ -37,8 +38,8 @@ export const action = async ({ request }) => {
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy
         let cusRes = await getCustomerDataByContractId(admin, contractId)
-
-        if (payload?.billing_policy?.interval === 'year') {
+        console.log("cusRes=", cusRes)
+        if (payload?.billing_policy?.interval === 'day') {
           billing_policy = { ...billing_policy, interval: 'oneTime' }
 
           const mutationQuery = `#graphql
@@ -78,6 +79,25 @@ export const action = async ({ request }) => {
           planId = product?.node?.sellingPlanId
           products.push(detail)
         })
+        const mailData = {
+          shop: shop,
+          orderId: orderId || "",
+          contractId: contractId || "",
+          customer: cusRes?.data?.customer,
+          sellingPlanName: planName,
+          sellingPlanId: planId,
+          billing_policy: billing_policy,
+          products: products,
+          entries: planName.split('-entries-')[1],
+          status: payload?.billing_policy?.interval == 'day' ? 'ONETIME' : "ACTIVE",
+          nextBillingDate: cusRes?.data?.nextBillingDate
+        }
+        let drawIds = []
+        for (let i = 0; i < Number(mailData?.entries); i++) {
+          let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+          drawIds.push(unique)
+        }
+
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
@@ -88,9 +108,11 @@ export const action = async ({ request }) => {
           sellingPlanId: planId,
           billing_policy: billing_policy,
           products: products,
-          status: payload?.billing_policy?.interval == 'year' ? 'ONETIME' : "ACTIVE",
+          drawIds: drawIds,
+          status: payload?.billing_policy?.interval == 'day' ? 'ONETIME' : "ACTIVE",
           nextBillingDate: cusRes?.data?.nextBillingDate
         });
+
         const currentDate = new Date().toISOString();
         let biiling = await billingModel.create({
           shop: shop,
@@ -100,11 +122,13 @@ export const action = async ({ request }) => {
           customerId: customerId || "",
           products: products,
           entries: planName.split('-entries-')[1],
+          drawIds: drawIds,
           status: "done",
           billing_attempt_date: currentDate,
           renewal_date: currentDate,
         });
 
+        sendEmail({ ...mailData, drawIds });
         return new Response("Contract created successfully", { status: 200 });
       } catch (err) {
         console.error("Error processing webhook:", err);

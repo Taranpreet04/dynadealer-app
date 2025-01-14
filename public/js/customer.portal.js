@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://sorts-shell-gordon-milk.trycloudflare.com";
+    let serverPath = "https://latinas-yarn-management-zoning.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let subscriptionDetails = []
@@ -425,7 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         </div>
         <div id="card">
-            <p class='left-div'>Billing Frequency: <b>${contractDetail?.billingPolicy?.interval?.toLowerCase() == 'year' ? 'Onetime' : capitalize(contractDetail?.billingPolicy?.interval)}</b></p>
+            <p class='left-div'>Billing Frequency: <b>${contractDetail?.billingPolicy?.interval?.toLowerCase() == 'day' ? 'Onetime' : capitalize(contractDetail?.billingPolicy?.interval)}</b></p>
             
             <p class='right-div' id='billingCycle'>Minimum billing cycles: <b>${contractDetail?.billingPolicy?.minCycles}</b></p>
         </div>
@@ -452,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
             backBtn.onclick = () => main();
             backBtn.onclick = () => main();
             let pTag = document.getElementById("billingCycle")
-            if (contractDetail?.billingPolicy?.interval?.toLowerCase() == 'year') {
+            if (contractDetail?.billingPolicy?.interval?.toLowerCase() == 'day') {
                 pTag.style.display = 'none'
             }
             generateProductRows()
