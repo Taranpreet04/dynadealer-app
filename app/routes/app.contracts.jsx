@@ -124,9 +124,9 @@ export default function ContractData() {
     <Text><Badge tone={(itm?.status == "CANCELLED") ? 'critical' : 'success'}>{itm?.status}</Badge></Text>,
     <Text as="p">
       <Link url={`/app/contract/${itm?.contractId}`} prefetch="viewport" onClick={() => { shopify.loading(true), setContentSkel(true) }}>
-        <svg class="eye-svg w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="black" stroke-width="1" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
-          <path stroke="black" stroke-width="1" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        <svg className="eye-svg w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="black" strokeWidth="1" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
+          <path stroke="black" strokeWidth="1" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
         </svg></Link>
     </Text>
   ])
@@ -172,7 +172,6 @@ export default function ContractData() {
       });
       setProducts(sendData)
       setShowDatePicker(true)
-
     }
   }
 

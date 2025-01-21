@@ -1,7 +1,7 @@
-import { BlockStack, Box, Button, DatePicker, Icon, InlineGrid, OptionList, Popover,InlineStack, Scrollable, Select, TextField, useBreakpoints } from "@shopify/polaris";
+import { BlockStack, Box, Button, DatePicker, Icon, InlineGrid, Popover, InlineStack, TextField, useBreakpoints } from "@shopify/polaris";
 import { useState, useEffect, useRef } from "react";
-import { CalendarIcon , ArrowRightIcon } from "@shopify/polaris-icons"
-export default function DateRangePicker({setSelectedDates}) {
+import { CalendarIcon, ArrowRightIcon } from "@shopify/polaris-icons"
+export default function DateRangePicker({ setPlanDetail, planDetail }) {
     const { mdDown, lgUp } = useBreakpoints();
     const shouldShowMultiMonth = lgUp;
     const today = new Date(new Date().setHours(0, 0, 0, 0));
@@ -10,38 +10,20 @@ export default function DateRangePicker({setSelectedDates}) {
     );
     const ranges = [
         {
-            title: "Today",
-            alias: "today",
+            title: "Custom",
+            alias: "custom",
             period: {
-                since: today,
-                until: today,
-            },
-        },
-        {
-            title: "Yesterday",
-            alias: "yesterday",
-            period: {
-                since: yesterday,
-                until: yesterday,
-            },
-        },
-        {
-            title: "Last 7 days",
-            alias: "last7days",
-            period: {
-                since: new Date(
-                    new Date(new Date().setDate(today.getDate() - 7)).setHours(0, 0, 0, 0)
-                ),
-                until: yesterday,
+                start: planDetail?.offerValidity.start,
+                end: planDetail?.offerValidity.end,
             },
         },
     ];
     const [popoverActive, setPopoverActive] = useState(false);
-    const [activeDateRange, setActiveDateRange] = useState(ranges[2]);
+    const [activeDateRange, setActiveDateRange] = useState(ranges[0]);
     const [inputValues, setInputValues] = useState({});
     const [{ month, year }, setDate] = useState({
-        month: activeDateRange.period.since.getMonth(),
-        year: activeDateRange.period.since.getFullYear(),
+        month: activeDateRange.period.start.getMonth(),
+        year: activeDateRange.period.start.getFullYear(),
     });
     const datePickerRef = useRef(null);
     const VALID_YYYY_MM_DD_DATE_REGEX = /^\d{4}-\d{1,2}-\d{1,2}/;
@@ -55,10 +37,6 @@ export default function DateRangePicker({setSelectedDates}) {
         return date.length === 10 && isValidYearMonthDayDateString(date);
     }
     function parseYearMonthDayDateString(input) {
-        // Date-only strings (e.g. "1970-01-01") are treated as UTC, not local time
-        // when using new Date()
-        // We need to split year, month, day to pass into new Date() separately
-        // to get a localized Date
         const [year, month, day] = input.split("-");
         return new Date(Number(year), Number(month) - 1, Number(day));
     }
@@ -97,52 +75,32 @@ export default function DateRangePicker({setSelectedDates}) {
     }
     function handleStartInputValueChange(value) {
         setInputValues((prevState) => {
-            return { ...prevState, since: value };
+            return { ...prevState, start: value };
         });
-        console.log("handleStartInputValueChange, validDate", value);
         if (isValidDate(value)) {
             const newSince = parseYearMonthDayDateString(value);
             setActiveDateRange((prevState) => {
                 const newPeriod =
-                    prevState.period && newSince <= prevState.period.until
-                        ? { since: newSince, until: prevState.period.until }
-                        : { since: newSince, until: newSince };
+                    prevState.period && newSince <= prevState.period.end
+                        ? { start: newSince, end: prevState.period.end }
+                        : { start: newSince, end: newSince };
                 return {
                     ...prevState,
                     period: newPeriod,
                 };
             });
-            setSelectedDates((prevState) => {
-                const newPeriod =
-                    prevState.period && newSince <= prevState.period.until
-                        ? { since: newSince, until: prevState.period.until }
-                        : { since: newSince, until: newSince };
-                return {
-                    ...prevState,
-                    period: newPeriod,
-                };
-            });
+           
         }
     }
     function handleEndInputValueChange(value) {
-        setInputValues((prevState) => ({ ...prevState, until: value }));
+        setInputValues((prevState) => ({ ...prevState, end: value }));
         if (isValidDate(value)) {
             const newUntil = parseYearMonthDayDateString(value);
             setActiveDateRange((prevState) => {
                 const newPeriod =
-                    prevState.period && newUntil >= prevState.period.since
-                        ? { since: prevState.period.since, until: newUntil }
-                        : { since: newUntil, until: newUntil };
-                return {
-                    ...prevState,
-                    period: newPeriod,
-                };
-            });
-            setSelectedDates((prevState) => {
-                const newPeriod =
-                    prevState.period && newUntil >= prevState.period.since
-                        ? { since: prevState.period.since, until: newUntil }
-                        : { since: newUntil, until: newUntil };
+                    prevState.period && newUntil >= prevState.period.start
+                        ? { start: prevState.period.start, end: newUntil }
+                        : { start: newUntil, end: newUntil };
                 return {
                     ...prevState,
                     period: newPeriod,
@@ -153,33 +111,33 @@ export default function DateRangePicker({setSelectedDates}) {
     function handleInputBlur({ relatedTarget }) {
         const isRelatedTargetWithinPopover =
             relatedTarget != null && isNodeWithinPopover(relatedTarget);
-            
-        // If focus moves from the TextField to the Popover
-        // we don't want to close the popover
         if (isRelatedTargetWithinPopover) {
             return;
         }
         setPopoverActive(false);
     }
+
+
     function handleMonthChange(month, year) {
         setDate({ month, year });
     }
+
+
     function handleCalendarChange({ start, end }) {
         const newDateRange = ranges.find((range) => {
             return (
-                range.period.since.valueOf() === start.valueOf() &&
-                range.period.until.valueOf() === end.valueOf()
+                range.period.start.valueOf() === start.valueOf() &&
+                range.period.end.valueOf() === end.valueOf()
             );
         }) || {
             alias: "custom",
             title: "Custom",
             period: {
-                since: start,
-                until: end,
+                start: start,
+                end: end,
             },
         };
         setActiveDateRange(newDateRange);
-        setSelectedDates(newDateRange);
     }
     function apply() {
         setPopoverActive(false);
@@ -189,10 +147,9 @@ export default function DateRangePicker({setSelectedDates}) {
     }
     useEffect(() => {
         if (activeDateRange) {
-            console.log("activeDateRange==", activeDateRange)
             setInputValues({
-                since: formatDate(activeDateRange.period.since),
-                until: formatDate(activeDateRange.period.until),
+                start: formatDate(activeDateRange.period.start),
+                end: formatDate(activeDateRange.period.end),
             });
             function monthDiff(referenceDate, newDate) {
                 return (
@@ -204,23 +161,24 @@ export default function DateRangePicker({setSelectedDates}) {
             const monthDifference = monthDiff(
                 { year, month },
                 {
-                    year: activeDateRange.period.until.getFullYear(),
-                    month: activeDateRange.period.until.getMonth(),
+                    year: activeDateRange.period.end.getFullYear(),
+                    month: activeDateRange.period.end.getMonth(),
                 }
             );
             if (monthDifference > 1 || monthDifference < 0) {
                 setDate({
-                    month: activeDateRange.period.until.getMonth(),
-                    year: activeDateRange.period.until.getFullYear(),
+                    month: activeDateRange.period.end.getMonth(),
+                    year: activeDateRange.period.end.getFullYear(),
                 });
             }
+            setPlanDetail({ ...planDetail, offerValidity: activeDateRange?.period })
         }
     }, [activeDateRange]);
     const buttonValue =
         activeDateRange.title === "Custom"
-            ? activeDateRange.period.since.toDateString() +
+            ? activeDateRange.period.start.toDateString() +
             " - " +
-            activeDateRange.period.until.toDateString()
+            activeDateRange.period.end.toDateString()
             : activeDateRange.title;
     return (
         <Popover
@@ -252,46 +210,6 @@ export default function DateRangePicker({setSelectedDates}) {
                     gap={0}
                     ref={datePickerRef}
                 >
-                    <Box
-                        maxWidth={mdDown ? "516px" : "212px"}
-                        width={mdDown ? "100%" : "212px"}
-                        padding={{ xs: 500, md: 0 }}
-                        paddingBlockEnd={{ xs: 100, md: 0 }}
-                    >
-                        {mdDown ? (
-                            <Select
-                                label="dateRangeLabel"
-                                labelHidden
-                                onChange={(value) => {
-                                    const result = ranges.find(
-                                        ({ title, alias }) => title === value || alias === value
-                                    );
-                                    setActiveDateRange(result);
-                                    setSelectedDates(result);
-                                }}
-                                value={activeDateRange?.title || activeDateRange?.alias || ""}
-                                options={ranges.map(({ alias, title }) => title || alias)}
-                            />
-                        ) : (
-                            <Scrollable style={{ height: "334px" }}>
-                                <OptionList
-                                    options={ranges.map((range) => ({
-                                        value: range.alias,
-                                        label: range.title,
-                                    }))}
-                                    selected={activeDateRange.alias}
-                                    onChange={(value) => {
-                                        setActiveDateRange(
-                                            ranges.find((range) => range.alias === value[0])
-                                        );
-                                        setSelectedDates(
-                                            ranges.find((range) => range.alias === value[0])
-                                        );
-                                    }}
-                                />
-                            </Scrollable>
-                        )}
-                    </Box>
                     <Box padding={{ xs: 500 }} maxWidth={mdDown ? "320px" : "516px"}>
                         <BlockStack gap="400">
                             <InlineStack gap="200">
@@ -301,7 +219,7 @@ export default function DateRangePicker({setSelectedDates}) {
                                         label={"Since"}
                                         labelHidden
                                         prefix={<Icon source={CalendarIcon} />}
-                                        value={inputValues.since}
+                                        value={inputValues.start}
                                         onChange={handleStartInputValueChange}
                                         onBlur={handleInputBlur}
                                         autoComplete="off"
@@ -314,7 +232,7 @@ export default function DateRangePicker({setSelectedDates}) {
                                         label={"Until"}
                                         labelHidden
                                         prefix={<Icon source={CalendarIcon} />}
-                                        value={inputValues.until}
+                                        value={inputValues.end}
                                         onChange={handleEndInputValueChange}
                                         onBlur={handleInputBlur}
                                         autoComplete="off"
@@ -326,8 +244,8 @@ export default function DateRangePicker({setSelectedDates}) {
                                     month={month}
                                     year={year}
                                     selected={{
-                                        start: activeDateRange.period.since,
-                                        end: activeDateRange.period.until,
+                                        start: activeDateRange.period.start,
+                                        end: activeDateRange.period.end,
                                     }}
                                     onMonthChange={handleMonthChange}
                                     onChange={handleCalendarChange}

@@ -1,6 +1,20 @@
 import { billingModel, planDetailsModel, subscriptionContractModel } from '../schema'
 import fs from "fs";
 
+export const checkProductSubscription = async (newPlanDetails, id) => {
+    try {
+        const check = await planDetailsModel.findOne({shop: newPlanDetails?.shop,
+            products: { $in: newPlanDetails?.products },
+        });
+        if(check?._id == id){
+            return check == null; 
+        }
+        return check !== null; 
+    } catch (err) {
+        console.error("Error checking product subscription:", err);
+        throw err; 
+    }
+}
 export const createPlan = async (admin, newPlanDetail) => {
     const { shop } = admin.rest.session;
     const newPlanDetails = {
@@ -8,10 +22,9 @@ export const createPlan = async (admin, newPlanDetail) => {
         shop: shop
     };
     try {
-        const date= newPlanDetails?.offerValidity
-        console.log("newPlanDetails==", newPlanDetails?.offerValidity)
-        const startIST = toIST(date.since);
-        let endIST = toIST(date.until);
+        const date = newPlanDetails?.offerValidity
+        const startIST = toIST(date.start);
+        let endIST = toIST(date.end);
         endIST.setHours(23, 59, 59, 999);
         endIST = toIST(endIST);
 
@@ -20,8 +33,7 @@ export const createPlan = async (admin, newPlanDetail) => {
             end: endIST,
         };
 
-        console.log("dateRange-----------", dateRange)
-        let allOptions = [];
+       let allOptions = [];
         newPlanDetails?.plans?.map((item) => {
             let unique =
                 Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -44,13 +56,12 @@ export const createPlan = async (admin, newPlanDetail) => {
                     },
                 });
             }
-            let unique =
-                Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+          
             let additionData = JSON.stringify({
                 entries: item.entries,
                 exclusiveDraw: item.exclusiveDraw
             })
-            sellPlan.push({
+           sellPlan.push({
                 name: item.name,
                 options: item.purchaseType + " " + item.mincycle + " " + item.name,
                 position: 1,
@@ -61,8 +72,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                 },
                 billingPolicy: {
                     recurring: {
-                        // anchors: draftAnchors,
-                        interval: item?.purchaseType?.toUpperCase(),
+                       interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
                         minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
                     },
@@ -70,8 +80,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                 deliveryPolicy: {
                     recurring: {
                         intent: "FULFILLMENT_BEGIN",
-                        // anchors: draftAnchors ,
-                        preAnchorBehavior: "ASAP",
+                       preAnchorBehavior: "ASAP",
                         interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1
                     },
@@ -90,30 +99,31 @@ export const createPlan = async (admin, newPlanDetail) => {
 
         const response = await admin.graphql(
             `#graphql
-      mutation createSellingPlanGroup($input: SellingPlanGroupInput!, $resources: SellingPlanGroupResourceInput) {
-        sellingPlanGroupCreate(input: $input, resources: $resources) {
-          sellingPlanGroup {
-            id
-            sellingPlans(first: 10) {
-              edges {
-                node {
-                  id
-                  name
+                    mutation createSellingPlanGroup($input: SellingPlanGroupInput!, $resources: SellingPlanGroupResourceInput) {
+                    sellingPlanGroupCreate(input: $input, resources: $resources) {
+                    sellingPlanGroup {
+                        id
+                        sellingPlans(first: 10) {
+                        edges {
+                            node {
+                                id
+                                name
+                            }
+                        }
+                    }
                 }
-              }
+                userErrors {
+                    field
+                    message
+                }
             }
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`,
+        }`,
             {
                 variables: {
                     "input": {
                         "appId": "SubscriptionApp2k24",
                         "name": newPlanDetails?.name,
+                        "description": JSON.stringify(dateRange),
                         "merchantCode": newPlanDetails?.name,
                         "options": [topOptions],
                         "sellingPlansToCreate": sellPlan
@@ -139,12 +149,11 @@ export const createPlan = async (admin, newPlanDetail) => {
                     if (matchedItem) {
                         plansWids.push({ ...plan, plan_id: matchedItem.node.id });
                     } else {
-
                         plansWids.push({ ...plan })
                     }
                 });
             }
-            let newData = { ...newPlanDetails, plans: plansWids, plan_group_id: planGroupId,  offerValidity: dateRange }
+            let newData = { ...newPlanDetails, plans: plansWids, plan_group_id: planGroupId, offerValidity: dateRange }
             const planDetails = await planDetailsModel.create(newData);
             return { success: true, planDetails };
         }
@@ -176,15 +185,15 @@ export const deletePlanById = async (admin, data) => {
         };
         const response = await admin.graphql(
             `#graphql
-            mutation sellingPlanGroupDelete($id: ID!) {
-            sellingPlanGroupDelete(id: $id) {
-              deletedSellingPlanGroupId
-              userErrors {
-                field
-                message
-              }
-            }
-          }`,
+                    mutation sellingPlanGroupDelete($id: ID!) {
+                    sellingPlanGroupDelete(id: $id) {
+                        deletedSellingPlanGroupId
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+            }`,
             {
                 variables: planId,
             },
@@ -231,10 +240,9 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     try {
         const { shop } = admin.rest.session;
         let dbproductlist = data?.dbProducts
-        const date= newPlanDetails?.offerValidity
-        console.log("newPlanDetails==", newPlanDetails?.offerValidity)
-        const startIST = toIST(date.since);
-        let endIST = toIST(date.until);
+        const date = newPlanDetails?.offerValidity
+        const startIST = toIST(date.start);
+        let endIST = toIST(date.end);
         endIST.setHours(23, 59, 59, 999);
         endIST = toIST(endIST);
 
@@ -242,10 +250,6 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
             start: startIST,
             end: endIST,
         };
-
-        console.log("dateRange-----------", dateRange)
-
-
         const allVariants = newPlanDetails?.products.reduce((acc, product) => {
             return acc.concat(product.variants);
         }, []);
@@ -292,7 +296,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                 entries: item.entries,
                 exclusiveDraw: item.exclusiveDraw
             })
-            plansToCreate?.push({
+           plansToCreate?.push({
                 name: item.name,
                 options: item.purchaseType + " " + item.mincycle + " " + item.name,
                 position: 1,
@@ -303,6 +307,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                 },
                 billingPolicy: {
                     recurring: {
+                        interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
                         minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
                     },
@@ -311,7 +316,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     recurring: {
                         intent: "FULFILLMENT_BEGIN",
                         preAnchorBehavior: "ASAP",
-                        intervalCount: 1
+                        intervalCount: 1,
+                        interval: item?.purchaseType?.toUpperCase(),
                     },
                 },
                 pricingPolicies: pricingPolicy,
@@ -348,6 +354,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                 },
                 billingPolicy: {
                     recurring: {
+                        interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
                         minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
                     },
@@ -356,7 +363,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     recurring: {
                         intent: "FULFILLMENT_BEGIN",
                         preAnchorBehavior: "ASAP",
-                        intervalCount: 1
+                        intervalCount: 1,
+                        interval: item?.purchaseType?.toUpperCase(),
                     },
                 },
                 pricingPolicies: pricingPolicy,
@@ -377,6 +385,12 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     node {
                       id
                       name
+                      billingPolicy{
+              ... on SellingPlanRecurringBillingPolicy {
+                interval
+                maxCycles
+              }
+            }
                       metafields(first: 10) {
                         edges {
                           node {
@@ -403,6 +417,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     "input": {
                         "appId": "SubscriptionApp2k24",
                         "name": newPlanDetails?.name,
+                        "description": JSON.stringify(dateRange),
                         "merchantCode": newPlanDetails?.name,
                         "options": [topOptions],
                         "sellingPlansToUpdate": plansToUpdate,
@@ -414,7 +429,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         );
 
         const resData = await response.json();
-
+     
         let planIds = resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans?.edges
         if (planIds) {
 
@@ -429,7 +444,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     }
                 });
             }
-            let newData = { ...newPlanDetails, plans: plansWids , offerValidity: dateRange}
+            let newData = { ...newPlanDetails, plans: plansWids, offerValidity: dateRange }
             if (variantsToDelete?.length > 0) {
                 const delVariantresponse = await admin.graphql(
                     `#graphql
@@ -476,8 +491,6 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
 
                 const addVariantRes = await addVariantresponse.json();
             }
-
-
             const query = { _id: ids?.id };
             const update = {
                 ...newData, shop: shop
@@ -501,7 +514,6 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
 
     } catch (error) {
         console.error("Error:", error);
-        const error_log = { noerror: false, data: "database error" };
         return { success: false, error: "Failed to update plan details." };
     }
 }
@@ -837,22 +849,11 @@ export const getExportData = async (admin, data, date) => {
             $gte: startIST,
             $lte: endIST,
         };
-
-        console.log("dateRange-----------", dateRange)
         const matchingDocuments = await billingModel.find({
             "products.productId": { $in: data },
             createdAt: dateRange,
             status: "done"
         })
-
-        const dataString = typeof matchingDocuments === "string" ? matchingDocuments : JSON.stringify(matchingDocuments);
-        fs.writeFile("checkkkk.txt", dataString, (err) => {
-            if (err) {
-                console.error("Error writing to file:", err);
-            } else {
-                console.log("Data written to file successfully!");
-            }
-        });
         return { success: true, data: matchingDocuments };
     } catch (error) {
         console.error("Error processing POST request:", error);
@@ -876,3 +877,12 @@ export const checkMincycleComplete = async (contractId) => {
     }
 
 }
+
+   // const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
+        // fs.writeFile("checkkkk.txt", dataString, (err) => {
+        //     if (err) {
+        //         console.error("Error writing to file:", err);
+        //     } else {
+        //         console.log("Data written to file successfully!");
+        //     }
+        // });

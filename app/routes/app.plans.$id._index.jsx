@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import { useActionData, useLoaderData, useSubmit, useNavigate, useParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { createPlan, getPlanById, updatePlanById } from "../controllers/planController";
+import { checkProductSubscription, createPlan, getPlanById, updatePlanById } from "../controllers/planController";
 import { authenticate } from "../shopify.server";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons"
 import { Button, Page, Card, ResourceList, Avatar, ResourceItem, Text, Icon, TextField, BlockStack, Grid, Select, Modal, Box, Checkbox, InlineStack, DatePicker } from "@shopify/polaris";
@@ -46,9 +46,16 @@ export const action = async ({ params, request }) => {
 
     try {
         let detail = { updatePlans, deletePlans, newPlans, dbProducts }
-        const planDetails = params?.id == "create" ?
-            await createPlan(admin, newPlanDetails) :
-            await updatePlanById(admin, { id: params?.id, plan_group_id: plan_group_id }, newPlanDetails, detail);
+        let planDetails = { success: false, error: "Product has already subscription plans" }
+        let hasSubscription = await checkProductSubscription(newPlanDetails, params?.id)
+        if (!hasSubscription) {
+            if (params?.id == "create") {
+                planDetails = await createPlan(admin, newPlanDetails)
+            } else {
+                planDetails = await updatePlanById(admin, { id: params?.id, plan_group_id: plan_group_id }, newPlanDetails, detail);
+            }
+        }
+
         return json(planDetails);
     } catch (error) {
         console.error("Error creating plan details:", error);
@@ -63,12 +70,10 @@ export default function CreateUpdatePlan() {
     const actionData = useActionData()
     const navigate = useNavigate();
     let { id } = useParams()
-    // const [addPlanModal, setAddPlanModal] = useState(false)
     const [sellingPlanModal, setSellingPlanModal] = useState(false)
     const [deleteSellingPlan, setDeleteSellingPlan] = useState('')
     const [existPlanType, setExistPlanType] = useState(false)
     const [minCycleErr, setMinCycleErr] = useState(false)
-    const [priceErr, setPriceErr] = useState(false)
     const [planNameExist, setPlanNameExist] = useState(false)
     const [editSellingPlan, setEditSellingPlan] = useState(false)
     const [deletePlans, setDeletePlans] = useState([])
@@ -85,41 +90,46 @@ export default function CreateUpdatePlan() {
         price: '',
         exclusiveDraw: false
     })
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    const resetToMidnight = (date) => {
+        const newDate = new Date(date);
+        newDate.setHours(0, 0, 0, 0);
+        return newDate;
+    };
     const [planDetail, setPlanDetail] = useState({
         name: '',
         plans: [],
-        products: []
+        products: [],
     })
     const [originalData, setOriginalData] = useState({
         name: '',
         plans: [],
         products: []
     })
-    const today = new Date(new Date().setHours(0, 0, 0, 0));
-    const yesterday = new Date(
-        new Date(new Date().setDate(today.getDate() - 1)).setHours(0, 0, 0, 0)
-    );
-    const [selectedDates, setSelectedDates] = useState({
-        title: "Last 7 days",
-        alias: "last7days",
-        period: {
-            since: new Date(
-                new Date(new Date().setDate(today.getDate() - 7)).setHours(0, 0, 0, 0)
-            ),
-            until: yesterday,
-        },
-    });
 
-    // const handleMonthChange = (month, year) => {
-    //     setDate({ month, year })
-    // }
-
+   
     useEffect(() => {
         shopify.loading(true)
+        const toIST = (dateString) => {
+            const date = new Date(dateString);
+            const offsetInMinutes = 330; 
+            return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
+        };
         if (loaderData !== null) {
-            setPlanDetail({ ...loaderData })
-            setOriginalData({ ...loaderData })
+            const dates = {
+                start: new Date(toIST(loaderData?.offerValidity?.start)),
+                end: new Date(toIST(loaderData?.offerValidity?.end))
+            }
+            setPlanDetail({ ...loaderData, offerValidity: dates })
+            setOriginalData({ ...loaderData, offerValidity: dates })
             setDbProducts([...loaderData?.products])
+        } else {
+            setPlanDetail({
+                ...planDetail, offerValidity: {
+                    start: resetToMidnight(new Date()),
+                    end: resetToMidnight(new Date((new Date()).getTime() + 10 * 24 * 60 * 60 * 1000)),  
+                }
+            })
         }
         shopify.loading(false)
     }, [loaderData])
@@ -137,7 +147,6 @@ export default function CreateUpdatePlan() {
             planDetail?.plans?.map((item) => {
                 item?.plan_id ? updatePlans?.push(item) : newPlans?.push(item)
             })
-
             if (JSON.stringify(originalData) !== JSON.stringify(planDetail)) {
                 let formData = {
                     ...planDetail,
@@ -147,10 +156,9 @@ export default function CreateUpdatePlan() {
                     updatePlans: JSON.stringify(updatePlans),
                     deletePlans: JSON.stringify(deletePlans),
                     dbProducts: JSON.stringify(dbProducts),
-                    offerValidity: JSON.stringify(selectedDates?.period)
+                    offerValidity: JSON.stringify(planDetail?.offerValidity)
                 }
-                // console.log("formData=", formData.offerValidity.since)
-                shopify.loading(true)
+              shopify.loading(true)
                 setBtnLoader(true)
                 submit(formData, {
                     method: "post",
@@ -221,12 +229,15 @@ export default function CreateUpdatePlan() {
             setBtnLoader(false)
             setTableSkel(true)
             navigate('../plans')
+        } else if (actionData?.success == false) {
+            shopify.toast.show(`${actionData?.error}`, { duration: 5000 })
+            shopify.loading(false)
+            setBtnLoader(false)
         }
         shopify.loading(false)
     }, [actionData])
 
     const options = [
-        // { label: 'Oneday-testing', value: 'day' },
         { label: 'One-time', value: 'day' },
         { label: 'Weekly', value: 'week' },
         { label: 'Monthly', value: 'month' },
@@ -279,23 +290,6 @@ export default function CreateUpdatePlan() {
             [name]: val
         })
     }
-
-    // const handleModalClose = () => {
-    //     setEditSellingPlan(false)
-    //     setAddPlanModal(false);
-    //     setExistPlanType(false)
-    //     setPlanNameExist(false)
-    //     setMinCycleErr(false)
-    //     setNewPlan({
-    //         name: 'New plan',
-    //         entries: 1,
-    //         purchaseType: 'year',
-    //         mincycle: 1,
-    //         price: '',
-    //         exclusiveDraw: false
-    //     })
-    // };
-
     const handleDeleteProduct = (id) => {
         let products = planDetail?.products?.filter((item) => item?.product_id !== id)
         setPlanDetail({ ...planDetail, products: products })
@@ -318,10 +312,8 @@ export default function CreateUpdatePlan() {
                 setMinCycleErr(true)
                 shopify.toast.show("Minimum cycle should be greater than or equal to 1.", { duration: 5000 })
             } else if (newPlan?.price == '' || parseInt(newPlan?.price) <= 0) {
-                setPriceErr(true)
                 shopify.toast.show("Price is required", { duration: 5000 })
             } else {
-                // setAddPlanModal(false)
                 setEditSellingPlan(false)
                 planDetail?.plans?.map((item, index) => {
                     if (index == updatePlanIndex) {
@@ -363,11 +355,8 @@ export default function CreateUpdatePlan() {
             } else if ((minCycleErr || !(newPlan?.mincycle >= 1) && newPlan?.purchaseType !== "day")) {
                 shopify.toast.show("Minimum cycle should be greater than or equal to 1.", { duration: 5000 })
             } else if (newPlan?.price == '' || parseInt(newPlan?.price) <= 0) {
-                setPriceErr(true)
-                shopify.toast.show("Price is required", { duration: 5000 })
+              shopify.toast.show("Price is required", { duration: 5000 })
             } else {
-                setPriceErr(false)
-                // setAddPlanModal(false)
                 setEditSellingPlan(false)
                 let editPlanName = { ...newPlan, name: newPlan?.name + "-entries-" + newPlan?.entries }
                 let newPlans = [...planDetail?.plans, editPlanName]
@@ -383,7 +372,6 @@ export default function CreateUpdatePlan() {
             }
         }
     }
-    // console.log("seleted dates==", selectedDates)
     return (
         <>
             {tableSkel ? <TableSkeleton /> :
@@ -419,9 +407,13 @@ export default function CreateUpdatePlan() {
                                             </Grid.Cell>
                                             <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 8, lg: 8, xl: 8 }}
                                                 style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                <DateRangePicker setSelectedDates={setSelectedDates} />
-                                                {console.log("setSelectedDates=", selectedDates)}
-                                            </Grid.Cell>
+                                                { planDetail?.offerValidity &&
+                                                <DateRangePicker
+                                                    setPlanDetail={setPlanDetail}
+                                                    planDetail={planDetail}
+                                                />
+                                               } 
+                                               </Grid.Cell>
                                         </Grid>
                                     </Card>
                                     <Card>

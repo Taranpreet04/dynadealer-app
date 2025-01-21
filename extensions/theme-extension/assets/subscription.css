@@ -216,10 +216,17 @@ h2#product-price {
     position: relative;
 }
 
+#oneTime-plans {
+    display: flex;
+    gap: 5px;
+    justify-content: normal;
+}
+
 .onetime-selling-plan {
     border: 2px solid #E6EDFF;
     border-radius: 18px;
     position: relative;
+    width: 50%;
 }
 
 .subscription-body .var-entries {
@@ -241,10 +248,10 @@ h2#product-price {
 .onetime-selling-plan label {
     display: flex;
     align-items: flex-start;
-    gap: 15px;
+    gap: 5px;
     flex-direction: column;
     cursor: pointer;
-    padding: 15px 25px;
+    padding: 10px 20px;
 }
 
 .onetime-selling-plan span,
@@ -572,7 +579,6 @@ span.var-entries {
     right: 0;
     bottom: 0;
     top: 0;
-
 }
 
 .currancy-symbol {
@@ -625,8 +631,42 @@ span.var-entries {
 .subscription-body .subscription-selling-plan ul#widget-list li#description:before {
     background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Frame_523.png?v=1735898031);
 }
-.selectTime{
+
+.selectTime {
     width: 100%;
     border-radius: 10px;
     padding: 5px;
+}
+
+
+/***count down style*****/
+.countdown-main-div {
+    position: absolute;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: #fff;
+    width: 40%;
+    z-index: 999;
+    top: -30px;
+    left: 30%;
+}
+.countdown, .show-timer-div{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    column-gap: 10px;
+}
+.countdown p{
+    font-size: medium;
+}
+.time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
+    justify-content: center; 
+    gap: 2px; 
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2px;
+    margin: 5px 0;
 }

@@ -3,7 +3,6 @@ import { getCustomerDataByContractId } from "../controllers/planController";
 import { credentialModel, subscriptionContractModel, billingModel } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-import fs from "fs"
 
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } = await authenticate.webhook(request);
@@ -14,10 +13,8 @@ export const action = async ({ request }) => {
     case "APP_UNINSTALLED":
       if (session) {
         const deleteCredential = credentialModel.deleteOne({ shop });
-        // const deleteBilling = shopify_sessions.deleteOne({shop});
         await Promise.all([
           deleteCredential,
-          // deleteBilling
         ]);
 
         const sessionId = session.id;
@@ -32,13 +29,12 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
-        console.log("details from webhook_____SUBSCRIPTION_CONTRACTS_CREATE")
-        const contractId = payload?.id; // Contract ID
-        const orderId = payload?.origin_order_id; // Order ID
+        console.log("details from webhook_____SUBSCRIPTION_CONTRACTS_CREATE", payload)
+        const contractId = payload?.id; 
+        const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy
         let cusRes = await getCustomerDataByContractId(admin, contractId)
-        console.log("cusRes=", cusRes)
         if (payload?.billing_policy?.interval === 'day') {
           billing_policy = { ...billing_policy, interval: 'oneTime' }
 
@@ -65,35 +61,23 @@ export const action = async ({ request }) => {
 
           const result = await response.json();
         }
-        let customer = cusRes?.data?.customer
+
+
+
+
         let products = [];
-        let planName = ''
-        let planId = ''
+        let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName
+        let planId =  cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
             productId: product?.node?.productId,
             productName: product?.node?.title,
             quantity: product?.node?.quantity,
           }
-          planName = product?.node?.sellingPlanName
-          planId = product?.node?.sellingPlanId
           products.push(detail)
         })
-        const mailData = {
-          shop: shop,
-          orderId: orderId || "",
-          contractId: contractId || "",
-          customer: cusRes?.data?.customer,
-          sellingPlanName: planName,
-          sellingPlanId: planId,
-          billing_policy: billing_policy,
-          products: products,
-          entries: planName.split('-entries-')[1],
-          status: payload?.billing_policy?.interval == 'day' ? 'ONETIME' : "ACTIVE",
-          nextBillingDate: cusRes?.data?.nextBillingDate
-        }
         let drawIds = []
-        for (let i = 0; i < Number(mailData?.entries); i++) {
+        for (let i = 0; i < Number(planName.split('-entries-')[1]); i++) {
           let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
           drawIds.push(unique)
         }
@@ -102,7 +86,8 @@ export const action = async ({ request }) => {
           shop: shop,
           orderId: orderId || "",
           contractId: contractId || "",
-          customerName: customer.firstName + ' ' + customer.lastName || '',
+          customerName: cusRes?.data?.customer?.firstName + ' ' + cusRes?.data?.customer?.lastName,
+          customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           sellingPlanName: planName,
           sellingPlanId: planId,
@@ -110,7 +95,7 @@ export const action = async ({ request }) => {
           products: products,
           drawIds: drawIds,
           status: payload?.billing_policy?.interval == 'day' ? 'ONETIME' : "ACTIVE",
-          nextBillingDate: cusRes?.data?.nextBillingDate
+          nextBillingDate:payload?.billing_policy?.interval == 'day' ? new Date().toISOString() :  cusRes?.data?.nextBillingDate
         });
 
         const currentDate = new Date().toISOString();
@@ -118,7 +103,8 @@ export const action = async ({ request }) => {
           shop: shop,
           orderId: orderId || "",
           contractId: contractId || "",
-          customerName: customer.firstName + ' ' + customer.lastName || '',
+          customerName: cusRes?.data?.customer?.firstName + ' ' + cusRes?.data?.customer?.lastName,
+          customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           products: products,
           entries: planName.split('-entries-')[1],
@@ -128,7 +114,7 @@ export const action = async ({ request }) => {
           renewal_date: currentDate,
         });
 
-        sendEmail({ ...mailData, drawIds });
+        sendEmail(contractDetail);
         return new Response("Contract created successfully", { status: 200 });
       } catch (err) {
         console.error("Error processing webhook:", err);
@@ -136,13 +122,11 @@ export const action = async ({ request }) => {
       }
     case "SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS":
       try {
-        console.log("subscription_billing_attempts/success webhook works= payload")
-        const contractId = payload?.subscription_contract_id;
-        const uniqueId = payload?.idempotency_key;
+        console.log("subscription_billing_attempts/success webhook works= payload", payload)
         let data = await billingModel.findOneAndUpdate(
           {
             contractId: payload?.subscription_contract_id,
-            idempotencyKey: payload?.idempotency_key
+            idempotencyKey: payload?.idempotency_key,
           },
           {
             $set: {
@@ -150,6 +134,9 @@ export const action = async ({ request }) => {
             },
           }
         )
+        if(data){
+          sendEmail(data);
+        }
         return new Response("subscription_billing_attempts/success", { status: 200 });
       } catch (err) {
         console.error("Error processing webhook:", err);

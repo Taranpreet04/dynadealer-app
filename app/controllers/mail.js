@@ -1,10 +1,6 @@
-// const nodemailer = require("nodemailer");
 import nodemailer from 'nodemailer'
 export async function sendEmail(data) {
-    // const { to, subject } = req.body;
-        console.log("mail-data",data)
     try {
-        // Create a transporter
         let transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
             port: 465,
@@ -15,21 +11,20 @@ export async function sendEmail(data) {
             },
         });
 
-        // Email options
         const drawIdsList = data?.drawIds?.map((id) => `<tr>
-                    <td>${data?.customer?.firstName || 'Rohit'} ${data?.customer?.lastName ||''}</td>
+                    <td>${data?.customerName}</td>
                     <td>${id}</td>
                 </tr>`).join(" ");
         let mailOptions = {
-            from: "Subscription App", // Sender's email
-            to: data?.customer?.email, // Recipient's email
-            subject: "Your order is successfully done", // Subject of the email
+            from: "Subscription App",
+            to: data?.customerEmail,
+            subject: "Your order is successfully done",
             html: `
-        <p>Hi ${data?.customer?.firstName || ''} ${data?.customer?.lastName ||''},</p>
+        <p>Hi ${data?.customerName || 'Sir/Mam'},</p>
         <p>Thankyou for order.</p>
         <p>Your orderId is: ${data?.orderId}</p>
         <p>Your contractId is: ${data?.contractId}</p>
-        <p>Your have ${data?.entries} chances for winning</p>
+        <p>Your have ${data?.drawIds?.length} chances for winning</p>
         <p>Your Ticket IDs are:</p>
         <table>
             <thead>
@@ -45,13 +40,12 @@ export async function sendEmail(data) {
            `,
         };
 
-        // Send email
         await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully!")
         return {
             success: true,
-            result: "sent mail",
+            result: "Email sent successfully!",
         };
-        //   res.status(200).json({ message: "Email sent successfully!" });
     } catch (error) {
         console.error("Error sending email:", error);
         return {

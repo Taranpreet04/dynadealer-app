@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://latinas-yarn-management-zoning.trycloudflare.com";
+    let serverPath = "https://blocked-commands-hispanic-horizontal.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let subscriptionDetails = []
@@ -449,7 +449,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`
             let backBtn = document.getElementById("backBtn")
 
-            backBtn.onclick = () => main();
             backBtn.onclick = () => main();
             let pTag = document.getElementById("billingCycle")
             if (contractDetail?.billingPolicy?.interval?.toLowerCase() == 'day') {
