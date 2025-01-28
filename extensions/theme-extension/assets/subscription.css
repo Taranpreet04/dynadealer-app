@@ -397,13 +397,14 @@ body .ticket-details .var-entries {
 
 /****************************/
 .subscription-manage {
-    width: 150px;
+    width: 170px;
     height: 150px;
     border: 1px solid black;
     display: block !important;
-    padding: 1rem;
-    background: linear-gradient(157.12deg, rgba(102, 255, 231, 1) 5.19%, rgba(67, 241, 227, 1) 17.72%, rgba(168, 255, 230, 1) 26.59%, rgba(203, 255, 171, 1) 43.71%, rgba(245, 245, 245, 1) 66.32%, rgba(255, 255, 255, 0) 95.61%);
-    color: white;
+    padding: .8rem .8rem;
+    background-color: red;
+    /* background: linear-gradient(157.12deg, rgba(102, 255, 231, 1) 5.19%, rgba(67, 241, 227, 1) 17.72%, rgba(168, 255, 230, 1) 26.59%, rgba(203, 255, 171, 1) 43.71%, rgba(245, 245, 245, 1) 66.32%, rgba(255, 255, 255, 0) 95.61%); */
+    color: white !important;
     cursor: pointer;
 }
 
@@ -413,9 +414,7 @@ body .ticket-details .var-entries {
     /* width: 100%; */
 }
 
-.subscription-manage h3 {
-    color: black;
-}
+
 
 thead.sub-table-head tr:hover {
     color: white;
@@ -640,11 +639,12 @@ span.var-entries {
 
 
 /***count down style*****/
-.countdown-main-div {
+.countdown-main-div{
     position: absolute;
     border: 1px solid black;
     border-radius: 5px;
     background-color: #fff;
+    color: black;
     width: 40%;
     z-index: 999;
     top: -30px;
@@ -669,4 +669,11 @@ span.var-entries {
     border-radius: 5px;
     padding: 2px;
     margin: 5px 0;
+}
+
+
+.list-countdown-main-div {
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: #fff;
 }

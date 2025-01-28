@@ -1,18 +1,34 @@
 import { billingModel, planDetailsModel, subscriptionContractModel } from '../schema'
-import fs from "fs";
+// import fs from "fs";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
     try {
-        const check = await planDetailsModel.findOne({shop: newPlanDetails?.shop,
+        const check = await planDetailsModel.find({
+            shop: newPlanDetails?.shop,
             products: { $in: newPlanDetails?.products },
         });
-        if(check?._id == id){
-            return check == null; 
+        console.log("check=", check)
+        let idMatch = 0
+        let notMatch = 0
+        if (check && id != "create") {
+
+            check.map((itm) => {
+                if (itm._id.toString() === id.toString()) {
+                    idMatch = idMatch + 1
+                } else {
+                    notMatch = notMatch + 1
+                }
+            })
+            if (notMatch > 0) {
+                return true;
+            } else if (idMatch == 1) {
+                return false;
+            }
         }
-        return check !== null; 
+        return false;
     } catch (err) {
         console.error("Error checking product subscription:", err);
-        throw err; 
+        throw err;
     }
 }
 export const createPlan = async (admin, newPlanDetail) => {
@@ -20,7 +36,9 @@ export const createPlan = async (admin, newPlanDetail) => {
     const newPlanDetails = {
         ...newPlanDetail,
         shop: shop
-    };
+    };     
+
+        
     try {
         const date = newPlanDetails?.offerValidity
         const startIST = toIST(date.start);
@@ -33,7 +51,7 @@ export const createPlan = async (admin, newPlanDetail) => {
             end: endIST,
         };
 
-       let allOptions = [];
+        let allOptions = [];
         newPlanDetails?.plans?.map((item) => {
             let unique =
                 Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -45,7 +63,7 @@ export const createPlan = async (admin, newPlanDetail) => {
 
         let sellPlan = []
         newPlanDetails?.plans?.map((item) => {
-            let pricingPolicy = []
+            let pricingPolicy = [] 
             if (item?.price) {
                 pricingPolicy.push({
                     fixed: {
@@ -56,12 +74,12 @@ export const createPlan = async (admin, newPlanDetail) => {
                     },
                 });
             }
-          
+
             let additionData = JSON.stringify({
                 entries: item.entries,
                 exclusiveDraw: item.exclusiveDraw
             })
-           sellPlan.push({
+            sellPlan.push({
                 name: item.name,
                 options: item.purchaseType + " " + item.mincycle + " " + item.name,
                 position: 1,
@@ -72,7 +90,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                 },
                 billingPolicy: {
                     recurring: {
-                       interval: item?.purchaseType?.toUpperCase(),
+                        interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
                         minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
                     },
@@ -80,7 +98,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                 deliveryPolicy: {
                     recurring: {
                         intent: "FULFILLMENT_BEGIN",
-                       preAnchorBehavior: "ASAP",
+                        preAnchorBehavior: "ASAP",
                         interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1
                     },
@@ -296,7 +314,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                 entries: item.entries,
                 exclusiveDraw: item.exclusiveDraw
             })
-           plansToCreate?.push({
+            plansToCreate?.push({
                 name: item.name,
                 options: item.purchaseType + " " + item.mincycle + " " + item.name,
                 position: 1,
@@ -429,7 +447,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         );
 
         const resData = await response.json();
-     
+
         let planIds = resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans?.edges
         if (planIds) {
 
@@ -543,7 +561,6 @@ export const cancelContract = async (admin, data) => {
             }
         }
         const contractStatus = contractResult?.data?.subscriptionContract?.status;
-        // Check if contract status is valid for cancellation
         if (!['ACTIVE', 'PAUSED', 'FAILED'].includes(contractStatus?.toUpperCase())) {
             return {
                 success: false,
@@ -577,7 +594,7 @@ export const cancelContract = async (admin, data) => {
 
         const result = await response.json();
 
-        // Check for errors in the response
+
         if (result.data?.subscriptionContractCancel?.userErrors?.length > 0) {
             return {
                 success: false,
@@ -863,7 +880,7 @@ export const getExportData = async (admin, data, date) => {
 
 const toIST = (dateString) => {
     const date = new Date(dateString);
-    const offsetInMinutes = 330; // IST is UTC+5:30, which is 330 minutes ahead
+    const offsetInMinutes = 330;
     return new Date(date.getTime() + offsetInMinutes * 60 * 1000);
 };
 
@@ -875,14 +892,13 @@ export const checkMincycleComplete = async (contractId) => {
         console.error("Error processing POST request:", error);
         return { message: "Error processing request", status: 500 };
     }
-
 }
 
-   // const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
-        // fs.writeFile("checkkkk.txt", dataString, (err) => {
-        //     if (err) {
-        //         console.error("Error writing to file:", err);
-        //     } else {
-        //         console.log("Data written to file successfully!");
-        //     }
-        // });
+// const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
+// fs.writeFile("checkkkk.txt", dataString, (err) => {
+//     if (err) {
+//         console.error("Error writing to file:", err);
+//     } else {
+//         console.log("Data written to file successfully!");
+//     }
+// });

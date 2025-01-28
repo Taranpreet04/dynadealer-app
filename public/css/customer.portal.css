@@ -14,7 +14,7 @@ table {
 }
 
 td {
-  border: 1px solid #026b56;
+  border: 1px solid red;
   padding: .5rem 1rem !important;
   text-align: left;
 }
@@ -68,7 +68,7 @@ p{
  */
 
 .sub-table-head {
-  background-color: #22b388;
+  background-color: red;
   color: white;
 }
 
@@ -79,20 +79,20 @@ tr {
   color: white !important;
 }
 tr:hover {
-  color: #22b388;
+  color: red;
 }
  tbody tr:nth-of-type(even) {
   background-color: #d2f3e9;
 }
 
  tbody tr:last-of-type {
-  border-bottom: 2px solid #009879;
+  border-bottom: 2px solid red;
 }
 .btn {
-  background: #22b388;
+  background: red;
   color: white;
   border-radius: 10px;
-  border: 1px solid #22b388;
+  border: 1px solid red;
   padding: 5px 10px;
   cursor: pointer;
   margin: 5px;
@@ -106,10 +106,10 @@ button:disabled{
 }
 
 .eye-svg:hover path {
-  stroke: #22b388;
+  stroke: red;
 }
 #card p b{
-  color: #22b388
+  color: red
 }
 
 

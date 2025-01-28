@@ -48,6 +48,7 @@ export const action = async ({ params, request }) => {
         let detail = { updatePlans, deletePlans, newPlans, dbProducts }
         let planDetails = { success: false, error: "Product has already subscription plans" }
         let hasSubscription = await checkProductSubscription(newPlanDetails, params?.id)
+        console.log("hasSubscription=", hasSubscription)
         if (!hasSubscription) {
             if (params?.id == "create") {
                 planDetails = await createPlan(admin, newPlanDetails)
@@ -520,16 +521,6 @@ export default function CreateUpdatePlan() {
                                                         <Text tone="critical">Value should be greater than or equal to 1.</Text>
                                                     }
                                                 </Grid.Cell>
-                                                {/* {newPlan?.purchaseType !== "day" ?
-                                                    <Grid.Cell columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }} gap="800">
-                                                        <Text>Add exclusive draw</Text>
-                                                        <Checkbox
-                                                            label=" "
-                                                            checked={newPlan?.exclusiveDraw}
-                                                            onChange={(value) => handleModalValChange(value, 'exclusiveDraw')}
-                                                        />
-                                                    </Grid.Cell> : ''
-                                                } */}
                                             </Grid>
                                             <Button onClick={handleAddPlan}>{editSellingPlan ? "Update" : "Add"} plan</Button>
                                             <ResourceList
