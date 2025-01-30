@@ -216,17 +216,21 @@ h2#product-price {
     position: relative;
 }
 
-#oneTime-plans {
+#entries-plans {
     display: flex;
     gap: 5px;
     justify-content: normal;
 }
-
+#entries-plans input[type="radio"] {
+    -webkit-appearance: none; /* For Safari and Chrome */
+    -moz-appearance: none;    /* For Firefox */
+    appearance: none;         /* Standard syntax */
+  }
 .onetime-selling-plan {
     border: 2px solid #E6EDFF;
     border-radius: 18px;
     position: relative;
-    width: 50%;
+    /* width: 50%; */
 }
 
 .subscription-body .var-entries {
@@ -366,7 +370,7 @@ body .ticket-details .var-entries {
     font-size: 16px;
 }
 
-.oneTime-body .radio-wrapper-27 input[type=radio] {
+/* .oneTime-body .radio-wrapper-27 input[type=radio] {
     margin: 0;
     padding: 0;
     -webkit-appearance: none;
@@ -383,7 +387,7 @@ body .ticket-details .var-entries {
     --b1: 100% 0 0;
     position: relative;
     top: 2px;
-}
+} */
 
 .oneTime-body .oneTime-widget-box {
     margin-top: 26px;
@@ -498,7 +502,7 @@ span.var-entries {
 }
 
 
-.radio-wrapper-27 input[type=radio] {
+/* .radio-wrapper-27 input[type=radio] {
     margin: 0;
     padding: 0;
     -webkit-appearance: none;
@@ -520,9 +524,9 @@ span.var-entries {
     top: auto;
     right: 6px;
     border: 0;
-}
+} */
 
-.radio-wrapper-27 input[type=radio]:checked,
+/* .radio-wrapper-27 input[type=radio]:checked,
 .radio-wrapper-27 input[type=radio][aria-checked=true] {
     background: url(/cdn/shop/files/Frame_1171279496_1.svg?v=1734333289) no-repeat bottom/contain;
     border-width: 2px;
@@ -531,7 +535,7 @@ span.var-entries {
     --tw-border-opacity: .2;
     width: 25px;
     height: 25px;
-}
+} */
 
 .plan-radio {
     display: block;
@@ -639,7 +643,7 @@ span.var-entries {
 
 
 /***count down style*****/
-.countdown-main-div{
+/* .countdown-main-div{
     position: absolute;
     border: 1px solid black;
     border-radius: 5px;
@@ -676,4 +680,19 @@ span.var-entries {
     border: 1px solid black;
     border-radius: 5px;
     background-color: #fff;
+} */
+
+.onetime-purchase, .subscription-purchase{
+    border: 1px solid white;
+    width: 70%;
+    padding: .6rem;
+    margin: 5px;
+    display: flex;
+}
+.onetime-purchase label, .subscription-purchase label{
+    width: 100%
+}
+.label{
+    display: flex;
+    justify-content: space-between;
 }

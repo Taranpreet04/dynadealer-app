@@ -110,7 +110,7 @@ export const action = async ({ request }) => {
         }),
       }
     );
-
+// console.log("fetchDetail==", fetchDetail)
     if (!fetchDetail.ok) {
       throw new Error(`Admin API request failed with status ${fetchDetail.status}`);
     }

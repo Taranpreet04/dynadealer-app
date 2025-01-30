@@ -1,4 +1,4 @@
-import { sendEmail } from "../controllers/mail";
+import { sendOrderEmail } from "../controllers/mail";
 import { getCustomerDataByContractId } from "../controllers/planController";
 import { credentialModel, subscriptionContractModel, billingModel } from "../schema";
 import { authenticate } from "../shopify.server";
@@ -30,7 +30,7 @@ export const action = async ({ request }) => {
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
         console.log("details from webhook_____SUBSCRIPTION_CONTRACTS_CREATE", payload)
-        const contractId = payload?.id; 
+        const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy
@@ -67,7 +67,7 @@ export const action = async ({ request }) => {
 
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName
-        let planId =  cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId
+        let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
             productId: product?.node?.productId,
@@ -78,7 +78,10 @@ export const action = async ({ request }) => {
         })
         let drawIds = []
         for (let i = 0; i < Number(planName.split('-entries-')[1]); i++) {
-          let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+          // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+          let unique = (Date.now().toString(36).substring(0, 4) + Math.random().toString(36).substring(2, 5))
+            .toUpperCase()
+            .substring(0, 7);
           drawIds.push(unique)
         }
 
@@ -95,7 +98,7 @@ export const action = async ({ request }) => {
           products: products,
           drawIds: drawIds,
           status: payload?.billing_policy?.interval == 'day' ? 'ONETIME' : "ACTIVE",
-          nextBillingDate:payload?.billing_policy?.interval == 'day' ? new Date().toISOString() :  cusRes?.data?.nextBillingDate
+          nextBillingDate: payload?.billing_policy?.interval == 'day' ? new Date().toISOString() : cusRes?.data?.nextBillingDate
         });
 
         const currentDate = new Date().toISOString();
@@ -107,14 +110,16 @@ export const action = async ({ request }) => {
           customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           products: products,
+          billing_policy: billing_policy,
           entries: planName.split('-entries-')[1],
           drawIds: drawIds,
           status: "done",
           billing_attempt_date: currentDate,
           renewal_date: currentDate,
+          applied: false
         });
 
-        sendEmail(contractDetail);
+        sendOrderEmail(contractDetail);
         return new Response("Contract created successfully", { status: 200 });
       } catch (err) {
         console.error("Error processing webhook:", err);
@@ -134,8 +139,8 @@ export const action = async ({ request }) => {
             },
           }
         )
-        if(data){
-          sendEmail(data);
+        if (data) {
+          sendOrderEmail(data);
         }
         return new Response("subscription_billing_attempts/success", { status: 200 });
       } catch (err) {

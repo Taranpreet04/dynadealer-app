@@ -7,7 +7,6 @@ import { getAllSubscriptions, getExportData } from "../controllers/planControlle
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx"
-// import { sendEmail } from "../controllers/mail";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);

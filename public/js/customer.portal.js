@@ -1,11 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://press-cow-flower-james.trycloudflare.com";
+    let serverPath = "https://egg-period-reserved-incredible.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
+    let shop = Shopify.shop;
+
     let subscriptionDetails = []
     let tableData = []
-    let contractDetail = ''
+    let contractDetailShopify = ''
+    let contractDetailDb = ''
     let selectedSubscription = {}
     let totalPlans = 0
     let totalPages = 0
@@ -22,6 +25,23 @@ document.addEventListener("DOMContentLoaded", () => {
     function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     }
+    function getCurrencySymbol(currencyCode) {
+        const currencySymbols = {
+            INR: "₹",  // Indian Rupee
+            USD: "$",  // US Dollar
+            EUR: "€",  // Euro
+            GBP: "£",  // British Pound
+            JPY: "¥",  // Japanese Yen
+            CNY: "¥",  // Chinese Yuan
+            AUD: "A$", // Australian Dollar
+            CAD: "C$", // Canadian Dollar
+        };
+
+        return currencySymbols[currencyCode?.toUpperCase()] || `Symbol not found for ${currencyCode}`;
+    }
+
+    let currencySymbol = getCurrencySymbol(Shopify?.currrency?.active || 'USD')
+    console.log(getCurrencySymbol(Shopify?.currrency?.active));
     let tableStructure = `<table>
         <thead class='sub-table-head'>
             <tr>
@@ -135,7 +155,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (result.message == "success") {
-                contractDetail = result?.data?.subscriptionContract;
+                contractDetailShopify = result?.data?.subscriptionContract;
+                currencyCode = contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode
+                currencySymbol = getCurrencySymbol(currencyCode)
                 loaderStop();
                 showDetailedData()
                 if (show) {
@@ -156,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             loaderStart();
             let data = {
-                ...contractDetail,
+                ...contractDetailShopify,
                 status: "CANCELLED",
                 contractDbID: selectedSubscription?._id,
                 shop: selectedSubscription?.shop
@@ -197,11 +219,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (result.message == "success") {
-                if (result?.details?.length >= selectedSubscription?.billing_policy?.min_cycles) {
+                console.log("result?.details==", result?.details)
+                contractDetailDb = result?.details
+                if (contractDetailDb?.length >= selectedSubscription?.billing_policy?.min_cycles) {
                     canCancelSubscription = true;
                 } else {
                     canCancelSubscription = false;
                 }
+            }
+        } catch (error) {
+            loaderStop();
+            console.error("Error:", error);
+        }
+    }
+    const applyTickets = async (item) => {
+        try {
+            let data = { ...item, applied: true }
+            const response = await fetch(
+                `${serverPath}/api/appledTickets`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                }
+            );
+
+            const result = await response.json();
+            if (result.message == "success") {
+                console.log("result?.details==", result?.details)
+                let applyBtn = document.getElementById(`${item?._id}`)
+                console.log("applyBtn== check id", applyBtn)
+                applyBtn.disabled = true
+                applyBtn.innerText = 'Applied'
+                
+                // contractDetailDb= result?.details
+                // if (contractDetailDb?.length >= selectedSubscription?.billing_policy?.min_cycles) {
+                //     canCancelSubscription = true;
+                // } else {
+                //     canCancelSubscription = false;
+                // }
             }
         } catch (error) {
             loaderStop();
@@ -270,19 +328,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const generateProductRows = () => {
         let tbody = document.getElementById("product-row")
-        let products = contractDetail?.lines?.edges
+        let products = contractDetailShopify?.lines?.edges
         products?.map((item, index) => {
+            console.log("item=", item)
             let tr = document.createElement('tr');
             tr.id = index
             tbody.appendChild(tr)
             let productCell = document.createElement('td');
             productCell.id = "title-img"
             let priceCell = document.createElement('td');
-            priceCell.innerText = `$${item?.node?.currentPrice?.amount}`
+            priceCell.innerText = `${currencySymbol}${item?.node?.currentPrice?.amount}`
             let entriesCell = document.createElement('td');
             entriesCell.innerText = `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let totalCell = document.createElement('td');
-            totalCell.innerText = `$${(item?.node?.currentPrice?.amount * item?.node?.quantity).toFixed(2)}`
+            totalCell.innerText = `${currencySymbol}${(item?.node?.currentPrice?.amount * item?.node?.quantity).toFixed(2)}`
             tbody.appendChild(tr)
             tr.appendChild(productCell)
             tr.appendChild(priceCell)
@@ -299,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
 
         let footer = document.getElementById("contract-footer")
-        let status = contractDetail?.status?.toLowerCase()
+        let status = contractDetailShopify?.status?.toLowerCase()
         if (status == "active") {
             let btnDiv = document.createElement('div');
             btnDiv.id = "cancelBtnDiv";
@@ -353,12 +412,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     cancelStatus()
                 }
             }
-
-
-
         } else {
             footer.remove()
         }
+    }
+    const generateTicketsrow = () => {
+        let tbody = document.getElementById("ticket-listing-row")
+        // let products = contractDetailShopify?.lines?.edges
+        contractDetailDb?.map((item, index) => {
+            console.log("item=", item)
+            let tr = document.createElement('tr');
+            tr.id = index
+            tbody.appendChild(tr)
+            let ticketIdsCell = document.createElement('td');
+            ticketIdsCell.id = "ticketIds"
+            ticketIdsCell.colSpan = 2;
+            let content = item?.drawIds.join(', ')
+            console.log("content=", content)
+            ticketIdsCell.innerText = content
+            let applyBtnCell = document.createElement('td');
+            applyBtnCell.innerHTML = `<button class='applyBtn btn' id='${item?._id}' ${item?.applied ? 'disabled' : ''}>Apply Now</button>`;
+            tbody.appendChild(tr)
+            tr.appendChild(ticketIdsCell)
+            tr.appendChild(applyBtnCell)
+            let applyBtn = applyBtnCell.getElementsByClassName('applyBtn')[0]
+            console.log("applyBtn==", applyBtn)
+            item?.applied ? applyBtn.innerText = 'Applied' : applyBtn.innerText = 'Apply Now'
+            applyBtn.onclick = function () {
+                // modal.style.display = "block";
+                // alert(item?._id)
+                console.log("item clicked==", item)
+                applyTickets(item)
+            }
+        })
+
     }
 
     const showListData = () => {
@@ -370,7 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
         headerDiv.className = "subscription-header"
         listDiv.appendChild(headerDiv)
         let h2 = document.createElement('h2');
-        h2.innerText = "Subscriptions"
+        h2.innerText = "Membership Entries"
         headerDiv.appendChild(h2)
         if (tableData?.length > 0) {
             let tableDiv = document.createElement('div');
@@ -413,36 +500,49 @@ document.addEventListener("DOMContentLoaded", () => {
         let detailedDiv = document.createElement('div');
         detailedDiv.id = 'contract-detail';
         contentDiv.appendChild(detailedDiv)
-        if (contractDetail == '') {
+        if (contractDetailShopify == '') {
             detailedDiv.innerHTML = `<h2>Something went wrong</h2>`
         } else {
             detailedDiv.innerHTML = `<div id='contract-header' class='contract-header'>
             <div id="customer-name">
-                <p>Hi ${capitalize(contractDetail?.customer?.firstName)}</p>
+                <p>Hi ${capitalize(contractDetailShopify?.customer?.firstName)}</p>
             </div>
             <div id="contractId">
                 <button class='btn' id="backBtn"> Back To List</button>
             </div>
         </div>
         <div id="card">
-            <p class='left-div'>Billing Frequency: <b>${contractDetail?.billingPolicy?.interval?.toLowerCase() == 'day' ? 'Onetime' : capitalize(contractDetail?.billingPolicy?.interval)}</b></p>
+            <p class='left-div'>Billing Frequency: <b>${contractDetailShopify?.billingPolicy?.interval?.toLowerCase() == 'day' ? 'Onetime' : capitalize(contractDetailShopify?.billingPolicy?.interval)}</b></p>
             
-            <p class='right-div' id='billingCycle'>Minimum billing cycles: <b>${contractDetail?.billingPolicy?.minCycles}</b></p>
+            <p class='right-div' id='billingCycle'>Minimum billing cycles: <b>${contractDetailShopify?.billingPolicy?.minCycles}</b></p>
         </div>
         <div id="product-list">
             <table>
                 <thead class='sub-table-head'>
                     <tr>
                         <td>Product</td>
-                        <td>Price (${contractDetail?.lines?.edges[0]?.node?.currentPrice?.currencyCode})</td>
+                        <td>Price (${contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})</td>
                         <td>Entries</td>
-                        <td>Total (${contractDetail?.lines?.edges[0]?.node?.currentPrice?.currencyCode})</td>
+                        <td>Total (${contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})</td>
                     </tr>
                 </thead>
                 <tbody id="product-row">
                 
                 </tbody>
             </table>
+            <div class='ticketIds-listing'>
+
+            <table>
+                <thead class='ticket-listing-table-head'>
+                    <tr>
+                        <td colspan="3">Your Ticket ids</td>
+                    </tr>
+                </thead>
+                <tbody id="ticket-listing-row">
+                
+                </tbody>
+            </table>
+            </div>
             <div id="contract-footer">
                
             </div>
@@ -451,10 +551,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             backBtn.onclick = () => main();
             let pTag = document.getElementById("billingCycle")
-            if (contractDetail?.billingPolicy?.interval?.toLowerCase() == 'day') {
+            if (contractDetailShopify?.billingPolicy?.interval?.toLowerCase() == 'day') {
                 pTag.style.display = 'none'
             }
             generateProductRows()
+            generateTicketsrow()
         }
 
     }

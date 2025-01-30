@@ -33,7 +33,7 @@ export async function recurringOrderCron() {
         if (data.length > 0) {
             const { admin } = await unauthenticated.admin(data[0]?.shop);
             for (let i = 0; i < data.length; i++) {
-                const uniqueId = i + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);  
+                const uniqueId = i + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
                 let id = `gid://shopify/SubscriptionContract/${data[i].contractId}`
                 const response = await admin.graphql(
                     `#graphql
@@ -62,7 +62,10 @@ export async function recurringOrderCron() {
                     let entries = Number(data[i]?.sellingPlanName?.split('-entries-')?.[1]) * 1
                     let drawIds = []
                     for (let i = 0; i < entries; i++) {
-                        let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+                        // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+                        let unique = (Date.now().toString(36).substring(0, 4) + Math.random().toString(36).substring(2, 5))
+                            .toUpperCase()
+                            .substring(0, 7);
                         drawIds.push(unique)
                     }
                     let saveToBillingAttempt = await billingModel.create({
@@ -73,13 +76,15 @@ export async function recurringOrderCron() {
                         customerEmail: data[i]?.customerEmail,
                         billing_attempt_date: currentDate,
                         renewal_date: currentDate,
+                        billing_policy: data[i]?.billing_policy,
                         billing_attempt_id: billingAttempt?.data?.subscriptionBillingAttemptCreate?.subscriptionBillingAttempt?.id,
                         idempotencyKey: uniqueId,
                         orderId: data[i]?.orderId,
                         customerId: data[i]?.customerId,
                         customerName: data[i]?.customerName,
                         drawIds: drawIds,
-                        entries: entries || 1
+                        entries: entries || 1,
+                        applied: false
                     });
                     const originalDate = new Date(currentDate);
                     let nextDate;

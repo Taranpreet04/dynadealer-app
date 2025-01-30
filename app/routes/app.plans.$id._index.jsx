@@ -108,12 +108,12 @@ export default function CreateUpdatePlan() {
         products: []
     })
 
-   
+
     useEffect(() => {
         shopify.loading(true)
         const toIST = (dateString) => {
             const date = new Date(dateString);
-            const offsetInMinutes = 330; 
+            const offsetInMinutes = 330;
             return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
         };
         if (loaderData !== null) {
@@ -128,7 +128,7 @@ export default function CreateUpdatePlan() {
             setPlanDetail({
                 ...planDetail, offerValidity: {
                     start: resetToMidnight(new Date()),
-                    end: resetToMidnight(new Date((new Date()).getTime() + 10 * 24 * 60 * 60 * 1000)),  
+                    end: resetToMidnight(new Date((new Date()).getTime() + 10 * 24 * 60 * 60 * 1000)),
                 }
             })
         }
@@ -159,7 +159,7 @@ export default function CreateUpdatePlan() {
                     dbProducts: JSON.stringify(dbProducts),
                     offerValidity: JSON.stringify(planDetail?.offerValidity)
                 }
-              shopify.loading(true)
+                shopify.loading(true)
                 setBtnLoader(true)
                 submit(formData, {
                     method: "post",
@@ -247,6 +247,7 @@ export default function CreateUpdatePlan() {
 
     const handleModalValChange = (val, name) => {
         let match = 0
+        let planName = newPlan?.name
         if (name == "name") {
             planDetail?.plans?.map((item) => {
                 if (item?.name.trim() == val.trim() && !editSellingPlan) {
@@ -270,16 +271,21 @@ export default function CreateUpdatePlan() {
             setMinCycleErr(false)
         }
 
+        // if (name == "entries") {
+        //     planName = newPlan?.name?.split('-entries-')[0] + '-entries-' + val
+        // }
         if (val == 'day') {
             setNewPlan({
                 ...newPlan,
                 [name]: name === 'price' ? (val ? parseFloat(val) : '') : val,
-                mincycle: 1
+                mincycle: 1,
+                // name: name === 'entries' ? planName : newPlan?.name
             })
         } else {
             setNewPlan({
                 ...newPlan,
                 [name]: name === 'price' ? (val ? parseFloat(val) : '') : val,
+                // name: name === 'entries' ? planName : newPlan?.name
             })
         }
     }
@@ -319,7 +325,9 @@ export default function CreateUpdatePlan() {
                 planDetail?.plans?.map((item, index) => {
                     if (index == updatePlanIndex) {
                         if (newPlan?.name?.includes('-entries-')) {
-                            plans?.push(newPlan)
+                            let newPlanName = newPlan?.name.split('-entries-')[0] + '-entries-' + newPlan?.entries
+                            let editPlanName = { ...newPlan, name: newPlanName }
+                            plans?.push(editPlanName)
                         } else {
                             let editPlanName = { ...newPlan, name: newPlan?.name + "-entries-" + newPlan?.entries }
                             plans?.push(editPlanName)
@@ -329,6 +337,7 @@ export default function CreateUpdatePlan() {
                         plans?.push(item)
                     }
                 })
+                console.log("plans==", plans)
                 setPlanDetail({ ...planDetail, plans: plans })
                 setNewPlan({
                     name: 'New plan',
@@ -356,7 +365,7 @@ export default function CreateUpdatePlan() {
             } else if ((minCycleErr || !(newPlan?.mincycle >= 1) && newPlan?.purchaseType !== "day")) {
                 shopify.toast.show("Minimum cycle should be greater than or equal to 1.", { duration: 5000 })
             } else if (newPlan?.price == '' || parseInt(newPlan?.price) <= 0) {
-              shopify.toast.show("Price is required", { duration: 5000 })
+                shopify.toast.show("Price is required", { duration: 5000 })
             } else {
                 setEditSellingPlan(false)
                 let editPlanName = { ...newPlan, name: newPlan?.name + "-entries-" + newPlan?.entries }
@@ -408,13 +417,13 @@ export default function CreateUpdatePlan() {
                                             </Grid.Cell>
                                             <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 8, lg: 8, xl: 8 }}
                                                 style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                { planDetail?.offerValidity &&
-                                                <DateRangePicker
-                                                    setPlanDetail={setPlanDetail}
-                                                    planDetail={planDetail}
-                                                />
-                                               } 
-                                               </Grid.Cell>
+                                                {planDetail?.offerValidity &&
+                                                    <DateRangePicker
+                                                        setPlanDetail={setPlanDetail}
+                                                        planDetail={planDetail}
+                                                    />
+                                                }
+                                            </Grid.Cell>
                                         </Grid>
                                     </Card>
                                     <Card>

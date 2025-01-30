@@ -869,7 +869,8 @@ export const getExportData = async (admin, data, date) => {
         const matchingDocuments = await billingModel.find({
             "products.productId": { $in: data },
             createdAt: dateRange,
-            status: "done"
+            status: "done",
+            applied: true
         })
         return { success: true, data: matchingDocuments };
     } catch (error) {

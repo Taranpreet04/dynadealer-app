@@ -14,7 +14,7 @@ table {
 }
 
 td {
-  border: 1px solid red;
+  border: 1px solid #f22600;
   padding: .5rem 1rem !important;
   text-align: left;
 }
@@ -68,7 +68,7 @@ p{
  */
 
 .sub-table-head {
-  background-color: red;
+  background-color: #f22600;
   color: white;
 }
 
@@ -79,20 +79,20 @@ tr {
   color: white !important;
 }
 tr:hover {
-  color: red;
+  color: #f22600;
 }
  tbody tr:nth-of-type(even) {
-  background-color: #d2f3e9;
+  /* background-color: #d2f3e9; */
 }
 
  tbody tr:last-of-type {
-  border-bottom: 2px solid red;
+  border-bottom: 2px solid #f22600;
 }
 .btn {
-  background: red;
+  background: #f22600;
   color: white;
   border-radius: 10px;
-  border: 1px solid red;
+  border: 1px solid #f22600;
   padding: 5px 10px;
   cursor: pointer;
   margin: 5px;
@@ -106,10 +106,13 @@ button:disabled{
 }
 
 .eye-svg:hover path {
-  stroke: red;
+  stroke: #f22600;
 }
 #card p b{
-  color: red
+  color: #f22600
+}
+.ticketIds-listing{
+  margin-top: 2rem;
 }
 
 
@@ -140,7 +143,7 @@ div:empty {
   margin: 100px auto;
   border: 16px solid #f3f3f3;
   border-radius: 50%;
-  border-top: 16px solid #22b388;;
+  border-top: 16px solid #f22600;;
   width: 100px;
   height: 100px;
   -webkit-animation: spin 2s linear infinite;

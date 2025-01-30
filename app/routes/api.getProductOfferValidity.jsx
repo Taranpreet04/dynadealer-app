@@ -35,7 +35,12 @@ export const action = async ({ request }) => {
                         offerValidity: itm.offerValidity
                     })
                 })
-            })
+            }) 
+
+
+
+
+            
             return new Response(JSON.stringify({ message: "success", data:result}), {
                 status: 200,
                 headers: {
