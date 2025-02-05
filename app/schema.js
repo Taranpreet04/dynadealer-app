@@ -11,13 +11,21 @@ const planDetailsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+const templateSchema = new mongoose.Schema(
+  {
+    shop:  { type: String, required: true },
+    orderTemplate: Object,
+    appliedTemplate: Object,
+    winningTemplate: Object
+  },
+  { timestamps: true }
+);
 
 // Credentials Schema
 
 const credentialSchema = new mongoose.Schema({
   shop: { type: String, required: true },
   accessToken: { type: String, required: true },
-  // scope : String
 }, {
   timestamps: true
 })
@@ -70,6 +78,7 @@ billingSchema.index({ shop: 1 });
 
 const planDetailsModel = mongoose.models?.planDetails || mongoose.model("planDetails", planDetailsSchema);
 const credentialModel = mongoose.models?.credential || mongoose.model("credential", credentialSchema);
+const templateModel = mongoose.models?.template || mongoose.model("template", templateSchema);
 const subscriptionContractModel = mongoose.models?.contractDetails || mongoose.model("contractDetails", subscriptionContract);
 const billingModel = mongoose.models?.billingDetails || mongoose.model("billingDetails", billingSchema);
-export { planDetailsModel, credentialModel, subscriptionContractModel, billingModel };
+export { planDetailsModel, credentialModel,templateModel, subscriptionContractModel, billingModel };

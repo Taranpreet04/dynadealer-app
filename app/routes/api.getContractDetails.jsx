@@ -26,8 +26,13 @@ export const action = async ({ request }) => {
                 originOrder {
                   id
                   name
+                  totalPrice
                   totalPriceSet {
                     presentmentMoney {
+                      amount
+                      currencyCode
+                    }
+                    shopMoney {
                       amount
                       currencyCode
                     }
@@ -90,6 +95,7 @@ export const action = async ({ request }) => {
                           adjustmentValue {
                             ... on MoneyV2 {
                               amount
+                              currencyCode
                             }
                             ... on SellingPlanPricingPolicyPercentageValue {
                               percentage

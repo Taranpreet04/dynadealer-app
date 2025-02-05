@@ -1,4 +1,4 @@
-import { billingModel, planDetailsModel, subscriptionContractModel } from '../schema'
+import { billingModel, planDetailsModel, subscriptionContractModel, templateModel } from '../schema'
 // import fs from "fs";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
@@ -36,9 +36,9 @@ export const createPlan = async (admin, newPlanDetail) => {
     const newPlanDetails = {
         ...newPlanDetail,
         shop: shop
-    };     
+    };
 
-        
+
     try {
         const date = newPlanDetails?.offerValidity
         const startIST = toIST(date.start);
@@ -63,13 +63,13 @@ export const createPlan = async (admin, newPlanDetail) => {
 
         let sellPlan = []
         newPlanDetails?.plans?.map((item) => {
-            let pricingPolicy = [] 
+            let pricingPolicy = []
             if (item?.price) {
                 pricingPolicy.push({
                     fixed: {
                         adjustmentType: "PRICE",
                         adjustmentValue: {
-                            fixedValue: parseInt(item?.price),
+                            fixedValue: parseFloat(item?.price),
                         },
                     },
                 });
@@ -92,7 +92,7 @@ export const createPlan = async (admin, newPlanDetail) => {
                     recurring: {
                         interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
-                        minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
+                        minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
                     },
                 },
                 deliveryPolicy: {
@@ -284,8 +284,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
             dbvarientIds.push(item.id);
         });
 
-        const variantsToDelete = dbvarientIds.filter((x) => !varientIds.includes(x));
-        const varientsToAdd = varientIds.filter((x) => !dbvarientIds.includes(x));
+        const variantsToDelete = dbvarientIds.filter((x) => !varientIds?.includes(x));
+        const varientsToAdd = varientIds.filter((x) => !dbvarientIds?.includes(x));
 
         let allOptions = [];
         newPlanDetails?.plans?.map((item) => {
@@ -305,7 +305,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     fixed: {
                         adjustmentType: "PRICE",
                         adjustmentValue: {
-                            fixedValue: parseInt(item?.price),
+                            fixedValue: parseFloat(item?.price),
                         },
                     },
                 });
@@ -327,7 +327,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     recurring: {
                         interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
-                        minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
+                        minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
                     },
                 },
                 deliveryPolicy: {
@@ -350,7 +350,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     fixed: {
                         adjustmentType: "PRICE",
                         adjustmentValue: {
-                            fixedValue: parseInt(item?.price),
+                            fixedValue: parseFloat(item?.price),
                         },
                     },
                 });
@@ -374,7 +374,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                     recurring: {
                         interval: item?.purchaseType?.toUpperCase(),
                         intervalCount: 1,
-                        minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
+                        minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
                     },
                 },
                 deliveryPolicy: {
@@ -561,7 +561,7 @@ export const cancelContract = async (admin, data) => {
             }
         }
         const contractStatus = contractResult?.data?.subscriptionContract?.status;
-        if (!['ACTIVE', 'PAUSED', 'FAILED'].includes(contractStatus?.toUpperCase())) {
+        if (!['ACTIVE', 'PAUSED', 'FAILED']?.includes(contractStatus?.toUpperCase())) {
             return {
                 success: false,
                 message: `Cannot cancel contract with status: ${contractStatus}`,
@@ -602,7 +602,8 @@ export const cancelContract = async (admin, data) => {
                 status: 400
             }
         } else {
-            let res = await subscriptionContractModel.findOneAndUpdate({ contractId: data?.contractDbID },
+            console.log("data==", data)
+            let res = await subscriptionContractModel.findOneAndUpdate({ _id: data?.contractDbID },
                 { $set: { status: "CANCELLED" } },
                 { new: true }
             )
@@ -619,7 +620,7 @@ export const cancelContract = async (admin, data) => {
     }
 }
 
-export const getAllSubscriptions = async (admin, page, search) => {
+export const getSubscriptions = async (admin, page, search) => {
     try {
         const { shop } = admin.rest.session;
         let skip = 0;
@@ -894,6 +895,16 @@ export const checkMincycleComplete = async (contractId) => {
         return { message: "Error processing request", status: 500 };
     }
 }
+export const getAllContracts=async(admin)=>{
+    try{
+        const { shop } = admin.rest.session;
+       const details = await subscriptionContractModel.find({ shop })
+       return { message: "success", details: details, status: 200};
+    }catch(error){
+        console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+    }
+}
 
 // const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
 // fs.writeFile("checkkkk.txt", dataString, (err) => {
@@ -903,3 +914,270 @@ export const checkMincycleComplete = async (contractId) => {
 //         console.log("Data written to file successfully!");
 //     }
 // });
+
+export const setDefaultTemplate = async (shop) => {
+    try {
+        // console.log("email template set", shop)
+        let orderTemplate = {
+            subject: "Your order is successfully done",
+            from: "Membership App",
+            html: `p>Hi {{customerName}},</p>
+            <p>Thankyou to order for <b>{{productName}}</b> which is your${' '}
+            <b>{{interval}}</b> plan.</p>
+            <p>Your have {{drawIdsLength}} chances for winning.</p>
+            <p>Your Entry Numbers are:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Entry Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{drawIdsList}}
+                </tbody>
+            </table>
+            <p>Note: You must apply for tickets through the customer portal; otherwise, they will not be included in the lucky draw listing.</p>
+               <p>Steps to apply for tickets-</p>
+               <li>First Login to your customer portal.</li>
+               <li>Then click on Mange Memberships box.</li>
+               <li>Now you will able to see your orders list.</li>
+               <li>Each order has a view icon that you need to click on it and apply your tickets to getting chances for lucky draws</li>
+               `,
+               dummyData :{
+                "shop": "virendertesting.myshopify.com",
+                "orderId": "6486463742142",
+                "customerId": "7979103453374",
+                "customerName": "Taran preet",
+                "customerEmail": "taranpreet@shinedezign.com",
+                "contractId": "24182882494",
+                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
+                "sellingPlanName": "New plan22-entries-7",
+                "billing_policy": {
+                    "interval": "month",
+                    "interval_count": 1,
+                    "min_cycles": 1,
+                    "max_cycles": null
+                },
+                "products": [
+                    {
+                        "productId": "gid://shopify/Product/7837187014846",
+                        "productName": "Antique Drawers",
+                        "quantity": 1
+                    }
+                ],
+                "drawIds": [
+                    "M6LQWQG",
+                    "M6LQCEC",
+                ],
+            },
+            orderMailParameters :[
+                {
+                    term: '{{ customerName }}',
+                    description:
+                        `This specifies the customer's name.`,
+                },
+                {
+                    term: '{{ productName }}',
+                    description:
+                        'This specifies the name of the product for which the order is placed.',
+                },
+                {
+                    term: '{{ billingInterval }}',
+                    description:
+                        'It Shows the billing interval of subscription.',
+                },
+                {
+                    term: '{{ drawsLength }}',
+                    description:
+                        'It denotes the total number of entries (chances to win).',
+                },
+                {
+                    term: '{{ drawIdsList }}',
+                    description:
+                        'This is list of the tickets.',
+                },
+            ]
+        }
+        let appliedTemplate = {
+            subject: "Your tickets are applied succesfully.",
+            from: "Membership App",
+            html: `
+            <p>Hi {{customerName}},</p>
+
+            <p>Your orderId is: {{orderId}}</p>
+            <p>Your contractId is: {{contractId}}</p>
+            <p>Your have {{drawIdsLength}} chances for winning.</p>
+            <p>Here, the list of your ticket Entries which are applied for upcomming lucky draw.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Entry Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{drawIdsList}}
+                </tbody>
+            </table>`,
+               dummyData :{
+                "shop": "virendertesting.myshopify.com",
+                "orderId": "6486463742142",
+                "customerId": "7979103453374",
+                "customerName": "Taran preet",
+                "customerEmail": "taranpreet@shinedezign.com",
+                "contractId": "24182882494",
+                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
+                "sellingPlanName": "New plan22-entries-7",
+                "billing_policy": {
+                    "interval": "month",
+                    "interval_count": 1,
+                    "min_cycles": 1,
+                    "max_cycles": null
+                },
+                "products": [
+                    {
+                        "productId": "gid://shopify/Product/7837187014846",
+                        "productName": "Antique Drawers",
+                        "quantity": 1
+                    }
+                ],
+                "drawIds": [
+                    "M6LQWQG",
+                    "M6LQCEC",
+                ],
+            },
+            appliedMailParameters : [
+                {
+                    term: '{{customerName}}',
+                    description:
+                        `This specifies the customer's name.`,
+                },
+                {
+                    term: '{{productName}}',
+                    description:
+                        'This specifies the name of the product for which the order is placed.',
+                },
+                {
+                    term: '{{interval}}',
+                    description:
+                        'It Shows the billing interval of subscription.',
+                },
+                {
+                    term: '{{appliedLength}}',
+                    description:
+                        'It denotes the total number of entries (chances to win).',
+                },
+                {
+                    term: '{{appliedList}}',
+                    description:
+                        'This is list of the tickets.',
+                },
+            ]
+        }
+        let winningTemplate = {
+            subject: "Your order is successfully done",
+            from: "Membership App",
+            html: `<p>Hi {{customerName}},</p>
+            <p>Congratulations,Your are Winner <b>{{productName}}</b> which is your${' '}
+            <b>{{interval}}</b> plan.</p>
+         `,
+               dummyData :{
+                "shop": "virendertesting.myshopify.com",
+                "orderId": "6486463742142",
+                "customerId": "7979103453374",
+                "customerName": "Taran preet",
+                "customerEmail": "taranpreet@shinedezign.com",
+                "contractId": "24182882494",
+                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
+                "sellingPlanName": "New plan22-entries-7",
+                "billing_policy": {
+                    "interval": "month",
+                    "interval_count": 1,
+                    "min_cycles": 1,
+                    "max_cycles": null
+                },
+                "products": [
+                    {
+                        "productId": "gid://shopify/Product/7837187014846",
+                        "productName": "Antique Drawers",
+                        "quantity": 1
+                    }
+                ],
+                "drawIds": [
+                    "M6LQWQG",
+                    "M6LQCEC",
+                ],
+            },
+            winnerMailParameters : [
+                {
+                    term: '{{customerName}}',
+                    description:
+                        `This specifies the customer's name.`,
+                },
+                {
+                    term: '{{productName}}',
+                    description:
+                        'This specifies the name of the product for which the order is placed.',
+                },
+                {
+                    term: '{{interval}}',
+                    description:
+                        'It Shows the billing interval of subscription.',
+                },
+                // {
+                //     term: '{{ticket}}',
+                //     description:
+                //         'Winner Announcement',
+                // },
+            ]
+        }
+        const template = await templateModel.findOneAndUpdate(
+            { shop },
+            {
+                $set: { 
+                    shop: shop,
+                    orderTemplate: orderTemplate,
+                    appliedTemplate: appliedTemplate,
+                    winningTemplate: winningTemplate
+                }
+            },
+            { upsert: true, new: true }
+        );
+        // console.log("template==", template)
+        return { message: "success", template }
+    } catch (error) {
+        console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+    }
+}
+export const getEmailTemplate = async (admin) => {
+    try {
+        const { shop } = admin.rest.session;
+        console.log("email template get", shop)
+     
+        const data = await templateModel.findOne({ shop });
+        // console.log("template==", data)
+        return { message: "success", data }
+    } catch (error) {
+        console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+    }
+}
+export const updateTemplate = async (admin, data) => {
+    try {
+        const { shop } = admin.rest.session;
+        // console.log("email template get", shop)
+     
+        const template = await templateModel.findOneAndUpdate(
+            { shop },
+            { $set: { ...data } },
+            { upsert: true, new: true }
+        );
+        // console.log("template===", template)
+        return { message: "success", template }
+    } catch (error) {
+        console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+    }
+}

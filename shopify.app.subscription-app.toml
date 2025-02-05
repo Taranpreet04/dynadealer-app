@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://egg-period-reserved-incredible.trycloudflare.com"
+application_url = "https://scenic-sponsor-outsourcing-fs.trycloudflare.com"
 embedded = true
 
 [access_scopes]
@@ -12,9 +12,9 @@ scopes = "read_customers,read_orders,read_products,write_own_subscription_contra
 
 [auth]
 redirect_urls = [
-  "https://egg-period-reserved-incredible.trycloudflare.com/auth/callback",
-  "https://egg-period-reserved-incredible.trycloudflare.com/auth/shopify/callback",
-  "https://egg-period-reserved-incredible.trycloudflare.com/api/auth/callback"
+  "https://scenic-sponsor-outsourcing-fs.trycloudflare.com/auth/callback",
+  "https://scenic-sponsor-outsourcing-fs.trycloudflare.com/auth/shopify/callback",
+  "https://scenic-sponsor-outsourcing-fs.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -25,7 +25,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://egg-period-reserved-incredible.trycloudflare.com/api/subscription"
+url = "https://scenic-sponsor-outsourcing-fs.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

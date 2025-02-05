@@ -1,10 +1,10 @@
-console.log("js---*****=")
+console.log("js--__________=")
 
 // document.addEventListener("DOMContentLoaded", () => {
 let indexPage = document.getElementById('index')
 let collectionPage = document.getElementById('collection')
 console.log("subscription_page_type------------------", indexPage)
-let serverPath = "https://egg-period-reserved-incredible.trycloudflare.com";
+let serverPath = "https://snap-abandoned-imperial-harder.trycloudflare.com";
 let allProductId = []
 let allOffers = []
 let activeCurrency = Shopify?.currency?.active;
@@ -58,11 +58,8 @@ if (currentUrl.includes("account")) {
 }
 
 if (subscription_page_type == "product") {
-    const getEntries = (str) => {
-        let data = JSON.parse(str);
-        return data.entries;
-    }
     const sendDataToCart = (plan) => {
+        console.log("plan in cart", plan)
         var form = document.querySelectorAll('form[action*="/cart/add"]');
         form.forEach((item) => {
             var sellingPlanInputs = item.querySelectorAll(
@@ -81,10 +78,25 @@ if (subscription_page_type == "product") {
             }
         });
     }
+    const cartClear = () => {
+        // alert("cart claear")
+        var form = document.querySelectorAll('form[action*="/cart/add"]');
 
+        form.forEach((item) => {
+            var sellingPlanInputs = item.querySelectorAll(
+                'input[name="selling_plan"]'
+            );
 
+            if (sellingPlanInputs.length > 0) {
+                sellingPlanInputs.forEach(function (input) {
+                    input.value = "";
+                });
+            }
+        })
+    }
     let pName = productJson?.title.toUpperCase()
-    if (pName.includes('SILVER') || pName.includes('GOlD') || pName.includes('BRONZE') || pName.includes('PLATINUM')) {
+    console.log("pName", pName, pName?.includes('GOlD'))
+    if (pName?.includes('SILVER') || pName?.includes('GOLD') || pName?.includes('BRONZE') || pName?.includes('PLATINUM')) {
         giveawayProduct = true
     }
     if (filtered_selling_plan_groups?.length > 0) {
@@ -99,59 +111,41 @@ if (subscription_page_type == "product") {
         }
     } else {
         if (allSellingPlans?.length > 1) {
-            allSellingPlans?.map(item => {
-                let interval = item?.options[0]?.value?.split(' ')?.[0]
-                if (interval == 'day') {
-                    oneTimePlans?.push(item)
-                } else {
-                    otherPlans?.push(item)
-                }
-            })
-            oneTimePlans?.length > 0 ? selectedPlan = oneTimePlans[0] : selectedPlan = otherPlans[0]
+            const getEntries = (str) => {
+                let data = JSON.parse(str);
+                return data.entries;
+            }
             const getCurrencySymbol = (currency) => {
                 const symbol = new Intl.NumberFormat("en", { style: "currency", currency })
                     .formatToParts()
                     .find((x) => x.type === "currency");
                 return symbol && symbol.value;
             };
-            const setPriceAndEntries=(plan)=>{
-               let entries = getEntries(plan?.description)
-                selectedEntries=entries
+            const setPriceAndEntries = (plan) => {
+                console.log("plan= setPriceAndEntries== cart===", plan)
+                let entries = getEntries(plan?.description)
+                selectedEntries = entries
                 if (purchaseOption == 'oneTime-purchase') {
                     oneTimeSelectedPlan = plan
-                    subscriptionSelectedPlan = otherPlans?.filter((itm) => itm.name.includes(`-entries-${entries}`))[0]
+                    subscriptionSelectedPlan = otherPlans?.filter((itm) => itm?.name?.includes(`-entries-${entries}`))[0]
                 } else {
                     subscriptionSelectedPlan = plan
-                    oneTimeSelectedPlan = oneTimePlans?.filter((itm) => itm.name.includes(`-entries-${entries}`))[0]
+                    oneTimeSelectedPlan = oneTimePlans?.filter((itm) => itm?.name?.includes(`-entries-${entries}`))[0]
                 }
                 oneTimePrice = oneTimeSelectedPlan?.price_adjustments[0]?.value / 100
                 subscriptionPrice = subscriptionSelectedPlan?.price_adjustments[0]?.value / 100
-               let oneTimePriceDiv = document.getElementsByClassName('oneTimePrice')[0]
+                let oneTimePriceDiv = document.getElementsByClassName('oneTimePrice')[0]
                 let subscriptionPriceDiv = document.getElementsByClassName('subscriptionPrice')[0]
-                oneTimePriceDiv.innerText = `${getCurrencySymbol(activeCurrency)}${oneTimePrice}`
-                subscriptionPriceDiv.innerText = `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
-            }
-            // const sendDataToCart = (plan) => {
-            //    var form = document.querySelectorAll('form[action*="/cart/add"]');
-            //     form.forEach((item) => {
-            //         var sellingPlanInputs = item.querySelectorAll(
-            //             'input[name="selling_plan"]'
-            //         );
-            //         if (sellingPlanInputs.length === 0) {
-            //             var newHiddenInput = document.createElement("input");
-            //             newHiddenInput.type = "hidden";
-            //             newHiddenInput.name = "selling_plan";
-            //             newHiddenInput.value = plan?.id;
-            //             item.appendChild(newHiddenInput);
-            //         } else {
-            //             sellingPlanInputs.forEach(function (input) {
-            //                 input.value = plan?.id;
-            //             });
-            //         }
-            //     });
-            //     // setPriceAndEntries(plan)
-            // }
+                oneTimePriceDiv.innerText = oneTimePrice ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}` : '';
+                subscriptionPriceDiv.innerText = subscriptionPrice ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}` : '';
 
+                console.log("purchaseOption=", purchaseOption)
+                console.log("oneTimePrice=", oneTimePrice)
+                console.log("subscriptionPrice=", subscriptionPrice)
+                if ((purchaseOption == 'oneTime-purchase' && !oneTimePrice) || (purchaseOption == 'subscription-purchase' && !subscriptionPrice)) {
+                    handlePlanChange()
+                }
+            }
             const generatePlans = (flag = false) => {
                 let entriesDiv;
                 let plans = []
@@ -161,9 +155,9 @@ if (subscription_page_type == "product") {
                     plans = otherPlans
                 }
                 if (flag) {
-                    oneTimeSelectedPlan = oneTimePlans?.filter((itm) => itm.name.includes(`-entries-${selectedEntries}`))[0]
-                    subscriptionSelectedPlan = otherPlans?.filter((itm) => itm.name.includes(`-entries-${selectedEntries}`))[0]
-                   if (purchaseOption == 'oneTime-purchase') {
+                    oneTimeSelectedPlan = oneTimePlans?.filter((itm) => itm?.name?.includes(`-entries-${selectedEntries}`))[0]
+                    subscriptionSelectedPlan = otherPlans?.filter((itm) => itm?.name?.includes(`-entries-${selectedEntries}`))[0]
+                    if (purchaseOption == 'oneTime-purchase') {
                         handlePlanChange(oneTimeSelectedPlan)
                     } else {
                         handlePlanChange(subscriptionSelectedPlan)
@@ -195,12 +189,10 @@ if (subscription_page_type == "product") {
                 }
 
             }
-
             function handlePurchaseType(event) {
                 purchaseOption = event.target.value;
                 generatePlans(true)
             }
-
             const showVariantPlans = () => {
 
                 if (subscription_page_type == "product" && (otherPlans?.length > 0 || oneTimePlans?.length > 0)) {
@@ -245,25 +237,40 @@ if (subscription_page_type == "product") {
                     setPriceAndEntries(selectedPlan)
                 }
             }
-           
             const handlePlanChange = (newPlan) => {
-                let hasActive = document.getElementsByClassName('active');
-                Array.from(hasActive).forEach(itm => {
-                    itm.classList.remove('active');
-                });
+                if (newPlan) {
 
-                let nowActive = document.getElementById(`${newPlan?.id}`);
-                if (nowActive) {
-                    nowActive.classList.add('active');
+                    let hasActive = document.getElementsByClassName('active');
+                    Array.from(hasActive).forEach(itm => {
+                        itm.classList.remove('active');
+                    });
+
+                    let nowActive = document.getElementById(`${newPlan?.id}`);
+                    if (nowActive) {
+                        nowActive.classList.add('active');
+                    }
+                    selectedPlan = newPlan
+                    selectedEntries = getEntries(selectedPlan?.description)
+                    sendDataToCart(selectedPlan)
+                    setPriceAndEntries(selectedPlan)
+                } else {
+                    let hasActive = document.getElementsByClassName('active');
+                    Array.from(hasActive).forEach(itm => {
+                        itm.classList.remove('active');
+                    });
+                    cartClear()
                 }
-                selectedPlan = newPlan
-                selectedEntries = getEntries(selectedPlan?.description)
-                sendDataToCart(selectedPlan)
-                setPriceAndEntries(selectedPlan)
             }
-
-           
             const showWidget = () => {
+                allSellingPlans?.map(item => {
+                    let interval = item?.options[0]?.value?.split(' ')?.[0]
+                    if (interval == 'day') {
+                        oneTimePlans?.push(item)
+                    } else {
+                        otherPlans?.push(item)
+                    }
+                })
+                oneTimePlans?.length > 0 ? selectedPlan = oneTimePlans[0] : selectedPlan = otherPlans[0]
                 if (otherPlans?.length > 0 || oneTimePlans?.length > 0) {
                     showVariantPlans();
                 } else {

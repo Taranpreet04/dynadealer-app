@@ -218,19 +218,20 @@ h2#product-price {
 
 #entries-plans {
     display: flex;
-    gap: 5px;
+    gap: 15px;
     justify-content: normal;
 }
+
 #entries-plans input[type="radio"] {
-    -webkit-appearance: none; /* For Safari and Chrome */
-    -moz-appearance: none;    /* For Firefox */
-    appearance: none;         /* Standard syntax */
-  }
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
 .onetime-selling-plan {
     border: 2px solid #E6EDFF;
     border-radius: 18px;
     position: relative;
-    /* width: 50%; */
 }
 
 .subscription-body .var-entries {
@@ -682,17 +683,21 @@ span.var-entries {
     background-color: #fff;
 } */
 
-.onetime-purchase, .subscription-purchase{
+.onetime-purchase,
+.subscription-purchase {
     border: 1px solid white;
     width: 70%;
     padding: .6rem;
     margin: 5px;
     display: flex;
 }
-.onetime-purchase label, .subscription-purchase label{
+
+.onetime-purchase label,
+.subscription-purchase label {
     width: 100%
 }
-.label{
+
+.label {
     display: flex;
     justify-content: space-between;
 }

@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://egg-period-reserved-incredible.trycloudflare.com";
+    let serverPath = "https://snap-abandoned-imperial-harder.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -18,12 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let contentDiv = document.createElement('div');
     contentDiv.id = 'main-content'
     let toastDiv = document.createElement('div');
-    toastDiv.innerHTML = '<div id="snackbar">Status updated successfully</div>';
+    toastDiv.innerHTML = '<div id="snackbar"></div>';
     mainDIv.appendChild(contentDiv)
     mainDIv.appendChild(toastDiv)
 
     function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
     }
     function getCurrencySymbol(currencyCode) {
         const currencySymbols = {
@@ -36,8 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
             AUD: "A$", // Australian Dollar
             CAD: "C$", // Canadian Dollar
         };
+        // if(currencyCode){
+            return currencySymbols[currencyCode?.toUpperCase()|| "USD"] || `Symbol not found for ${currencyCode}`;
+        // }else{
+        //     return currencySymbols[Shopify?.currrency?.active] || `Symbol not found for ${currencyCode}`;
+        // }
 
-        return currencySymbols[currencyCode?.toUpperCase()] || `Symbol not found for ${currencyCode}`;
     }
 
     let currencySymbol = getCurrencySymbol(Shopify?.currrency?.active || 'USD')
@@ -45,10 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let tableStructure = `<table>
         <thead class='sub-table-head'>
             <tr>
-                <td>Id</td>
+                <td>Order Id</td>
                 <td>Customer Name</td>
                 <td>Purchase Type</td>
+                <td>Entries/per cycle</td>
                 <td>Status</td>
+                <td>Created Date</td>
                 <td>View Details</td>
             </tr>
         </thead>
@@ -133,10 +139,19 @@ document.addEventListener("DOMContentLoaded", () => {
         currentPage == totalPages ? nextBtn.disabled = true : nextBtn.disabled = false;
     }
 
-    function showToast() {
+    function showToast(text) {
         var x = document.getElementById("snackbar");
+        x.innerText= text
         x.className = "show";
-        setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
+        setTimeout(function () { x.className = x.className.replace("show", ""); }, 5000);
+    }
+    function formatISOToDate(isoDate) {
+        const date = new Date(isoDate);
+        return date.toISOString().split('T')[0]; // Extracts YYYY-MM-DD
+    }
+    function getEntries(planName) {
+        return  planName.split('-entries-')[1]
+        
     }
 
     const getContractDetails = async (id, show = false) => {
@@ -157,11 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (result.message == "success") {
                 contractDetailShopify = result?.data?.subscriptionContract;
                 currencyCode = contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode
-                currencySymbol = getCurrencySymbol(currencyCode)
+                currencySymbol = getCurrencySymbol(contractDetailShopify?.lines?.edges[0]?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.currencyCode)
                 loaderStop();
                 showDetailedData()
                 if (show) {
-                    showToast()
+                    showToast("Your membership cancelled successfully.")
                 }
             } else {
                 loaderStop();
@@ -253,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("applyBtn== check id", applyBtn)
                 applyBtn.disabled = true
                 applyBtn.innerText = 'Applied'
-                
+                showToast("Successfully applied for this giveaway.")
                 // contractDetailDb= result?.details
                 // if (contractDetailDb?.length >= selectedSubscription?.billing_policy?.min_cycles) {
                 //     canCancelSubscription = true;
@@ -270,24 +285,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateRows = () => {
         let tbody = document.getElementById("sub-row")
         tbody.innerHTML = ''
+        console.log("tableData=", tableData)
         tableData?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = item?.contractId
             tbody.appendChild(tr)
             let planIdCell = document.createElement('td');
-            planIdCell.innerText = item.contractId;
+            planIdCell.innerText = item.orderId;
             let nameCell = document.createElement('td');
             nameCell.innerText = capitalize(item.customerName);
             let purchaseTypeCell = document.createElement('td');
             purchaseTypeCell.innerText = capitalize(item.billing_policy?.interval)
+            let entriesCell = document.createElement('td');
+            entriesCell.innerText = getEntries(item?.sellingPlanName)
             let statusCell = document.createElement('td');
             statusCell.innerText = capitalize(item.status)
+            if(item.status=='CANCELLED'){
+                statusCell.style.color= 'red';
+            }
+            let dateCell = document.createElement('td');
+            dateCell.innerText = formatISOToDate(item.createdAt)
             let actionCell = document.createElement('td');
             let link = document.createElement('a');
             link.href = "#";
             link.innerHTML = `<svg class="eye-svg w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="black" stroke-width="1" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
-  <path stroke="black" stroke-width="1" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+  <path stroke="white" stroke-width="1" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
+  <path stroke="white" stroke-width="1" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
 </svg>`;
             link.onclick = async () => {
                 selectedSubscription = item;
@@ -299,7 +322,9 @@ document.addEventListener("DOMContentLoaded", () => {
             tr.appendChild(planIdCell)
             tr.appendChild(nameCell)
             tr.appendChild(purchaseTypeCell)
+            tr.appendChild(entriesCell)
             tr.appendChild(statusCell)
+            tr.appendChild(dateCell)
             tr.appendChild(actionCell)
         })
     }
@@ -330,18 +355,17 @@ document.addEventListener("DOMContentLoaded", () => {
         let tbody = document.getElementById("product-row")
         let products = contractDetailShopify?.lines?.edges
         products?.map((item, index) => {
-            console.log("item=", item)
             let tr = document.createElement('tr');
             tr.id = index
             tbody.appendChild(tr)
             let productCell = document.createElement('td');
             productCell.id = "title-img"
             let priceCell = document.createElement('td');
-            priceCell.innerText = `${currencySymbol}${item?.node?.currentPrice?.amount}`
+            priceCell.innerText = `${currencySymbol}${item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount}`
             let entriesCell = document.createElement('td');
             entriesCell.innerText = `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let totalCell = document.createElement('td');
-            totalCell.innerText = `${currencySymbol}${(item?.node?.currentPrice?.amount * item?.node?.quantity).toFixed(2)}`
+            totalCell.innerText = `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`
             tbody.appendChild(tr)
             tr.appendChild(productCell)
             tr.appendChild(priceCell)
@@ -430,10 +454,13 @@ document.addEventListener("DOMContentLoaded", () => {
             let content = item?.drawIds.join(', ')
             console.log("content=", content)
             ticketIdsCell.innerText = content
+            let dateCell = document.createElement('td');
+            dateCell.innerText = formatISOToDate(item?.createdAt)
             let applyBtnCell = document.createElement('td');
             applyBtnCell.innerHTML = `<button class='applyBtn btn' id='${item?._id}' ${item?.applied ? 'disabled' : ''}>Apply Now</button>`;
             tbody.appendChild(tr)
             tr.appendChild(ticketIdsCell)
+            tr.appendChild(dateCell)
             tr.appendChild(applyBtnCell)
             let applyBtn = applyBtnCell.getElementsByClassName('applyBtn')[0]
             console.log("applyBtn==", applyBtn)
@@ -535,7 +562,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <table>
                 <thead class='ticket-listing-table-head'>
                     <tr>
-                        <td colspan="3">Your Ticket ids</td>
+                        <td colspan="2">Your Ticket ids</td>
+                        <td >Created Date</td>
+                        <td ></td>
                     </tr>
                 </thead>
                 <tbody id="ticket-listing-row">

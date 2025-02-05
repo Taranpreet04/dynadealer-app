@@ -3,7 +3,7 @@ import { Page, Filters, ChoiceList, Modal, BlockStack, DatePicker, Button, Text,
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
-import { getAllSubscriptions, getExportData } from "../controllers/planController";
+import { getSubscriptions, getExportData } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx"
@@ -13,7 +13,7 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || '';
   const page = url.searchParams.get("page") || 1;
-  const planDetails = await getAllSubscriptions(admin, page, search);
+  const planDetails = await getSubscriptions(admin, page, search);
   if (planDetails?.status == 200) {
     return json({ planDetails: planDetails })
   }
@@ -37,7 +37,10 @@ export default function ContractData() {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
-  const [{ month, year }, setDate] = useState({ month: currentMonth - 1, year: currentYear });
+  const [{ month, year }, setDate] = useState({
+    month: currentMonth == 0 ? 11 : currentMonth - 1,
+    year: currentMonth == 0 ? currentYear - 1 : currentYear
+  });
   const resetToMidnight = (date) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
@@ -77,16 +80,16 @@ export default function ContractData() {
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data
-      let dataToExport=[]
-       detail?.map((detail)=>{
-          detail?.drawIds?.map((id) =>{
-            dataToExport.push({
-              drawId: id,
-              customerId: detail?.customerId,
-              customerName: detail?.customerName,
-              orderId: detail?.orderId
-            })
+      let dataToExport = []
+      detail?.map((detail) => {
+        detail?.drawIds?.map((id) => {
+          dataToExport.push({
+            drawId: id,
+            customerId: detail?.customerId,
+            customerName: detail?.customerName,
+            orderId: detail?.orderId
           })
+        })
       })
       if (dataToExport?.length > 0) {
         let data = [
@@ -102,13 +105,13 @@ export default function ContractData() {
           },
         ]
         let settings = {
-          fileName: "MyTickets", 
-          extraLength: 3, 
-          writeMode: "writeFile", 
-          writeOptions: {}, 
-          RTL: false, 
+          fileName: "MyTickets",
+          extraLength: 3,
+          writeMode: "writeFile",
+          writeOptions: {},
+          RTL: false,
         }
-        xlsx(data, settings) 
+        xlsx(data, settings)
       } else {
         shopify.toast.show("No data found", { duration: 5000 })
       }

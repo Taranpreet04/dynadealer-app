@@ -13,7 +13,7 @@ export const action = async ({ request }) => {
             );
 
             console.log("details==", details)
-            sendApplyEmail(data)
+           let res= sendApplyEmail(data)
             return new Response(JSON.stringify({ message: "success", details: details }), {
                 status: 200,
                 headers: {

@@ -52,4 +52,7 @@ export default defineConfig({
   build: {
     assetsInlineLimit: 0,
   },
+  define: {
+    global: 'window', // Polyfill `global` with `window`
+  },
 });

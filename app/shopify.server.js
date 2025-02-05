@@ -12,6 +12,7 @@ import { credentialModel } from "./schema";
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { recurringOrderCron } from './controllers/cron.js'
+import { setDefaultTemplate } from "./controllers/planController.js";
 dotenv.config()
 
 
@@ -25,7 +26,7 @@ var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });
 task.start();
-
+console.log("process.env.SHOPIFY_API_KEY==", process.env.SHOPIFY_API_KEY)
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
@@ -56,13 +57,24 @@ const shopify = shopifyApp({
   },
   hooks: {
     afterAuth: async ({ session, admin }) => {
+      console.log("✅ afterAuth hook is running...");
+      // console.log("session==", session)
+      // console.log("admin==", admin)
       try {
-        shopify.registerWebhooks({ session });
+        const res = shopify.registerWebhooks({ session });
+        console.log("res==", res)
         const { shop, accessToken, scope } = session;
-        const credentials = credentialModel.create({
-          shop,
-          accessToken,
-        });
+        console.log("👉 Shop:", shop, "Token:", accessToken);
+        // const credentials = credentialModel.create({
+        //   shop,
+        //   accessToken,
+        // });
+        const credentials = await credentialModel.findOneAndUpdate(
+          { shop },
+          { accessToken },
+          { upsert: true, new: true }
+        );
+        await setDefaultTemplate(shop)
         await Promise.all([credentials]);
       } catch (error) {
         console.log("Error in Installing", error)

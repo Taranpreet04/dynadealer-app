@@ -114,7 +114,9 @@ button:disabled{
 .ticketIds-listing{
   margin-top: 2rem;
 }
-
+#cancelModalHead, #cancelModalBody{
+  color : black;
+}
 
 
 
@@ -282,7 +284,7 @@ div:empty {
 
 /* The Close Button */
 .close {
-  color: #22b388;
+  color: #f22600;
   float: right;
   font-size: 28px;
   font-weight: bold;

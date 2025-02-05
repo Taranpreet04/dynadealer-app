@@ -97,6 +97,11 @@
   padding: .5rem;
 }
 
+.rsw-ce{
+  height: 280px;
+  overflow: scroll;
+}
+
 
 
 

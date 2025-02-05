@@ -469,7 +469,6 @@ export default function CreateUpdatePlan() {
                                             }}
                                         />
                                     </Card>
-
                                 </BlockStack>
                             </Grid.Cell>
                             <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>

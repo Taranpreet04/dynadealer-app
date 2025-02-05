@@ -7,8 +7,10 @@ import { AppProvider } from "@shopify/shopify-app-remix/react";
 import enTranslations from '@shopify/polaris/locales/en.json';
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
+
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
+  
   return json({ apiKey: process.env.SHOPIFY_API_KEY || "" });
 };
 
@@ -20,7 +22,8 @@ export default function App() {
         <ui-nav-menu>
           <Link to="/app" rel="home" prefetch="viewport">Subscription</Link>
           <Link to="/app/plans" prefetch="viewport">Plans</Link>
-          <Link to="/app/contracts" prefetch="viewport">Contracts</Link>
+          <Link to="/app/contracts" prefetch="viewport">Memberships</Link>
+          <Link to="/app/emailCustomizer" prefetch="viewport">Email Customizer</Link>
         </ui-nav-menu>
        <Outlet />
     </AppProvider>
