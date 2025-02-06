@@ -4,7 +4,7 @@ console.log("js--__________=")
 let indexPage = document.getElementById('index')
 let collectionPage = document.getElementById('collection')
 console.log("subscription_page_type------------------", indexPage)
-let serverPath = "https://snap-abandoned-imperial-harder.trycloudflare.com";
+let serverPath = "https://tone-clean-dans-indoor.trycloudflare.com";
 let allProductId = []
 let allOffers = []
 let activeCurrency = Shopify?.currency?.active;
@@ -20,6 +20,7 @@ let otherPlans = []
 let oneTimeSelectedPlan
 let subscriptionSelectedPlan
 let giveawayProduct = false
+let inventory = 0
 let options = [
     { name: "Weekly", value: "week", class: "timePeriodList" },
     { name: "Monthly", value: "month", class: "timePeriodList" },
@@ -56,8 +57,137 @@ if (currentUrl.includes("account")) {
         cusDiv.insertAdjacentHTML("afterend", "<br>");
     }
 }
+console.log("location====", window.location.pathname)
+const codeForTimer = () => {
+    let cards = document.querySelectorAll('.card-wrapper.product-card-wrapper');
+    let cardss = document.getElementsByClassName('card-wrapper');
+    console.log("cards==", cards, cardss)
+    cards?.forEach(card => {
+        let productId = card.getAttribute('data-product-id');
+        console.log("Product ID:", productId);
+        allProductId.push(productId)
+    })
+    const getListOfOfferValidity = async () => {
+        try {
+            let data = {
+                allProductId: allProductId
+            }
+            const response = await fetch(
+                `${serverPath}/api/getProductOfferValidity`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                }
+            );
 
+            const result = await response.json();
+            if (result.message == "success") {
+                console.log("result.data==", result.data)
+                result.data?.map((itm) => {
+
+                    const date = itm?.offerValidity
+                    const startIST = toIST(date?.start);
+                    let endIST = toIST(date?.end);
+                    endIST.setHours(23, 59, 59, 999);
+
+                    let dateRange = {
+                        start: startIST,
+                        end: endIST,
+                    };
+                    allOffers.push({
+                        ...itm,
+                        offerValidity: dateRange
+                    })
+                })
+                console.log("allOffers=", allOffers)
+                checkOfferOnProducts()
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+    getListOfOfferValidity()
+
+    const checkOfferOnProducts = () => {
+        cards.forEach(card => {
+            console.log(card);
+            let productId = card.getAttribute('data-product-id');
+            console.log("Product ID:", productId);
+            allOffers?.map(offer => {
+                if (offer?.id == productId) {
+                    const now = new Date();
+                    const timeDifferenceToStart = new Date(offer?.offerValidity?.start) - now;
+                    console.log("timeDifferenceToStart==", timeDifferenceToStart)
+                    if (timeDifferenceToStart < 0) {
+                        console.log("offer?.id=", productId, offer?.id)
+                        let cardInner = card.getElementsByClassName('card__inner color-background-2 gradient ratio')[0]
+                        console.log(cardInner)
+                        const main = document.createElement('div');
+                        main.className = 'list-countdown-main-div';
+                        let content = ''
+                        cardInner.insertAdjacentElement('afterend', main);
+
+                        const today = new Date(new Date().setHours(0, 0, 0, 0));
+                        const todayDate = today.getDate();
+                        const offerValidity = new Date(offer?.offerValidity?.end)
+                        const offerValidityDate = offerValidity.getDate();
+                        function updateCountdown() {
+                            const now = new Date();
+                            const timeDifference = offerValidity - now;
+                            console.log("timeDifference== for mini counter", timeDifference)
+                            if (timeDifference > 0 || todayDate === offerValidityDate) {
+                                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+                                const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
+                                const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+                                const seconds = Math.floor((timeDifference / 1000) % 60);
+
+                                // console.log("Today's countdown -- show time in hrs", days, hours, minutes, seconds);
+
+                                content = `<div class="countdown">
+                        <div class='show-timer-div'>
+                         <div class='time'>
+                                <span>Days</span>
+                                <span>${days}</span>
+                            </div>
+                            <span>:</span>
+                           <div class='time'>
+                                <span>Hrs</span>
+                                <span>${hours}</span>
+                            </div>
+                            <span>:</span>
+                           <div class='time'>
+                                <span>Mins</span>
+                               <span>${minutes}</span>
+                            </div>
+                            <span>:</span>
+                           <div class='time'>
+                              <span>Secs</span>
+                              <span>${seconds}</span>
+                            </div>
+                       </div>
+                    </div>`;
+                            } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+                                content = `<div class="countdown">
+                                        <p>GIVEAWAY ENDED</p>
+                                    </div>`;
+                                clearInterval(timer);
+                            }
+                            main.innerHTML = content;
+                        }
+                        const timer = setInterval(updateCountdown, 1000);
+                        updateCountdown();
+                    }
+                }
+            })
+        });
+    }
+}
+codeForTimer()
 if (subscription_page_type == "product") {
+  
     const sendDataToCart = (plan) => {
         console.log("plan in cart", plan)
         var form = document.querySelectorAll('form[action*="/cart/add"]');
@@ -94,6 +224,11 @@ if (subscription_page_type == "product") {
             }
         })
     }
+    const toIST = (dateString) => {
+        const date = new Date(dateString);
+        const offsetInMinutes = 330;
+        return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
+    };
     let pName = productJson?.title.toUpperCase()
     console.log("pName", pName, pName?.includes('GOlD'))
     if (pName?.includes('SILVER') || pName?.includes('GOLD') || pName?.includes('BRONZE') || pName?.includes('PLATINUM')) {
@@ -196,7 +331,10 @@ if (subscription_page_type == "product") {
             const showVariantPlans = () => {
 
                 if (subscription_page_type == "product" && (otherPlans?.length > 0 || oneTimePlans?.length > 0)) {
-                    let mainWidget = `<div id="oneTime" class="oneTime purchase-optn-main">
+                    let mainWidget = `<div id='show-inventory'>
+                  
+                    </div>
+                    <div id="oneTime" class="oneTime purchase-optn-main">
                 <div class="oneTime-body">
                     <div id="oneTime-widget-box" class="oneTime-widget-box">
                          <h5>Entries</h5>
@@ -205,7 +343,7 @@ if (subscription_page_type == "product") {
                     </div>
                 </div>
                 <div>
-                <h5>Purcahse options</h5>
+                <h5>Purchase options</h5>
                         <div id="options" class="options">
                          <div class='onetime-purchase'>
                             <input type="radio" id="onetime-purchase" value='oneTime-purchase' name="purchase-option" 
@@ -277,8 +415,159 @@ if (subscription_page_type == "product") {
                     let subscriptionBlock = document.getElementById('subscription-app-block')
                     subscriptionBlock.innerHTML = '';
                 }
+
+                let quantityDiv = document.querySelectorAll('.product-form__input.product-form__quantity')[0];
+                console.log("quantityDiv==", quantityDiv)
+                if (quantityDiv) {
+                    quantityDiv.style.display = 'none';
+                }
+                
             }
-            showWidget()
+            // showWidget()
+
+            /***code for product page timer */
+            const showCountDown = () => {
+                // const productImage = document.querySelectorAll('.product__media-wrapper')[0];
+                const mediaGallery = document.querySelector('media-gallery');
+                console.log("mediaGallery==", mediaGallery)
+                // productImage.style.position = 'relative';
+
+                const today = new Date(new Date().setHours(0, 0, 0, 0));
+                const todayDate = today.getDate();
+                const offerValidity = new Date(offerDuartion?.end)
+                const offerValidityDate = offerValidity.getDate();
+
+                const main = document.createElement('div');
+                main.className = 'countdown-main-div';
+                mediaGallery.appendChild(main);
+                showWidget()
+                function updateCountdown() {
+                    const now = new Date();
+                    const timeDifference = offerValidity - now;
+                    if (timeDifference > 0 || todayDate === offerValidityDate) {
+                        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+                        const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
+                        const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+                        const seconds = Math.floor((timeDifference / 1000) % 60);
+
+                        // console.log("Today's countdown -- show time in hrs", hours, minutes, seconds);
+
+                        content = `<div class="countdown">
+                        <div class='show-timer-div'>
+                            <div class='time'>
+                                <span>Days</span>
+                                <span>${days}</span>
+                            </div>
+                            <span>:</span>
+                           <div class='time'>
+                                <span>Hrs</span>
+                                <span>${hours}</span>
+                            </div>
+                            <span>:</span>
+                           <div class='time'>
+                                <span>Mins</span>
+                               <span>${minutes}</span>
+                            </div>
+                            <span>:</span>
+                           <div class='time'>
+                              <span>Secs</span>
+                              <span>${seconds}</span>
+                            </div>
+                       </div>
+                    </div>`;
+                    } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+                        let subscriptionBlock = document.getElementById('subscription-app-block')
+                        subscriptionBlock.innerHTML = '';
+                        content = `<div class="countdown">
+                                        <p>OFFER EXPIRED</p>
+                                    </div>`;
+                        clearInterval(timer);
+                    }
+                    main.innerHTML = content;
+                    // clearInterval(timer);
+                }
+                const timer = setInterval(updateCountdown, 1000);
+                updateCountdown();
+            }
+            const getOfferValidity = async () => {
+                try {
+                    let data = {
+                        productId: productJson.id
+                    }
+                    const response = await fetch(
+                        `${serverPath}/api/getProductOfferValidity`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(data),
+                        }
+                    );
+
+                    const result = await response.json();
+                    if (result.message == "success") {
+                        const date = result?.offerValidity
+                        const startIST = toIST(date.start);
+                        let endIST = toIST(date.end);
+                        endIST.setHours(23, 59, 59, 999);
+
+                        let dateRange = {
+                            start: startIST,
+                            end: endIST,
+                        };
+
+                        offerDuartion = dateRange
+                        const now = new Date();
+                        const timeDifferenceToStart = new Date(startIST) - now;
+                        console.log(dateRange, "timeDifferenceToStart==", timeDifferenceToStart)
+                        if (timeDifferenceToStart < 0) {
+                            showCountDown();
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            }
+            getOfferValidity();
+               /***code for product page timer */
+
+               const showInventory=()=>{
+                let inventoryDiv= document.getElementById('show-inventory')
+                let span= document.createElement('span')
+                span.id= 'product-inventory'
+                console.log("inventoryDiv==", inventoryDiv)
+                span.innerText= `${inventory} left`
+                inventoryDiv?.appendChild(span)
+               }
+               const getProductDetails = async () => {
+                try {
+                    let data = {
+                        productId: productJson?.id,
+                        shop: shop
+                    }
+                    const response = await fetch(
+                        `${serverPath}/api/productDetails`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(data),
+                        }
+                    );
+        
+                    const result = await response.json();
+                    console.log("result==", result)
+                    if (result.message == "success") {
+                        inventory= result.data.product.totalInventory
+                        showInventory()
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            }
+            getProductDetails();
         }
     }
 }
@@ -465,33 +754,33 @@ if (subscription_page_type == "product") {
 //     // codeForTimer()
 //     // }
 
-//     if (currentUrl.includes("account")) {
-//         console.log("hello from account page")
-//         // let targetElement = document.getElementsByClassName("order-container")[0];
-//         let targetElement = document.querySelector(".customer__title");
-//         console.log("targetElement=", targetElement)
-//         if (targetElement) {
-//             let cusDiv = document.createElement("div");
-//             cusDiv.className = "mange-sub-container"
-//             let linebreak = document.createElement("br");
-//             cusDiv.innerHTML = `<div class='subscription-manage'>
-//                 <div>
-//                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"  viewBox="0 0 24 24" fill="transparent">
-//                   <path d="M16 17H21M18.5 14.5V19.5M12 19H6.2C5.0799 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2C3 7.0799 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H17.8C18.9201 5 19.4802 5 19.908 5.21799C20.2843 5.40973 20.5903 5.71569 20.782 6.09202C21 6.51984 21 7.0799 21 8.2V11M20.6067 8.26229L15.5499 11.6335C14.2669 12.4888 13.6254 12.9165 12.932 13.0827C12.3192 13.2295 11.6804 13.2295 11.0677 13.0827C10.3743 12.9165 9.73279 12.4888 8.44975 11.6335L3.14746 8.09863" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-//                   </svg>
-//                 </div>
-//                 <h3>Manage Memberships</h3>
-//                 </div>`;
+//     // if (currentUrl.includes("account")) {
+//     //     console.log("hello from account page")
+//     //     // let targetElement = document.getElementsByClassName("order-container")[0];
+//     //     let targetElement = document.querySelector(".customer__title");
+//     //     console.log("targetElement=", targetElement)
+//     //     if (targetElement) {
+//     //         let cusDiv = document.createElement("div");
+//     //         cusDiv.className = "mange-sub-container"
+//     //         let linebreak = document.createElement("br");
+//     //         cusDiv.innerHTML = `<div class='subscription-manage'>
+//     //             <div>
+//     //             <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"  viewBox="0 0 24 24" fill="transparent">
+//     //               <path d="M16 17H21M18.5 14.5V19.5M12 19H6.2C5.0799 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2C3 7.0799 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H17.8C18.9201 5 19.4802 5 19.908 5.21799C20.2843 5.40973 20.5903 5.71569 20.782 6.09202C21 6.51984 21 7.0799 21 8.2V11M20.6067 8.26229L15.5499 11.6335C14.2669 12.4888 13.6254 12.9165 12.932 13.0827C12.3192 13.2295 11.6804 13.2295 11.0677 13.0827C10.3743 12.9165 9.73279 12.4888 8.44975 11.6335L3.14746 8.09863" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+//     //               </svg>
+//     //             </div>
+//     //             <h3>Manage Memberships</h3>
+//     //             </div>`;
 
-//             const id = ShopifyAnalytics.meta.page.customerId;
-//             cusDiv.addEventListener("click", function () {
-//                 const targetUrl = `https://${shop}/apps/subscription?cid=${id}`;
-//                 targetUrl ? window.location.href = targetUrl : "";
-//             });
-//             targetElement.parentNode.insertBefore(cusDiv, targetElement);
-//             cusDiv.insertAdjacentHTML("afterend", "<br>");
-//         }
-//     }
+//     //         const id = ShopifyAnalytics.meta.page.customerId;
+//     //         cusDiv.addEventListener("click", function () {
+//     //             const targetUrl = `https://${shop}/apps/subscription?cid=${id}`;
+//     //             targetUrl ? window.location.href = targetUrl : "";
+//     //         });
+//     //         targetElement.parentNode.insertBefore(cusDiv, targetElement);
+//     //         cusDiv.insertAdjacentHTML("afterend", "<br>");
+//     //     }
+//     // }
 
 //     if (subscription_page_type == "product") {
 //         const sendDataToCart = (plan) => {
@@ -550,110 +839,7 @@ if (subscription_page_type == "product") {
 
 //                 oneTimePlans?.length > 0 ? selectedPlan = oneTimePlans[0] : selectedPlan = otherPlans[0]
 //                 /***code for timmer */
-//                 // const showCountDown = () => {
-//                 //     const productImage = document.querySelectorAll('.product__media-wrapper')[0];
-//                 //     productImage.style.position = 'relative';
-
-//                 //     const today = new Date(new Date().setHours(0, 0, 0, 0));
-//                 //     const todayDate = today.getDate();
-//                 //     const offerValidity = new Date(offerDuartion?.end)
-//                 //     const offerValidityDate = offerValidity.getDate();
-
-//                 //     const main = document.createElement('div');
-//                 //     main.className = 'countdown-main-div';
-//                 //     productImage.appendChild(main);
-//                 //     showWidget()
-//                 //     function updateCountdown() {
-//                 //         const now = new Date();
-//                 //         const timeDifference = offerValidity - now;
-//                 //         if (timeDifference > 0 || todayDate === offerValidityDate) {
-//                 //             const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-//                 //             const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
-//                 //             const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
-//                 //             const seconds = Math.floor((timeDifference / 1000) % 60);
-
-//                 //             console.log("Today's countdown -- show time in hrs", hours, minutes, seconds);
-
-//                 //             content = `<div class="countdown">
-//                 //             <div class='show-timer-div'>
-//                 //                 <div class='time'>
-//                 //                     <span>Days</span>
-//                 //                     <span>${days}</span>
-//                 //                 </div>
-//                 //                 <span>:</span>
-//                 //                <div class='time'>
-//                 //                     <span>Hrs</span>
-//                 //                     <span>${hours}</span>
-//                 //                 </div>
-//                 //                 <span>:</span>
-//                 //                <div class='time'>
-//                 //                     <span>Mins</span>
-//                 //                    <span>${minutes}</span>
-//                 //                 </div>
-//                 //                 <span>:</span>
-//                 //                <div class='time'>
-//                 //                   <span>Secs</span>
-//                 //                   <span>${seconds}</span>
-//                 //                 </div>
-//                 //            </div>
-//                 //         </div>`;
-//                 //         } else if (todayDate > offerValidityDate || timeDifference <= 0) {
-//                 //             let subscriptionBlock = document.getElementById('subscription-app-block')
-//                 //             subscriptionBlock.innerHTML = '';
-//                 //             content = `<div class="countdown">
-//                 //                             <p>OFFER EXPIRED</p>
-//                 //                         </div>`;
-//                 //             clearInterval(timer);
-//                 //         }
-//                 //         main.innerHTML = content;
-//                 //     }
-//                 //     const timer = setInterval(updateCountdown, 1000);
-//                 //     updateCountdown();
-//                 // }
-//                 // const getOfferValidity = async () => {
-//                 //     try {
-//                 //         let data = {
-//                 //             productId: productJson.id
-//                 //         }
-//                 //         const response = await fetch(
-//                 //             `${serverPath}/api/getProductOfferValidity`,
-//                 //             {
-//                 //                 method: "POST",
-//                 //                 headers: {
-//                 //                     "Content-Type": "application/json",
-//                 //                 },
-//                 //                 body: JSON.stringify(data),
-//                 //             }
-//                 //         );
-
-//                 //         const result = await response.json();
-//                 //         if (result.message == "success") {
-//                 //             const date = result?.offerValidity
-//                 //             const startIST = toIST(date.start);
-//                 //             let endIST = toIST(date.end);
-//                 //             endIST.setHours(23, 59, 59, 999);
-
-//                 //             let dateRange = {
-//                 //                 start: startIST,
-//                 //                 end: endIST,
-//                 //             };
-
-//                 //             offerDuartion = dateRange
-//                 //             const now = new Date();
-//                 //             const timeDifferenceToStart = new Date(startIST) - now;
-//                 //             console.log(dateRange, "timeDifferenceToStart==", timeDifferenceToStart)
-//                 //             if (timeDifferenceToStart < 0) {
-//                 //                 showCountDown();
-//                 //             }
-//                 //         }
-//                 //     } catch (error) {
-//                 //         console.error("Error:", error);
-//                 //     }
-//                 // }
-//                 // getOfferValidity();
-//                 // setTimeout(() => {
-//                 //     codeForTimer()
-//                 // }, 1000);
+                
 //                 /***code for subscription plans */
 
 //                 const sendDataToCart = (plan) => {
@@ -881,16 +1067,8 @@ if (subscription_page_type == "product") {
 //                         subscriptionBlock.innerHTML = '';
 //                     }
 //                 }
-//                 showWidget()
-//                 let variants = document.getElementsByTagName('variant-selects')[0]
-//                 if (variants) {
-//                     variants.style.display = 'none';
-//                 }
-//                 let quantityDiv = document.querySelectorAll('.product-form__input.product-form__quantity')[0];
-//                 console.log("quantityDiv==", quantityDiv)
-//                 if (quantityDiv) {
-//                     quantityDiv.style.display = 'none';
-//                 }
+//                 // showWidget()
+              
 
 //             }
 //         }

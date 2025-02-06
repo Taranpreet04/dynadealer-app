@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://snap-abandoned-imperial-harder.trycloudflare.com";
+    let serverPath = "https://tone-clean-dans-indoor.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         var x = document.getElementById("snackbar");
         x.innerText= text
         x.className = "show";
-        setTimeout(function () { x.className = x.className.replace("show", ""); }, 5000);
+        setTimeout(function () { x.className = x.className.replace("show", ""); }, 7000);
     }
     function formatISOToDate(isoDate) {
         const date = new Date(isoDate);
@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("applyBtn== check id", applyBtn)
                 applyBtn.disabled = true
                 applyBtn.innerText = 'Applied'
-                showToast("Successfully applied for this giveaway.")
+                showToast("Successfully applied for the current giveaway.")
                 // contractDetailDb= result?.details
                 // if (contractDetailDb?.length >= selectedSubscription?.billing_policy?.min_cycles) {
                 //     canCancelSubscription = true;

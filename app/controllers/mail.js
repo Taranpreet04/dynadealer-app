@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer'
 import { templateModel } from '../schema';
 export async function sendOrderEmail(data) {
+    // console.log("check data??",data)
     try {
         let template = await templateModel.findOne({shop: data?.shop}, {orderTemplate:1, shop: 1})
         console.log("template==", template)
@@ -26,8 +27,8 @@ export async function sendOrderEmail(data) {
                 html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
         let mailOptions = {
             from: "Membership App",
-            // to: data?.customerEmail,
-            to: 'taran@yopmail.com',
+            to: data?.customerEmail,
+            // to: 'taran@yopmail.com',
             subject: template?.orderTemplate?.subject,
             html: html,
         };
@@ -47,6 +48,7 @@ export async function sendOrderEmail(data) {
     }
 }
 export async function sendApplyEmail(data) {
+    // console.log("check apply mail data",data)
     try {
 
         let template = await templateModel.findOne({shop: data?.shop}, {appliedTemplate:1, shop: 1})
@@ -94,14 +96,14 @@ export async function sendApplyEmail(data) {
     }
 }
 export async function sendWinnerEmail(data) {
+    // console.log("check winner email data???",data)
     try {
-
         let template = await templateModel.findOne({shop: data?.shop}, {winningTemplate:1, shop: 1})
         console.log("template==", template, data?.billing_policy?.interval)
         console.log("data?.products[0]?.productName==",data?.products[0]?.productName)
         let interval=data?.billing_policy?.interval.toUpperCase()
         if(template){
-
+        
             let transporter = nodemailer.createTransport({
                 host: "smtp.gmail.com",
                 port: 465,
@@ -121,7 +123,7 @@ export async function sendWinnerEmail(data) {
             html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
             html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
             html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
-            // html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+            html= html?.replace('{{footer}}', `${template?.winningTemplate?.footer}`);
             let mailOptions = {
                 from: "Membership App",
                 to: data?.customerEmail,

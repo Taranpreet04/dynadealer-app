@@ -1,5 +1,5 @@
 import { billingModel, planDetailsModel, subscriptionContractModel, templateModel } from '../schema'
-// import fs from "fs";
+import fs from "fs";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
     try {
@@ -195,6 +195,7 @@ export const getAllPlans = async (admin) => {
 
 export const deletePlanById = async (admin, data) => {
     try {
+        // console.log("data--", data)
         const { shop } = admin.rest.session;
         const deletingID = data?._id
 
@@ -218,9 +219,19 @@ export const deletePlanById = async (admin, data) => {
         );
 
         const result = await response.json();
+        // const dataString = typeof result === "string" ? result : JSON.stringify(result);
+        // fs.writeFile("checkkkk.txt", dataString, (err) => {
+        //     if (err) {
+        //         console.error("Error writing to file:", err);
+        //     } else {
+        //         console.log("Data written to file successfully!");
+        //     }
+        // });
         let deletedPlanId = result?.data?.sellingPlanGroupDelete?.deletedSellingPlanGroupId
+        // console.log("bdeletedPlanId--", deletedPlanId)
         if (deletedPlanId) {
             const dbResult = await planDetailsModel.deleteOne({ _id: deletingID, shop: shop, plan_group_id: deletedPlanId });
+            console.log("dbResult==", dbResult)
             if (dbResult) {
                 return { status: true, data: "Plan Deleted" };
             } else {
@@ -895,12 +906,12 @@ export const checkMincycleComplete = async (contractId) => {
         return { message: "Error processing request", status: 500 };
     }
 }
-export const getAllContracts=async(admin)=>{
-    try{
+export const getAllContracts = async (admin) => {
+    try {
         const { shop } = admin.rest.session;
-       const details = await subscriptionContractModel.find({ shop })
-       return { message: "success", details: details, status: 200};
-    }catch(error){
+        const details = await subscriptionContractModel.find({ shop })
+        return { message: "success", details: details, status: 200 };
+    } catch (error) {
         console.error("Error processing POST request:", error);
         return { message: "Error processing request", status: 500 };
     }
@@ -944,7 +955,7 @@ export const setDefaultTemplate = async (shop) => {
                <li>Now you will able to see your orders list.</li>
                <li>Each order has a view icon that you need to click on it and apply your tickets to getting chances for lucky draws</li>
                `,
-               dummyData :{
+            dummyData: {
                 "shop": "virendertesting.myshopify.com",
                 "orderId": "6486463742142",
                 "customerId": "7979103453374",
@@ -971,7 +982,7 @@ export const setDefaultTemplate = async (shop) => {
                     "M6LQCEC",
                 ],
             },
-            orderMailParameters :[
+            orderMailParameters: [
                 {
                     term: '{{ customerName }}',
                     description:
@@ -1020,7 +1031,7 @@ export const setDefaultTemplate = async (shop) => {
                 {{drawIdsList}}
                 </tbody>
             </table>`,
-               dummyData :{
+            dummyData: {
                 "shop": "virendertesting.myshopify.com",
                 "orderId": "6486463742142",
                 "customerId": "7979103453374",
@@ -1047,7 +1058,7 @@ export const setDefaultTemplate = async (shop) => {
                     "M6LQCEC",
                 ],
             },
-            appliedMailParameters : [
+            appliedMailParameters: [
                 {
                     term: '{{customerName}}',
                     description:
@@ -1076,13 +1087,28 @@ export const setDefaultTemplate = async (shop) => {
             ]
         }
         let winningTemplate = {
-            subject: "Your order is successfully done",
+            subject: "Congratulations, YOU ARE A WINNER!",
             from: "Membership App",
             html: `<p>Hi {{customerName}},</p>
-            <p>Congratulations,Your are Winner <b>{{productName}}</b> which is your${' '}
-            <b>{{interval}}</b> plan.</p>
+            <h4>Congratulations,</h4>
+            
+            <p>We are thrilled to inform you that <b>YOU ARE A WINNER!</b> </p>
+            
+            <p>As part of our exclusive <b>{{interval}}</b>plan, you have won a beautiful <b>{{productName}}</b>
+            timeless piece that adds charm and elegance to any space.</p> 
+            <p>Thank you for being a valued part of our community. We appreciate your participation and look forward to more exciting moments with you!
+
+                    If you have any questions, feel free to reach out.
+  </p>
+           <pre> 
+        Best regards,
+        [Your Name]
+        [Your Company Name]
+        [Your Contact Information]
+            </pre>
+          
          `,
-               dummyData :{
+            dummyData: {
                 "shop": "virendertesting.myshopify.com",
                 "orderId": "6486463742142",
                 "customerId": "7979103453374",
@@ -1109,7 +1135,7 @@ export const setDefaultTemplate = async (shop) => {
                     "M6LQCEC",
                 ],
             },
-            winnerMailParameters : [
+            winnerMailParameters: [
                 {
                     term: '{{customerName}}',
                     description:
@@ -1132,20 +1158,30 @@ export const setDefaultTemplate = async (shop) => {
                 // },
             ]
         }
-        const template = await templateModel.findOneAndUpdate(
-            { shop },
-            {
-                $set: { 
+        const templateExist = await templateModel?.findOne({ shop })
+        if (!templateExist) {
+            const newTemplate = await templateModel.create(
+                {
                     shop: shop,
                     orderTemplate: orderTemplate,
                     appliedTemplate: appliedTemplate,
                     winningTemplate: winningTemplate
-                }
-            },
-            { upsert: true, new: true }
-        );
-        // console.log("template==", template)
-        return { message: "success", template }
+                })
+            return { message: "success", newTemplate }
+        } else {
+            const newTemplate = await templateModel.findOneAndUpdate(
+                { shop },
+                {
+                    $set: {
+                        orderTemplate: orderTemplate,
+                        appliedTemplate: appliedTemplate,
+                        winningTemplate: winningTemplate
+                    }
+                },
+                { upsert: true, new: true }
+            )
+            return { message: "success", newTemplate }
+        }
     } catch (error) {
         console.error("Error processing POST request:", error);
         return { message: "Error processing request", status: 500 };
@@ -1155,7 +1191,7 @@ export const getEmailTemplate = async (admin) => {
     try {
         const { shop } = admin.rest.session;
         console.log("email template get", shop)
-     
+
         const data = await templateModel.findOne({ shop });
         // console.log("template==", data)
         return { message: "success", data }
@@ -1168,7 +1204,7 @@ export const updateTemplate = async (admin, data) => {
     try {
         const { shop } = admin.rest.session;
         // console.log("email template get", shop)
-     
+
         const template = await templateModel.findOneAndUpdate(
             { shop },
             { $set: { ...data } },

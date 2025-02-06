@@ -9,7 +9,7 @@
   var selectedVariant= {{product.selected_or_first_available_variant.id}} ;
   var selectedVariantPrice={{ product.selected_or_first_available_variant.price }}
      let productJson = {{ product | json }};
-      console.log("oKKKk-snippet");
+      console.log("oKKKk-snippet", productJson);
               let Revlytic =  {};
                 Revlytic.shop = "{{shop.permanent_domain}}";
                 {% if product %}

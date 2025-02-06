@@ -644,11 +644,11 @@ span.var-entries {
 
 
 /***count down style*****/
-/* .countdown-main-div{
+.countdown-main-div{
     position: absolute;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     border-radius: 5px;
-    background-color: #fff;
+    /* background-color: #fff; */
     color: black;
     width: 40%;
     z-index: 999;
@@ -670,10 +670,14 @@ span.var-entries {
     align-items: center;  
     justify-content: center; 
     gap: 2px; 
-    border: 1px solid black;
+    /* border: 2px solid white; */
     border-radius: 5px;
-    padding: 2px;
+    padding: 5px;
     margin: 5px 0;
+    color: white;
+    background-color: #f22600;
+    width: 55px;
+    font-weight: bold;
 }
 
 
@@ -681,7 +685,7 @@ span.var-entries {
     border: 1px solid black;
     border-radius: 5px;
     background-color: #fff;
-} */
+}
 
 .onetime-purchase,
 .subscription-purchase {
@@ -700,4 +704,9 @@ span.var-entries {
 .label {
     display: flex;
     justify-content: space-between;
+}
+#product-inventory{
+    padding: 5px 15px;
+    background-color: red;
+    border-radius: 15px;
 }

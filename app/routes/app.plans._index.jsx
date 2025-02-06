@@ -56,7 +56,7 @@ export default function PlanData() {
   }, [loaderData])
 
   useEffect(() => {
-    actionData?.status ? shopify.toast.show("Plan deleted", { duration: 5000 }) : ''
+    actionData?.status ? shopify.toast.show("Plan deleted", { duration: 5000 }) : shopify.toast.show("Something went wrong", { duration: 5000 })
     shopify.loading(false)
     setTableSkel(false)
   }, [actionData])
@@ -90,6 +90,7 @@ export default function PlanData() {
 
   let plan = tableData?.filter((item) => item?._id == deleteId)
   const deletePlan = (deleteId) => {
+    console.log("deleteId--", deleteId)
     let data = {
       _id: deleteId,
       plan_group_id: plan[0]?.plan_group_id
@@ -104,12 +105,12 @@ export default function PlanData() {
     if (data.length > 0) {
       let table = data?.slice(skip, skip + limit)
       setTableData(table)
-      tableSkel(false)
+      setTableSkel(false)
     }
   }, [skip])
 
   const handleNextPage = () => {
-    tableSkel(true)
+    setTableSkel(false)
     setPage(page + 1);
     if (page >= 1) {
       setSkip((page) * limit)
@@ -120,7 +121,7 @@ export default function PlanData() {
 
 
   const handlePrevPage = () => {
-    tableSkel(true)
+    setTableSkel(true)
     setPage(page - 1);
     if ((page - 1) > 1) {
       let skip = (page - 1) * limit

@@ -32,13 +32,14 @@ import {
     EditorProvider,
     Toolbar
 } from 'react-simple-wysiwyg';
-import { getEmailTemplate, getAllContracts, updateTemplate } from '../controllers/planController';
+import { getEmailTemplate, getAllContracts, setDefaultTemplate, updateTemplate } from '../controllers/planController';
 import { sendWinnerEmail } from '../controllers/mail'
 import { authenticate } from '../shopify.server';
 import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 
 export const loader = async ({ request }) => {
     const { admin, session } = await authenticate.admin(request);
+    // await setDefaultTemplate(session?.shop)
     let contractData = await getAllContracts(admin)
     let data = await getEmailTemplate(admin)
     return {
@@ -57,10 +58,12 @@ export default function EmailCustomizer() {
     const [mailBtnLoader, setMailBtnLoader] = useState(false);
     const [contracts, setContracts] = useState([]);
     const [winnerAccount, setWinnerAccount] = useState([]);
+    const [winnerTicket, setWinnerTicket] = useState('');
     const [reCheckWinner, setReCheckWinner] = useState(false);
     const submit = useSubmit()
     useEffect(() => {
         if (loaderData) {
+            console.log("loaderData?.data==", loaderData?.data)
             setTemplates(loaderData?.data)
             let details = []
             loaderData?.contractDetails?.map((itm) => {
@@ -140,6 +143,7 @@ export default function EmailCustomizer() {
             drawIds: JSON.stringify(winnerDetail?.drawIds),
             billing_policy: JSON.stringify(winnerDetail?.billing_policy),
         }
+        console.log("winnerDetail==", winnerDetail)
         submit(formData, {
             method: "post"
         })
@@ -208,6 +212,15 @@ export default function EmailCustomizer() {
                                 onChange={(value) => handleChange(value, 'subject')}
                                 autoComplete="off"
                             />
+                            <TextField
+                                label="Email Footer"
+                                value={tabSelected == 0 ? templates?.orderTemplate?.footer
+                                    : tabSelected == 1 ? templates?.appliedTemplate?.footer
+                                        : tabSelected == 2 ? templates?.winningTemplate?.footer : ''}
+                                onChange={(value) => handleChange(value, 'footer')}
+                                autoComplete="off"
+                                multiline={4}
+                            />
                             {tabSelected == 2 &&
                                 <BlockStack gap='400'>
                                     <Select
@@ -216,21 +229,16 @@ export default function EmailCustomizer() {
                                         value={winnerAccount}
                                         onChange={(value) => setWinnerAccount(value)}
                                     />
+                                    {/* <TextField
+                                        label="Enter Winner Ticket Number"
+                                        value={winnerTicket}
+                                        onChange={(value) => setWinnerTicket(value)}
+                                        autoComplete="off"
+                                    /> */}
                                     <Button variant="primary" loading={mailBtnLoader}
                                         onClick={() => setReCheckWinner(true)}>Send Mail To Winner</Button>
                                 </BlockStack>}
-                            {/* <TextField
-                                label="Logo"
-                                value={templates?.logo}
-                                onChange={(value) => handleChange(value, 'logo')}
-                                autoComplete="off"
-                            />
-                            <TextField
-                                label="Email Footer"
-                                value={templates?.footer}
-                                onChange={(value) => handleChange(value, 'footer')}
-                                autoComplete="off"
-                            /> */}
+
                         </InlineGrid>
 
                     </Card>
