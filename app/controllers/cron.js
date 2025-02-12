@@ -4,7 +4,7 @@ import { billingModel, subscriptionContractModel } from "../schema";
 import { unauthenticated } from '../shopify.server';
 
 export async function recurringOrderCron() {
-    console.log('You will see this message every hours*******', new Date());
+    console.log('You will see this message every 10 minutes*******', new Date());
     const currentDate = new Date().toISOString();
     const targetDate = new Date(currentDate);
     try {
@@ -61,6 +61,17 @@ export async function recurringOrderCron() {
                     const currentDate = new Date().toISOString();
                     let entries = Number(data[i]?.sellingPlanName?.split('-entries-')?.[1]) * 1
                     let drawIds = []
+
+                    let recentDocument = await billingModel.find({
+                        shop: data[i].shop,
+                        contractId: data[i]?.contractId,
+                    }).sort({ createdAt: -1 });
+
+                    if (recentDocument[0]?.planUpdateDetail?.sellingPlanUpdate) {
+                        entries = Number(recentDocument[0]?.planUpdateDetail?.futureEntries) * 1;
+                    }
+                    console.log(recentDocument[0]);
+
                     for (let i = 0; i < entries; i++) {
                         // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
                         let unique = (Date.now().toString(36).substring(0, 4) + Math.random().toString(36).substring(2, 5))
@@ -68,6 +79,7 @@ export async function recurringOrderCron() {
                             .substring(0, 7);
                         drawIds.push(unique)
                     }
+console.log("data==", data[i])
                     let saveToBillingAttempt = await billingModel.create({
                         shop: data[i].shop,
                         status: "PENDING",
@@ -78,6 +90,7 @@ export async function recurringOrderCron() {
                         renewal_date: currentDate,
                         billing_policy: data[i]?.billing_policy,
                         billing_attempt_id: billingAttempt?.data?.subscriptionBillingAttemptCreate?.subscriptionBillingAttempt?.id,
+                        planUpdateDetail:  data[i]?.planUpdateDetail,
                         idempotencyKey: uniqueId,
                         orderId: data[i]?.orderId,
                         customerId: data[i]?.customerId,

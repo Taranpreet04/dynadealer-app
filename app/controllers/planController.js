@@ -3,6 +3,7 @@ import fs from "fs";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
     try {
+        console.log(newPlanDetails?.shop,newPlanDetails?.products);
         const check = await planDetailsModel.find({
             shop: newPlanDetails?.shop,
             products: { $in: newPlanDetails?.products },
@@ -950,11 +951,14 @@ export const setDefaultTemplate = async (shop) => {
             </table>
             <p>Note: You must apply for tickets through the customer portal; otherwise, they will not be included in the lucky draw listing.</p>
                <p>Steps to apply for tickets-</p>
+
                <li>First Login to your customer portal.</li>
                <li>Then click on Mange Memberships box.</li>
                <li>Now you will able to see your orders list.</li>
                <li>Each order has a view icon that you need to click on it and apply your tickets to getting chances for lucky draws</li>
-               `,
+                <pre>
+                {{footer}}
+                </pre>`,
             dummyData: {
                 "shop": "virendertesting.myshopify.com",
                 "orderId": "6486463742142",
@@ -984,29 +988,34 @@ export const setDefaultTemplate = async (shop) => {
             },
             orderMailParameters: [
                 {
-                    term: '{{ customerName }}',
+                    term: '{{customerName}}',
                     description:
                         `This specifies the customer's name.`,
                 },
                 {
-                    term: '{{ productName }}',
+                    term: '{{productName}}',
                     description:
                         'This specifies the name of the product for which the order is placed.',
                 },
                 {
-                    term: '{{ billingInterval }}',
+                    term: '{{billingInterval}}',
                     description:
                         'It Shows the billing interval of subscription.',
                 },
                 {
-                    term: '{{ drawsLength }}',
+                    term: '{{drawsLength}}',
                     description:
                         'It denotes the total number of entries (chances to win).',
                 },
                 {
-                    term: '{{ drawIdsList }}',
+                    term: '{{drawIdsList}}',
                     description:
                         'This is list of the tickets.',
+                },
+                {
+                    term: '{{footer}}',
+                    description:
+                        'Email footer like contact or address.',
                 },
             ]
         }
@@ -1030,7 +1039,10 @@ export const setDefaultTemplate = async (shop) => {
                 <tbody>
                 {{drawIdsList}}
                 </tbody>
-            </table>`,
+            </table>
+            <pre>
+                {{footer}}
+            </pre>`,
             dummyData: {
                 "shop": "virendertesting.myshopify.com",
                 "orderId": "6486463742142",
@@ -1084,6 +1096,11 @@ export const setDefaultTemplate = async (shop) => {
                     description:
                         'This is list of the tickets.',
                 },
+                {
+                    term: '{{footer}}',
+                    description:
+                        'Email footer like contact or address.',
+                },
             ]
         }
         let winningTemplate = {
@@ -1094,19 +1111,15 @@ export const setDefaultTemplate = async (shop) => {
             
             <p>We are thrilled to inform you that <b>YOU ARE A WINNER!</b> </p>
             
-            <p>As part of our exclusive <b>{{interval}}</b>plan, you have won a beautiful <b>{{productName}}</b>
+            <p>As part of our exclusive <b>{{interval}}</b> plan, you have won a beautiful <b>{{productName}}</b>
             timeless piece that adds charm and elegance to any space.</p> 
             <p>Thank you for being a valued part of our community. We appreciate your participation and look forward to more exciting moments with you!
 
                     If you have any questions, feel free to reach out.
   </p>
-           <pre> 
-        Best regards,
-        [Your Name]
-        [Your Company Name]
-        [Your Contact Information]
+          <pre>
+                {{footer}}
             </pre>
-          
          `,
             dummyData: {
                 "shop": "virendertesting.myshopify.com",
@@ -1151,11 +1164,11 @@ export const setDefaultTemplate = async (shop) => {
                     description:
                         'It Shows the billing interval of subscription.',
                 },
-                // {
-                //     term: '{{ticket}}',
-                //     description:
-                //         'Winner Announcement',
-                // },
+                {
+                    term: '{{footer}}',
+                    description:
+                        'Email footer like contact or address.',
+                },
             ]
         }
         const templateExist = await templateModel?.findOne({ shop })
@@ -1217,3 +1230,43 @@ export const updateTemplate = async (admin, data) => {
         return { message: "Error processing request", status: 500 };
     }
 }
+
+
+
+
+
+// if(data?.check){
+//     let result = await billingModel.aggregate([
+//       {
+//         $match: {
+//           shop: "virendertesting.myshopify.com",
+//           contractId: "23374299326",
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "contractdetails", // Collection name
+//           localField: "contractId", // Field in billingModel
+//           foreignField: "contractId", // Field in contractDetailsModel
+//           as: "contractDetails", // Result stored here (array)
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$contractDetails", 
+//           preserveNullAndEmptyArrays: true, 
+//         },
+//       },
+//     ]);
+//     const dataString = typeof result === "string" ? result : JSON.stringify(result);
+// fs.writeFile("checkkkk.txt", dataString, (err) => {
+//   if (err) {
+//       console.error("Error writing to file:", err);
+//   } else {
+//       console.log("Data written to file successfully!");
+//   }
+// });
+    
+//     console.log("planDetailsv=", result)
+//     return json({ success: true, message: "no dtaa in action" });
+//   }

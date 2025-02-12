@@ -1,6 +1,6 @@
 import { sendOrderEmail } from "../controllers/mail";
 import { getCustomerDataByContractId } from "../controllers/planController";
-import { credentialModel, subscriptionContractModel, billingModel } from "../schema";
+import { credentialModel, subscriptionContractModel, billingModel, membershipsModel, planDetailsModel } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
 
@@ -67,13 +67,27 @@ export const action = async ({ request }) => {
 
           const result = await response.json();
         }
-
-
-
-
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId
+        if (planName?.toLowerCase()?.includes('level')) {
+          console.log(planName?.split('-')[0])
+          // add level details in membership table
+          // memebershipLevel: planName?.toLowerCase()?.includes('level')? planName?.split('-')[0]: 'no',
+          let membership = await membershipsModel.findOneAndUpdate(
+            { shop, customerId: customerId }, // Find by shop and customerId
+            {
+              shop: shop,
+              customerId: customerId,
+              orderId: orderId || "",
+              contractId: contractId || "",
+              membershipLevel: planName?.split('-')[0]?.toLowerCase() || '',
+              sellingPlanName: planName,
+              sellingPlanId: planId,
+            },
+            { upsert: true, new: true } // Create if not found, return updated doc
+          );
+        }
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
             productId: product?.node?.productId,
@@ -90,8 +104,12 @@ export const action = async ({ request }) => {
             .substring(0, 7);
           drawIds.push(unique)
         }
-
-        let contractDetail = await subscriptionContractModel.create({
+   let planDetails= await planDetailsModel?.findOne({
+        shop: shop,
+        "plans.plan_id":planId
+      })
+      console.log("planDetailsv=", planDetails)
+          let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
           contractId: contractId || "",
@@ -100,6 +118,11 @@ export const action = async ({ request }) => {
           customerId: customerId || "",
           sellingPlanName: planName,
           sellingPlanId: planId,
+          planUpdateDetail:{
+              sellingPlanUpdate: planDetails?.sellingPlanUpdate,
+              upgradeTo: planDetails?.upgradeTo,
+              futureEntries: planDetails?.futureEntries,
+          },
           billing_policy: billing_policy,
           products: products,
           drawIds: drawIds,
@@ -118,6 +141,11 @@ export const action = async ({ request }) => {
           products: products,
           billing_policy: billing_policy,
           entries: planName.split('-entries-')[1],
+          planUpdateDetail:{
+            sellingPlanUpdate: planDetails?.sellingPlanUpdate,
+            upgradeTo: planDetails?.upgradeTo,
+            futureEntries: planDetails?.futureEntries,
+        },
           drawIds: drawIds,
           status: "done",
           billing_attempt_date: currentDate,

@@ -18,20 +18,16 @@ import { authenticate } from "../../shopify.server";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request)
   const errors = loginErrorMessage(await login(request));
 
-  return  json({
-    test:"ok"
-   });
+  return json({ errors, polarisTranslations });
 };
 
 export const action = async ({ request }) => {
-  await authenticate.admin(request)
   const errors = loginErrorMessage(await login(request));
-
+ 
   return json({
-    test:"ok"
+    errors,
   });
 };
 

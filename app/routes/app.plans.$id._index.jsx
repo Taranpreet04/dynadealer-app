@@ -39,23 +39,26 @@ export const action = async ({ params, request }) => {
     const newPlanDetails = {
         shop: shop,
         name: formData.get("name"),
+        sellingPlanUpdate: formData.get("sellingPlanUpdate"),
+        upgradeTo: formData.get("upgradeTo"),
+        futureEntries: formData.get("futureEntries"),
         products: JSON.parse(formData.get("products")),
         plans: JSON.parse(formData.get("plans")),
         offerValidity: offerValidity
     };
-
+console.log(newPlanDetails)
     try {
         let detail = { updatePlans, deletePlans, newPlans, dbProducts }
         let planDetails = { success: false, error: "Product has already subscription plans" }
-        let hasSubscription = await checkProductSubscription(newPlanDetails, params?.id)
-        console.log("hasSubscription=", hasSubscription)
-        if (!hasSubscription) {
+        // let hasSubscription = await checkProductSubscription(newPlanDetails, params?.id)
+        // console.log("hasSubscription=", hasSubscription)
+        // if (!hasSubscription) {
             if (params?.id == "create") {
                 planDetails = await createPlan(admin, newPlanDetails)
             } else {
                 planDetails = await updatePlanById(admin, { id: params?.id, plan_group_id: plan_group_id }, newPlanDetails, detail);
             }
-        }
+        // }
 
         return json(planDetails);
     } catch (error) {
@@ -99,6 +102,9 @@ export default function CreateUpdatePlan() {
     };
     const [planDetail, setPlanDetail] = useState({
         name: '',
+        sellingPlanUpdate: false,
+        upgradeTo: 'bronze',
+        futureEntries: 5,
         plans: [],
         products: [],
     })
@@ -136,13 +142,22 @@ export default function CreateUpdatePlan() {
     }, [loaderData])
 
     const handleSavePlan = () => {
+        console.log("planDetail====", planDetail)
+        let oneTimePlanExist=false
+        planDetail?.plans?.map((plan)=>{
+            if(plan?.purchaseType=='day'){
+                oneTimePlanExist= true
+            }
+        })
         if (planDetail?.name.trim() == '') {
             shopify.toast.show("Name is required.", { duration: 5000 })
         } else if (planDetail?.plans?.length <= 0) {
             shopify.toast.show("Minimum one selling plan is required.", { duration: 5000 })
         } else if (planDetail?.products?.length <= 0) {
             shopify.toast.show("Minimum one product is required.", { duration: 5000 })
-        } else {
+        } else if(planDetail?.sellingPlanUpdate && oneTimePlanExist){
+            shopify.toast.show("Please remove the one-time plan, as you intend to upgrade it next month.", { duration: 5000 })
+        }else {
             let newPlans = []
             let updatePlans = []
             planDetail?.plans?.map((item) => {
@@ -159,6 +174,7 @@ export default function CreateUpdatePlan() {
                     dbProducts: JSON.stringify(dbProducts),
                     offerValidity: JSON.stringify(planDetail?.offerValidity)
                 }
+                console.log("formData====", formData)
                 shopify.loading(true)
                 setBtnLoader(true)
                 submit(formData, {
@@ -243,6 +259,12 @@ export default function CreateUpdatePlan() {
         { label: 'Weekly', value: 'week' },
         { label: 'Monthly', value: 'month' },
         { label: 'Yearly', value: 'year' },
+    ];
+    const upgradeOptions = [
+        { label: 'Bronze', value: 'bronze' },
+        { label: 'Silver', value: 'silver' },
+        { label: 'Gold', value: 'gold' },
+        { label: 'Platinum', value: 'platinum' },
     ];
 
     const handleModalValChange = (val, name) => {
@@ -398,14 +420,43 @@ export default function CreateUpdatePlan() {
                     >
                         <Grid>
                             <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
-                                <BlockStack gap="200">
+                                <BlockStack gap="300">
                                     <Card>
-                                        <TextField
+                                       <BlockStack gap='200'>
+                                       <TextField
                                             label="Name"
                                             value={planDetail?.name}
                                             onChange={(value) => handleChange(value, 'name')}
                                             autoComplete="off"
                                         />
+
+                                        <Checkbox
+                                            label="Want to update plan after one month ?"
+                                            checked={planDetail?.sellingPlanUpdate}
+                                            onChange={(value) => handleChange(value, 'sellingPlanUpdate')}
+                                        // onChange={handleChange}
+                                        />
+                                       </BlockStack>
+                                        {planDetail?.sellingPlanUpdate &&
+                                            <Box>
+                                                <InlineStack align="space-between">
+                                                    <Select
+                                                        label="Upgrade to"
+                                                        options={upgradeOptions}
+                                                        value={planDetail?.upgradeTo}
+                                                        onChange={(value) => handleChange(value, 'upgradeTo')}
+                                                    />
+                                                    <TextField
+                                                        label="Future entries would be?"
+                                                        type="number"
+                                                        value={planDetail?.futureEntries}
+                                                        onChange={(value) => handleChange(value, 'futureEntries')}
+                                                        autoComplete="off"
+                                                    />
+                                                </InlineStack>
+                                            </Box>
+
+                                        }
                                     </Card>
                                     <Card>
                                         <Grid>

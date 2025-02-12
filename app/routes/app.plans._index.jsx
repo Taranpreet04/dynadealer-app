@@ -56,7 +56,10 @@ export default function PlanData() {
   }, [loaderData])
 
   useEffect(() => {
-    actionData?.status ? shopify.toast.show("Plan deleted", { duration: 5000 }) : shopify.toast.show("Something went wrong", { duration: 5000 })
+    actionData?.status ?
+      shopify.toast.show("Plan deleted", { duration: 5000 }) :
+      actionData?.status == false ?
+        shopify.toast.show("Something went wrong", { duration: 5000 }) : ''
     shopify.loading(false)
     setTableSkel(false)
   }, [actionData])
@@ -140,7 +143,7 @@ export default function PlanData() {
             setContentSkel(true)
           }
           }>Create new</Button>}>
-            
+
             <Card>
               {tableData.length > 0 ? (
                 <>

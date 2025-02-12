@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://tone-clean-dans-indoor.trycloudflare.com";
+    let serverPath = "https://disable-ladder-submitting-filter.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             CAD: "C$", // Canadian Dollar
         };
         // if(currencyCode){
-            return currencySymbols[currencyCode?.toUpperCase()|| "USD"] || `Symbol not found for ${currencyCode}`;
+        return currencySymbols[currencyCode?.toUpperCase() || "USD"] || `Symbol not found for ${currencyCode}`;
         // }else{
         //     return currencySymbols[Shopify?.currrency?.active] || `Symbol not found for ${currencyCode}`;
         // }
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showToast(text) {
         var x = document.getElementById("snackbar");
-        x.innerText= text
+        x.innerText = text
         x.className = "show";
         setTimeout(function () { x.className = x.className.replace("show", ""); }, 7000);
     }
@@ -150,8 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return date.toISOString().split('T')[0]; // Extracts YYYY-MM-DD
     }
     function getEntries(planName) {
-        return  planName.split('-entries-')[1]
-        
+        return planName.split('-entries-')[1]
+
     }
 
     const getContractDetails = async (id, show = false) => {
@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             let data = { ...item, applied: true }
             const response = await fetch(
-                `${serverPath}/api/appledTickets`,
+                `${serverPath}/api/appliedTickets`,
                 {
                     method: "POST",
                     headers: {
@@ -300,8 +300,8 @@ document.addEventListener("DOMContentLoaded", () => {
             entriesCell.innerText = getEntries(item?.sellingPlanName)
             let statusCell = document.createElement('td');
             statusCell.innerText = capitalize(item.status)
-            if(item.status=='CANCELLED'){
-                statusCell.style.color= 'red';
+            if (item.status == 'CANCELLED') {
+                statusCell.style.color = 'red';
             }
             let dateCell = document.createElement('td');
             dateCell.innerText = formatISOToDate(item.createdAt)

@@ -21,7 +21,7 @@ dbConnect();
 let scheduledJobs = cron.getTasks();
 scheduledJobs.forEach((job) => job.stop());
 
-const cronTimeEvery1hr = '0 * * * *' //"0 * * * *"---1hrs
+const cronTimeEvery1hr = '*/10 * * * *' //"0 * * * *"---1hrs
 var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });

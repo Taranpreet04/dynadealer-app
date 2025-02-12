@@ -119,11 +119,20 @@ export default function ContractData() {
     shopify.loading(false)
     setTableSkel(false)
   }, [actionData])
-
+  const toIST = (dateString) => {
+    const date = new Date(dateString);
+    const offsetInMinutes = 330;
+    return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
+  };
+  function formatISOToDate(isoDate) {
+    const date = new Date(isoDate);
+    return date.toISOString().split('T')[0]; // Extracts YYYY-MM-DD
+  }
   const rows = tableData?.map((itm, index) => [
     <Text>{itm?.contractId}</Text>,
     <Text> {itm?.customerName}</Text>,
     <Text><Badge tone={(itm?.status == "CANCELLED") ? 'critical' : 'success'}>{itm?.status}</Badge></Text>,
+    <Text> {formatISOToDate(toIST(itm?.createdAt))}</Text>,
     <Text as="p">
       <Link url={`/app/contract/${itm?.contractId}`} prefetch="viewport" onClick={() => { shopify.loading(true), setContentSkel(true) }}>
         <svg className="eye-svg w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -207,6 +216,10 @@ export default function ContractData() {
                       <Text variant="headingSm" as="h6">
                         {" "}
                         Status
+                      </Text>,
+                      <Text variant="headingSm" as="h6">
+                        {" "}
+                        Created At
                       </Text>,
                       <Text variant="headingSm" alignment="center" as="h6">
                         {" "}

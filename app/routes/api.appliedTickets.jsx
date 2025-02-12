@@ -1,5 +1,4 @@
 import { sendApplyEmail } from '../controllers/mail';
-import { checkMincycleComplete } from '../controllers/planController'
 import { billingModel } from '../schema';
 export const action = async ({ request }) => {
     const data = await request.json();

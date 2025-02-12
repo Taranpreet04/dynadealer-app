@@ -83,6 +83,7 @@ export default function EmailCustomizer() {
         }
     }, [actionData])
     const handleEditorChange = (e) => {
+        console.log(" e.target.value==",  e.target.value)
         let data = templates
         tabSelected == 0 ?
             (data.orderTemplate.html = e.target.value)

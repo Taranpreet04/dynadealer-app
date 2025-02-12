@@ -1,14 +1,16 @@
 console.log("js--__________=")
 
 // document.addEventListener("DOMContentLoaded", () => {
-let indexPage = document.getElementById('index')
-let collectionPage = document.getElementById('collection')
-console.log("subscription_page_type------------------", indexPage)
-let serverPath = "https://tone-clean-dans-indoor.trycloudflare.com";
+// let indexPage = document.getElementById('index')
+// let collectionPage = document.getElementById('collection')
+// console.log("subscription_page_type------------------", indexPage)
+let serverPath = "https://disable-ladder-submitting-filter.trycloudflare.com";
 let allProductId = []
 let allOffers = []
 let activeCurrency = Shopify?.currency?.active;
 let shop = Shopify.shop;
+let customerId = ShopifyAnalytics?.meta?.page?.customerId;
+let membershipDetails;
 let currentUrl = window.location.href;
 let purchaseOption = "oneTime-purchase"
 let selectedEntries
@@ -21,6 +23,8 @@ let oneTimeSelectedPlan
 let subscriptionSelectedPlan
 let giveawayProduct = false
 let inventory = 0
+let showMemebershipLevels= false
+let goldMembershipOffer= false
 let options = [
     { name: "Weekly", value: "week", class: "timePeriodList" },
     { name: "Monthly", value: "month", class: "timePeriodList" },
@@ -48,9 +52,9 @@ if (currentUrl.includes("account")) {
                 <h3>Manage Memberships</h3>
                 </div>`;
 
-        const id = ShopifyAnalytics.meta.page.customerId;
+        // const id = ShopifyAnalytics.meta.page.customerId;
         cusDiv.addEventListener("click", function () {
-            const targetUrl = `https://${shop}/apps/subscription?cid=${id}`;
+            const targetUrl = `https://${shop}/apps/subscription?cid=${customerId}`;
             targetUrl ? window.location.href = targetUrl : "";
         });
         targetElement.parentNode.insertBefore(cusDiv, targetElement);
@@ -58,136 +62,150 @@ if (currentUrl.includes("account")) {
     }
 }
 console.log("location====", window.location.pathname)
-const codeForTimer = () => {
-    let cards = document.querySelectorAll('.card-wrapper.product-card-wrapper');
-    let cardss = document.getElementsByClassName('card-wrapper');
-    console.log("cards==", cards, cardss)
-    cards?.forEach(card => {
-        let productId = card.getAttribute('data-product-id');
-        console.log("Product ID:", productId);
-        allProductId.push(productId)
-    })
-    const getListOfOfferValidity = async () => {
-        try {
-            let data = {
-                allProductId: allProductId
-            }
-            const response = await fetch(
-                `${serverPath}/api/getProductOfferValidity`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                }
-            );
+// const codeForTimer = () => {
+//     let cards = document.querySelectorAll('.card-wrapper.product-card-wrapper');
+//     let cardss = document.getElementsByClassName('card-wrapper');
+//     console.log("cards==", cards, cardss)
+//     cards?.forEach(card => {
+//         let productId = card.getAttribute('data-product-id');
+//         console.log("Product ID:", productId);
+//         allProductId.push(productId)
+//     })
+//     const getListOfOfferValidity = async () => {
+//         try {
+//             let data = {
+//                 allProductId: allProductId
+//             }
+//             const response = await fetch(
+//                 `${serverPath}/api/getProductOfferValidity`,
+//                 {
+//                     method: "POST",
+//                     headers: {
+//                         "Content-Type": "application/json",
+//                     },
+//                     body: JSON.stringify(data),
+//                 }
+//             );
 
-            const result = await response.json();
-            if (result.message == "success") {
-                console.log("result.data==", result.data)
-                result.data?.map((itm) => {
+//             const result = await response.json();
+//             if (result.message == "success") {
+//                 console.log("result.data==", result.data)
+//                 result.data?.map((itm) => {
 
-                    const date = itm?.offerValidity
-                    const startIST = toIST(date?.start);
-                    let endIST = toIST(date?.end);
-                    endIST.setHours(23, 59, 59, 999);
+//                     const date = itm?.offerValidity
+//                     const startIST = toIST(date?.start);
+//                     let endIST = toIST(date?.end);
+//                     endIST.setHours(23, 59, 59, 999);
 
-                    let dateRange = {
-                        start: startIST,
-                        end: endIST,
-                    };
-                    allOffers.push({
-                        ...itm,
-                        offerValidity: dateRange
-                    })
-                })
-                console.log("allOffers=", allOffers)
-                checkOfferOnProducts()
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    }
-    getListOfOfferValidity()
+//                     let dateRange = {
+//                         start: startIST,
+//                         end: endIST,
+//                     };
+//                     allOffers.push({
+//                         ...itm,
+//                         offerValidity: dateRange
+//                     })
+//                 })
+//                 console.log("allOffers=", allOffers)
+//                 checkOfferOnProducts()
+//             }
+//         } catch (error) {
+//             console.error("Error:", error);
+//         }
+//     }
+//     getListOfOfferValidity()
 
-    const checkOfferOnProducts = () => {
-        cards.forEach(card => {
-            console.log(card);
-            let productId = card.getAttribute('data-product-id');
-            console.log("Product ID:", productId);
-            allOffers?.map(offer => {
-                if (offer?.id == productId) {
-                    const now = new Date();
-                    const timeDifferenceToStart = new Date(offer?.offerValidity?.start) - now;
-                    console.log("timeDifferenceToStart==", timeDifferenceToStart)
-                    if (timeDifferenceToStart < 0) {
-                        console.log("offer?.id=", productId, offer?.id)
-                        let cardInner = card.getElementsByClassName('card__inner color-background-2 gradient ratio')[0]
-                        console.log(cardInner)
-                        const main = document.createElement('div');
-                        main.className = 'list-countdown-main-div';
-                        let content = ''
-                        cardInner.insertAdjacentElement('afterend', main);
+//     const checkOfferOnProducts = () => {
+//         cards.forEach(card => {
+//             console.log(card);
+//             let productId = card.getAttribute('data-product-id');
+//             console.log("Product ID:", productId);
+//             allOffers?.map(offer => {
+//                 if (offer?.id == productId) {
+//                     const now = new Date();
+//                     const timeDifferenceToStart = new Date(offer?.offerValidity?.start) - now;
+//                     console.log("timeDifferenceToStart==", timeDifferenceToStart)
+//                     if (timeDifferenceToStart < 0) {
+//                         console.log("offer?.id=", productId, offer?.id)
+//                         let cardInner = card.getElementsByClassName('card__inner color-background-2 gradient ratio')[0]
+//                         console.log(cardInner)
+//                         const main = document.createElement('div');
+//                         main.className = 'list-countdown-main-div';
+//                         let content = ''
+//                         cardInner.insertAdjacentElement('afterend', main);
 
-                        const today = new Date(new Date().setHours(0, 0, 0, 0));
-                        const todayDate = today.getDate();
-                        const offerValidity = new Date(offer?.offerValidity?.end)
-                        const offerValidityDate = offerValidity.getDate();
-                        function updateCountdown() {
-                            const now = new Date();
-                            const timeDifference = offerValidity - now;
-                            console.log("timeDifference== for mini counter", timeDifference)
-                            if (timeDifference > 0 || todayDate === offerValidityDate) {
-                                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-                                const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
-                                const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
-                                const seconds = Math.floor((timeDifference / 1000) % 60);
+//                         const today = new Date(new Date().setHours(0, 0, 0, 0));
+//                         const todayDate = today.getDate();
+//                         const offerValidity = new Date(offer?.offerValidity?.end)
+//                         const offerValidityDate = offerValidity.getDate();
+//                         function updateCountdown() {
+//                             const now = new Date();
+//                             const timeDifference = offerValidity - now;
+//                             console.log("timeDifference== for mini counter", timeDifference)
+//                             if (timeDifference > 0 || todayDate === offerValidityDate) {
+//                                 const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+//                                 const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
+//                                 const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+//                                 const seconds = Math.floor((timeDifference / 1000) % 60);
 
-                                // console.log("Today's countdown -- show time in hrs", days, hours, minutes, seconds);
+//                                 // console.log("Today's countdown -- show time in hrs", days, hours, minutes, seconds);
 
-                                content = `<div class="countdown">
-                        <div class='show-timer-div'>
-                         <div class='time'>
-                                <span>Days</span>
-                                <span>${days}</span>
-                            </div>
-                            <span>:</span>
-                           <div class='time'>
-                                <span>Hrs</span>
-                                <span>${hours}</span>
-                            </div>
-                            <span>:</span>
-                           <div class='time'>
-                                <span>Mins</span>
-                               <span>${minutes}</span>
-                            </div>
-                            <span>:</span>
-                           <div class='time'>
-                              <span>Secs</span>
-                              <span>${seconds}</span>
-                            </div>
-                       </div>
-                    </div>`;
-                            } else if (todayDate > offerValidityDate || timeDifference <= 0) {
-                                content = `<div class="countdown">
-                                        <p>GIVEAWAY ENDED</p>
-                                    </div>`;
-                                clearInterval(timer);
-                            }
-                            main.innerHTML = content;
-                        }
-                        const timer = setInterval(updateCountdown, 1000);
-                        updateCountdown();
-                    }
-                }
-            })
-        });
-    }
-}
-codeForTimer()
+//                                 content = `<div class="countdown">
+//                         <div class='show-timer-div'>
+//                          <div class='time'>
+//                                 <span>Days</span>
+//                                 <span>${days}</span>
+//                             </div>
+//                             <span>:</span>
+//                            <div class='time'>
+//                                 <span>Hrs</span>
+//                                 <span>${hours}</span>
+//                             </div>
+//                             <span>:</span>
+//                            <div class='time'>
+//                                 <span>Mins</span>
+//                                <span>${minutes}</span>
+//                             </div>
+//                             <span>:</span>
+//                            <div class='time'>
+//                               <span>Secs</span>
+//                               <span>${seconds}</span>
+//                             </div>
+//                        </div>
+//                     </div>`;
+//                             } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+//                                 content = `<div class="countdown">
+//                                         <p>GIVEAWAY ENDED</p>
+//                                     </div>`;
+//                                 clearInterval(timer);
+//                             }
+//                             main.innerHTML = content;
+//                         }
+//                         const timer = setInterval(updateCountdown, 1000);
+//                         updateCountdown();
+//                     }
+//                 }
+//             })
+//         });
+//     }
+// }
+// codeForTimer()
 if (subscription_page_type == "product") {
-  
+    console.log("filtered_selling_plan_groups==", filtered_selling_plan_groups)
+    if (filtered_selling_plan_groups?.length > 0) {
+        filtered_selling_plan_groups?.forEach((item) => {
+            allSellingPlans?.push(...item?.selling_plans)
+        })
+        console.log("allSellingPlans==", allSellingPlans)
+    }
+    productJson?.selling_plan_groups?.map((itm)=>{
+        let name = itm?.name?.toLowerCase()
+        name?.includes('level') ? showMemebershipLevels= true: ''
+        name?.includes('offer for gold membership') ? goldMembershipOffer= true: '';
+    })
+    function capitalize(str) {
+        return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
+    }
     const sendDataToCart = (plan) => {
         console.log("plan in cart", plan)
         var form = document.querySelectorAll('form[action*="/cart/add"]');
@@ -229,33 +247,179 @@ if (subscription_page_type == "product") {
         const offsetInMinutes = 330;
         return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
     };
+    const getEntries = (str) => {
+        let data = JSON.parse(str);
+        return data.entries;
+    }
+    const getCurrencySymbol = (currency) => {
+        const symbol = new Intl.NumberFormat("en", { style: "currency", currency })
+            .formatToParts()
+            .find((x) => x.type === "currency");
+        return symbol && symbol.value;
+    };
     let pName = productJson?.title.toUpperCase()
-    console.log("pName", pName, pName?.includes('GOlD'))
+    console.log("pName", pName, pName?.includes('GOLD'))
     if (pName?.includes('SILVER') || pName?.includes('GOLD') || pName?.includes('BRONZE') || pName?.includes('PLATINUM')) {
         giveawayProduct = true
     }
-    if (filtered_selling_plan_groups?.length > 0) {
-        filtered_selling_plan_groups?.forEach((item) => {
-            allSellingPlans?.push(...item?.selling_plans)
-        })
-        console.log("allSellingPlans==", allSellingPlans)
-    }
-    if (giveawayProduct) {
+    console.log("goldMembershipOffer==", goldMembershipOffer, customerId)
+    if(goldMembershipOffer){
+        if(customerId){
+            const handlePlanType = (newPlan) => {
+                if (newPlan) {
+                    let hasActive = document.getElementsByClassName('active');
+                    Array.from(hasActive).forEach(itm => {
+                        itm.classList.remove('active');
+                    });
+
+                    let nowActive = document.getElementById(`${newPlan?.id}`);
+                    if (nowActive) {
+                        nowActive.classList.add('active');
+                    }
+                    selectedPlan = newPlan
+                    // selectedEntries = getEntries(selectedPlan?.description)
+                    sendDataToCart(selectedPlan)
+                    // setPriceAndEntries(selectedPlan)
+                } 
+            }
+            const showPlan=()=>{
+                let subscriptionBlock = document.getElementById('subscription-app-block')
+                console.log("subscriptionBlock==", subscriptionBlock)
+                content= `<div id="levels-box" class="oneTime-widget-box">
+                             <h4>Offer for ${capitalize(membershipDetails?.membershipLevel)} membership only</h4>
+                            <div class='plan-levels var-pill-wrapper' id='special-plan-levels'>
+    
+                            </div>
+                    </div>`
+                subscriptionBlock.innerHTML=content
+
+
+                let entriesDiv= document.getElementById('special-plan-levels')
+                allSellingPlans?.map((item, index) => {
+                    let planDiv = document.createElement('div');
+                    planDiv.className = (item?.id == selectedPlan?.id) ? `level-plan active` : `level-plan`;
+                    planDiv.id = `${item?.id}`;
+                    entriesDiv?.appendChild(planDiv)
+                    let content = `
+          <label for="plan-${item?.id}" class="radio-wrapper-27">
+            <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? 'checked' : ''} />
+            <span class="var-entries">Get ${getEntries(item?.description)} Entries</span>
+            <span class="var-plan">${getCurrencySymbol(activeCurrency)}${parseFloat(item?.price_adjustments[0]?.value /100)}
+            ${item?.options[0]?.value?.split(' ')[0]== 'day'? "onetime plan": 
+                item?.options[0]?.value?.split(' ')[0]== 'month'? "/mo" :''
+            } only</span>
+            </label>`
+                    planDiv.innerHTML = content;
+                    planDiv.querySelector(`#plan-${item?.id}`).addEventListener('change', () => {
+                        handlePlanType(item)
+                    });
+                })
+            }
+            const getMembershipDetail = async () => {
+             try {
+                 let data = {
+                     shop: shop,
+                     customerId: customerId,
+                 }
+                 const response = await fetch(
+                     `${serverPath}/api/getMembership`,
+                     {
+                         method: "POST",
+                         headers: {
+                             "Content-Type": "application/json",
+                         },
+                         body: JSON.stringify(data),
+                     }
+                 );
+        
+                 const result = await response.json();
+                 console.log("result==", result)
+                 if (result.message == "success") {
+                    membershipDetails = result?.data
+                    
+                    if (membershipDetails.membershipLevel.toLowerCase()=='gold' && allSellingPlans) {
+                        sendDataToCart(allSellingPlans[0])
+                        selectedPlan= allSellingPlans[0]
+                        showPlan()
+                    }
+                 }
+             } catch (error) {
+                 console.error("Error:", error);
+             }
+         }
+        console.log("goldMembershipOffer==", goldMembershipOffer)
+         getMembershipDetail();
+        }
+       
+    }else if (giveawayProduct) {
         if (allSellingPlans) {
             sendDataToCart(allSellingPlans[0])
         }
+    }else if(allSellingPlans?.length == 1){
+        if (allSellingPlans) {
+            sendDataToCart(allSellingPlans[0])
+        }
+    }else if(showMemebershipLevels){
+            selectedPlan= allSellingPlans[0]
+              sendDataToCart(selectedPlan)
+            const handlePlanLevel = (newPlan) => {
+                if (newPlan) {
+                    let hasActive = document.getElementsByClassName('active');
+                    Array.from(hasActive).forEach(itm => {
+                        itm.classList.remove('active');
+                    });
+
+                    let nowActive = document.getElementById(`${newPlan?.id}`);
+                    if (nowActive) {
+                        nowActive.classList.add('active');
+                    }
+                    selectedPlan = newPlan
+                    // selectedEntries = getEntries(selectedPlan?.description)
+                    sendDataToCart(selectedPlan)
+                    // setPriceAndEntries(selectedPlan)
+                } 
+
+                // else {
+                //     let hasActive = document.getElementsByClassName('active');
+                //     Array.from(hasActive).forEach(itm => {
+                //         itm.classList.remove('active');
+                //     });
+                //     cartClear()
+                // }
+            }
+            const showLevels=()=>{
+                let entriesDiv= document.getElementById('plan-levels')
+                allSellingPlans?.map((item, index) => {
+                    let planDiv = document.createElement('div');
+                    planDiv.className = (item?.id == selectedPlan?.id) ? `level-plan active` : `level-plan`;
+                    planDiv.id = `${item?.id}`;
+                    entriesDiv?.appendChild(planDiv)
+                    let content = `
+          <label for="plan-${item?.id}" class="radio-wrapper-27">
+            <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? 'checked' : ''} />
+            <span class="var-plan">${capitalize(item?.name.split('-')[0])}</span>
+            <span class="var-entries">${getEntries(item?.description)} Entries</span>
+            </label>`
+                    planDiv.innerHTML = content;
+                    planDiv.querySelector(`#plan-${item?.id}`).addEventListener('change', () => {
+                        handlePlanLevel(item)
+                    });
+                })
+            }
+            let subscriptionBlock = document.getElementById('subscription-app-block')
+            console.log("subscriptionBlock==", subscriptionBlock)
+            content= `<div id="levels-box" class="oneTime-widget-box">
+                         <h4>Membership level</h4>
+                        <div class='plan-levels var-pill-wrapper' id='plan-levels'>
+
+                        </div>
+                </div>`
+            subscriptionBlock.innerHTML=content
+            showLevels()
+           
     } else {
         if (allSellingPlans?.length > 1) {
-            const getEntries = (str) => {
-                let data = JSON.parse(str);
-                return data.entries;
-            }
-            const getCurrencySymbol = (currency) => {
-                const symbol = new Intl.NumberFormat("en", { style: "currency", currency })
-                    .formatToParts()
-                    .find((x) => x.type === "currency");
-                return symbol && symbol.value;
-            };
+           
             const setPriceAndEntries = (plan) => {
                 console.log("plan= setPriceAndEntries== cart===", plan)
                 let entries = getEntries(plan?.description)
@@ -274,9 +438,6 @@ if (subscription_page_type == "product") {
                 oneTimePriceDiv.innerText = oneTimePrice ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}` : '';
                 subscriptionPriceDiv.innerText = subscriptionPrice ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}` : '';
 
-                console.log("purchaseOption=", purchaseOption)
-                console.log("oneTimePrice=", oneTimePrice)
-                console.log("subscriptionPrice=", subscriptionPrice)
                 if ((purchaseOption == 'oneTime-purchase' && !oneTimePrice) || (purchaseOption == 'subscription-purchase' && !subscriptionPrice)) {
                     handlePlanChange()
                 }
@@ -342,7 +503,7 @@ if (subscription_page_type == "product") {
                         </div>
                     </div>
                 </div>
-                <div>
+                <div class='other-options'>
                 <h5>Purchase options</h5>
                         <div id="options" class="options">
                          <div class='onetime-purchase'>
@@ -377,7 +538,6 @@ if (subscription_page_type == "product") {
             }
             const handlePlanChange = (newPlan) => {
                 if (newPlan) {
-
                     let hasActive = document.getElementsByClassName('active');
                     Array.from(hasActive).forEach(itm => {
                         itm.classList.remove('active');
@@ -561,6 +721,7 @@ if (subscription_page_type == "product") {
                     console.log("result==", result)
                     if (result.message == "success") {
                         inventory= result.data.product.totalInventory
+                        console.log("inventory==", inventory)
                         showInventory()
                     }
                 } catch (error) {
@@ -570,6 +731,8 @@ if (subscription_page_type == "product") {
             getProductDetails();
         }
     }
+    console.log(customerId, "ShopifyAnalytics==", ShopifyAnalytics, ShopifyAnalytics?.meta?.page?.customerId)
+   
 }
 
 

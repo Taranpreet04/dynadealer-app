@@ -25,6 +25,7 @@ export async function sendOrderEmail(data) {
                 html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
                 html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
                 html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+                html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
         let mailOptions = {
             from: "Membership App",
             to: data?.customerEmail,
@@ -74,6 +75,7 @@ export async function sendApplyEmail(data) {
         html= html?.replace('{{contractId}}', `${data?.contractId}`);
         html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
         html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+        html= html?.replace('{{footer}}', `${template?.appliedTemplate?.footer}`);
         let mailOptions = {
             from: "Membership App",
             to: data?.customerEmail,
