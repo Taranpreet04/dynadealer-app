@@ -1,4 +1,4 @@
-import { billingModel, planDetailsModel, subscriptionContractModel, templateModel } from '../schema'
+import { billingModel, planDetailsModel, raffleProductsModel, subscriptionContractModel, templateModel } from '../schema'
 import fs from "fs";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
@@ -933,6 +933,8 @@ export const setDefaultTemplate = async (shop) => {
         let orderTemplate = {
             subject: "Your order is successfully done",
             from: "Membership App",
+            footer: `Best Regards,
+            Dyna dealers`,
             html: `p>Hi {{customerName}},</p>
             <p>Thankyou to order for <b>{{productName}}</b> which is your${' '}
             <b>{{interval}}</b> plan.</p>
@@ -1022,6 +1024,8 @@ export const setDefaultTemplate = async (shop) => {
         let appliedTemplate = {
             subject: "Your tickets are applied succesfully.",
             from: "Membership App",
+            footer: `Best Regards,
+            Dyna dealers`,
             html: `
             <p>Hi {{customerName}},</p>
 
@@ -1106,6 +1110,8 @@ export const setDefaultTemplate = async (shop) => {
         let winningTemplate = {
             subject: "Congratulations, YOU ARE A WINNER!",
             from: "Membership App",
+            footer: `Best Regards,
+            Dyna dealers`,
             html: `<p>Hi {{customerName}},</p>
             <h4>Congratulations,</h4>
             
@@ -1171,6 +1177,77 @@ export const setDefaultTemplate = async (shop) => {
                 },
             ]
         }
+        let announcementTemplate = {
+            subject: "🚨 Exclusive Raffle Alert – Don’t Miss Your Chance! 🚨",
+            from: "Membership App",
+            footer: `Best Regards,
+            Dyna dealers`,
+            html: `<p>Attention Valued Members!</p>
+           
+            <br>
+            <p>We’re excited to announce this month’s exclusive Members-Only Raffle! 🎉</p>
+             <br>
+            <p>🔥 Prize: [Insert Prize Name]</p>
+            <p>🎟 Entry Level: [Subscription Tier Required]</p>
+            <p>📅 Spots Available: [Limited Spots]</p> <br>
+            <p>As a valued subscriber, you’re automatically entered based on your membership tier. Want more chances to win? Upgrade your subscription or grab your spot before entries fill up!</b>
+            timeless piece that adds charm and elegance to any space.</p> 
+             <br>
+            <p>Don’t miss out—once spots are gone, they’re gone! The winner will be announced on [Date].
+            <br>
+            <p>Good luck! </p>
+             <br>
+            </p>
+            <pre>
+                {{footer}}
+            </pre>
+         `,
+         
+            dummyData: {
+                "shop": "virendertesting.myshopify.com",
+                "orderId": "6486463742142",
+                "customerId": "7979103453374",
+                "customerName": "Taran preet",
+                "customerEmail": "taranpreet@shinedezign.com",
+                "contractId": "24182882494",
+                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
+                "sellingPlanName": "New plan22-entries-7",
+                "billing_policy": {
+                    "interval": "month",
+                    "interval_count": 1,
+                    "min_cycles": 1,
+                    "max_cycles": null
+                },
+                "products": [
+                    {
+                        "productId": "gid://shopify/Product/7837187014846",
+                        "productName": "Antique Drawers",
+                        "quantity": 1
+                    }
+                ],
+                "drawIds": [
+                    "M6LQWQG",
+                    "M6LQCEC",
+                ],
+            },
+            announcementMailParameters: [
+                {
+                    term: '{{productName}}',
+                    description:
+                        'This specifies the name of the product for which the order is placed.',
+                },
+                {
+                    term: '{{date}}',
+                    description:
+                        'date start or end date',
+                },
+                {
+                    term: '{{footer}}',
+                    description:
+                        'Email footer like contact or address.',
+                },
+            ]
+        }
         const templateExist = await templateModel?.findOne({ shop })
         if (!templateExist) {
             const newTemplate = await templateModel.create(
@@ -1178,7 +1255,8 @@ export const setDefaultTemplate = async (shop) => {
                     shop: shop,
                     orderTemplate: orderTemplate,
                     appliedTemplate: appliedTemplate,
-                    winningTemplate: winningTemplate
+                    winningTemplate: winningTemplate,
+                    announcementTemplate: announcementTemplate
                 })
             return { message: "success", newTemplate }
         } else {
@@ -1188,7 +1266,8 @@ export const setDefaultTemplate = async (shop) => {
                     $set: {
                         orderTemplate: orderTemplate,
                         appliedTemplate: appliedTemplate,
-                        winningTemplate: winningTemplate
+                        winningTemplate: winningTemplate,
+                        announcementTemplate: announcementTemplate
                     }
                 },
                 { upsert: true, new: true }
@@ -1231,7 +1310,32 @@ export const updateTemplate = async (admin, data) => {
     }
 }
 
-
+export const updateRaffleProducts=async (admin, products)=>{
+  try{
+    const { shop } = admin.rest.session;
+    const data = await raffleProductsModel.findOneAndUpdate(
+        { shop },
+        { $set: { products} },
+        { upsert: true, new: true }
+    );
+    return { message: "success", data }
+  }catch(error){
+    console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+  }
+}
+export const getRaffleProducts=async (admin)=>{
+  try{
+    const { shop } = admin.rest.session;
+    const data = await raffleProductsModel.findOne(
+        { shop }
+    );
+    return { message: "success", data }
+  }catch(error){
+    console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+  }
+}
 
 
 

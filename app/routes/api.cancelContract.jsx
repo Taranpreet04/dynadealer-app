@@ -1,6 +1,19 @@
 import { cancelContract } from "../controllers/planController";
 import { unauthenticated } from '../shopify.server';
-
+const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  }
+   
+  export const loader = async ({ request }) => {
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 200,
+        headers,
+      });
+    }
+  };
 export const action = async ({ request }) => {
     const data = await request.json();
     try {
@@ -10,7 +23,7 @@ export const action = async ({ request }) => {
                 JSON.stringify({ message: "Invalid Shopify shop" }),
                 {
                     status: 401,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers
                 }
             );
         }
@@ -19,18 +32,14 @@ export const action = async ({ request }) => {
 
         return new Response(JSON.stringify({ message: "success", data: res }), {
             status: 200,
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers
         });
     }
     catch (error) {
         console.error("Error processing POST request:", error);
-        return new Response(JSON.stringify({ message: "Error processing request" }), {
+        return json({ message: "Error processing request" }, {
             status: 500,
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers,
         });
     }
 }

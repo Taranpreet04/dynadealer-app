@@ -1,5 +1,5 @@
 import { json, useActionData, useLoaderData, useSubmit } from "@remix-run/react";
-import { Page, Filters, ChoiceList, Modal, BlockStack, DatePicker, Button, Text, Icon, DataTable, Badge, Card, Link, SkeletonDisplayText, TextField, EmptyState, SkeletonBodyText } from "@shopify/polaris";
+import { Page, Modal, BlockStack, DatePicker, Button, Text, Icon, DataTable, Badge, Card, Link, EmptyState,} from "@shopify/polaris";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
@@ -26,13 +26,13 @@ export default function ContractData() {
   const submit = useSubmit();
   const location = useLocation();
   const [tableData, setTableData] = useState([])
-  const [products, setProducts] = useState([])
   const [searchValue, setSearchValue] = useState('');
   const [totaldocs, setTotaldocs] = useState(0);
   const [totalRows, setTotalRows] = useState(0);
   const [page, setPage] = useState(1);
   const [tableSkel, setTableSkel] = useState(false);
   const [contentSkel, setContentSkel] = useState(false);
+  const [products, setProducts] = useState([])
   const [showDatePicker, setShowDatePicker] = useState(false);
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -194,6 +194,7 @@ export default function ContractData() {
           <Page
             title="Contracts"
             primaryAction={<Button variant="primary"
+              disabled= {tableData?.length<=0}
               onClick={() => handleResourcePicker()}
             >Export</Button>}
           >

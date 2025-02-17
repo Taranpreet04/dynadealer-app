@@ -30,7 +30,7 @@ export default function PlanData() {
   const [tableData, setTableData] = useState([])
   const [totaldocs, setTotaldocs] = useState(0);
   const [skip, setSkip] = useState(0)
-  const [limit, setLimit] = useState(10)
+  const [limit, setLimit] = useState(8)
   const [page, setPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const [reCheck, setReCheck] = useState(false)
@@ -43,6 +43,9 @@ export default function PlanData() {
     setTableSkel(true)
     loaderData?.planDetails ? setData(loaderData?.planDetails) : ''
     let table = loaderData?.planDetails?.slice(skip, limit)
+    if (loaderData?.planDetails?.length > 0 && table?.length <= 0) {
+      handlePrevPage()
+    }
     setTableData(table)
     let total = loaderData?.planDetails.length;
     setTotalRows(loaderData?.planDetails.length)

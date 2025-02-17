@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://disable-ladder-submitting-filter.trycloudflare.com"
+application_url = "https://dsc-government-sg-leg.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_orders,read_products,write_own_subscription_contra
 
 [auth]
 redirect_urls = [
-  "https://disable-ladder-submitting-filter.trycloudflare.com/auth/callback",
-  "https://disable-ladder-submitting-filter.trycloudflare.com/auth/shopify/callback",
-  "https://disable-ladder-submitting-filter.trycloudflare.com/api/auth/callback"
+  "https://dsc-government-sg-leg.trycloudflare.com/auth/callback",
+  "https://dsc-government-sg-leg.trycloudflare.com/auth/shopify/callback",
+  "https://dsc-government-sg-leg.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -30,7 +30,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://disable-ladder-submitting-filter.trycloudflare.com/api/subscription"
+url = "https://dsc-government-sg-leg.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

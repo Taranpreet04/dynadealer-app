@@ -1,6 +1,19 @@
 import { credentialModel } from "../schema";
 
-
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+ 
+export const loader = async ({ request }) => {
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 200,
+      headers,
+    });
+  }
+};
 export const action = async ({ request }) => {
   try {
     const data = await request.json();
@@ -116,7 +129,7 @@ export const action = async ({ request }) => {
         }),
       }
     );
-// console.log("fetchDetail==", fetchDetail)
+    // console.log("fetchDetail==", fetchDetail)
     if (!fetchDetail.ok) {
       throw new Error(`Admin API request failed with status ${fetchDetail.status}`);
     }
@@ -125,17 +138,13 @@ export const action = async ({ request }) => {
 
     return new Response(JSON.stringify({ message: "success", data: responseJSON.data }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers
     });
   } catch (error) {
     console.error("Error processing POST request:", error);
-    return new Response(JSON.stringify({ message: "Error processing request" }), {
+    return json({ message: "Error processing request" }, {
       status: 500,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
   }
 };

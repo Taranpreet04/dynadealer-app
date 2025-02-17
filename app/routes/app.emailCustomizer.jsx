@@ -39,7 +39,8 @@ import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 
 export const loader = async ({ request }) => {
     const { admin, session } = await authenticate.admin(request);
-    // await setDefaultTemplate(session?.shop)
+    // let check = await setDefaultTemplate(session?.shop)
+    // console.log(check)
     let contractData = await getAllContracts(admin)
     let data = await getEmailTemplate(admin)
     return {
@@ -83,12 +84,13 @@ export default function EmailCustomizer() {
         }
     }, [actionData])
     const handleEditorChange = (e) => {
-        console.log(" e.target.value==",  e.target.value)
+        console.log(" e.target.value==", e.target.value)
         let data = templates
         tabSelected == 0 ?
             (data.orderTemplate.html = e.target.value)
             : tabSelected == 1 ? (data.appliedTemplate.html = e.target.value)
-                : tabSelected == 2 ? (data.winningTemplate.html = e.target.value) : ''
+                : tabSelected == 2 ? (data.winningTemplate.html = e.target.value)
+                    : tabSelected == 3 ? (data.announcementTemplate.html = e.target.value) : ''
         setTemplates({ ...data })
     }
     const handleChange = (val, key) => {
@@ -96,7 +98,8 @@ export default function EmailCustomizer() {
         tabSelected == 0 ?
             (data.orderTemplate[key] = val)
             : tabSelected == 1 ? (data.appliedTemplate[key] = val)
-                : tabSelected == 2 ? (data.winningTemplate[key] = val) : ''
+                : tabSelected == 2 ? (data.winningTemplate[key] = val)
+                    : tabSelected == 3 ? (data.announcementTemplate[key] = val) : ''
         setTemplates({ ...data })
     }
     const tabMenu = [
@@ -115,6 +118,11 @@ export default function EmailCustomizer() {
             content: 'Winning Email Template',
             accessibilityLabel: 'winning',
         },
+        {
+            id: 'announcement',
+            content: 'Raffle Announcement Email Template',
+            accessibilityLabel: 'announcement',
+        },
     ];
     const handleTabSelect = useCallback((index) => {
         setTabSelected(index)
@@ -128,6 +136,7 @@ export default function EmailCustomizer() {
             orderTemplate: JSON.stringify(templates?.orderTemplate),
             appliedTemplate: JSON.stringify(templates?.appliedTemplate),
             winningTemplate: JSON.stringify(templates?.winningTemplate),
+            announcementTemplate: JSON.stringify(templates?.announcementTemplate),
         }
         submit(formData, {
             method: "post"
@@ -151,11 +160,11 @@ export default function EmailCustomizer() {
     }
     return (
         <Page
-            backAction={{
-                content: 'Settings', url: '../plans', onAction: () => {
-                    shopify.loading(true)
-                }
-            }}
+            // backAction={{
+            //     content: 'Settings', url: '../plans', onAction: () => {
+            //         shopify.loading(true)
+            //     }
+            // }}
             title="Email customizer"
             primaryAction={<Button variant="primary" loading={btnLoader}
                 onClick={handleSave}>Save</Button>}
@@ -178,7 +187,7 @@ export default function EmailCustomizer() {
                                     ariaExpanded={open}
                                     ariaControls="basic-collapsible"
                                 >
-                                    Collapse
+                                    {open ? "Collapse" : "Expand"}
                                 </Button>
                             </InlineStack>
                             <Collapsible
@@ -191,7 +200,8 @@ export default function EmailCustomizer() {
                                     items={tabSelected == 0 ?
                                         templates?.orderTemplate?.orderMailParameters || []
                                         : tabSelected == 1 ? templates?.appliedTemplate?.appliedMailParameters || []
-                                            : tabSelected == 2 ? templates?.winningTemplate?.winnerMailParameters || [] : []}
+                                            : tabSelected == 2 ? templates?.winningTemplate?.winnerMailParameters || []
+                                            : tabSelected == 3 ? templates?.announcementTemplate?.announcementMailParameters || [] : []}
                                 />
                             </Collapsible>
                         </BlockStack >
@@ -209,7 +219,8 @@ export default function EmailCustomizer() {
                                 label="Email Subject"
                                 value={tabSelected == 0 ? templates?.orderTemplate?.subject
                                     : tabSelected == 1 ? templates?.appliedTemplate?.subject
-                                        : tabSelected == 2 ? templates?.winningTemplate?.subject : ''}
+                                        : tabSelected == 2 ? templates?.winningTemplate?.subject 
+                                        : tabSelected == 3 ? templates?.announcementTemplate?.subject : ''}
                                 onChange={(value) => handleChange(value, 'subject')}
                                 autoComplete="off"
                             />
@@ -217,7 +228,8 @@ export default function EmailCustomizer() {
                                 label="Email Footer"
                                 value={tabSelected == 0 ? templates?.orderTemplate?.footer
                                     : tabSelected == 1 ? templates?.appliedTemplate?.footer
-                                        : tabSelected == 2 ? templates?.winningTemplate?.footer : ''}
+                                        : tabSelected == 2 ? templates?.winningTemplate?.footer 
+                                        : tabSelected == 3 ? templates?.announcementTemplate?.footer : ''}
                                 onChange={(value) => handleChange(value, 'footer')}
                                 autoComplete="off"
                                 multiline={4}
@@ -253,7 +265,8 @@ export default function EmailCustomizer() {
                             <Editor
                                 value={tabSelected == 0 ? templates?.orderTemplate?.html
                                     : tabSelected == 1 ? templates?.appliedTemplate?.html
-                                        : tabSelected == 2 ? templates?.winningTemplate?.html : ''}
+                                        : tabSelected == 2 ? templates?.winningTemplate?.html 
+                                        : tabSelected == 3 ? templates?.announcementTemplate?.html : ''}
                                 onChange={(e) => handleEditorChange(e)}
                             >
                                 <Toolbar>
@@ -329,6 +342,7 @@ export const action = async ({ request }) => {
             orderTemplate: JSON.parse(data?.orderTemplate),
             appliedTemplate: JSON.parse(data?.appliedTemplate),
             winningTemplate: JSON.parse(data?.winningTemplate),
+            announcementTemplate: JSON.parse(data?.announcementTemplate),
         }
         res = await updateTemplate(admin, data)
     }
