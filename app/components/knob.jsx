@@ -1,4 +1,4 @@
-import styles from './Knob.module.css';
+import styles from './Knob.module.css?url';
 
 /**
  * @typedef {Object} KnobProps
@@ -12,6 +12,9 @@ import styles from './Knob.module.css';
  * @param {KnobProps} props - The props for the Knob component
  * @returns {JSX.Element} The rendered Knob component
  */
+
+export const links = () => [{ rel: "stylesheet", href: styles }];
+
 export const Knob = ({ ariaLabel, selected, onClick }) => {
   return (
     <button
