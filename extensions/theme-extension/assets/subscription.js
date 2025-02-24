@@ -1,10 +1,6 @@
 console.log("js--__________=")
 
-// document.addEventListener("DOMContentLoaded", () => {
-// let indexPage = document.getElementById('index')
-// let collectionPage = document.getElementById('collection')
-// console.log("subscription_page_type------------------", indexPage)
-let serverPath = "https://disable-ladder-submitting-filter.trycloudflare.com";
+let serverPath = "https://grams-message-potentially-san.trycloudflare.com";
 let allProductId = []
 let allOffers = []
 let activeCurrency = Shopify?.currency?.active;

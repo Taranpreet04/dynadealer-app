@@ -32,7 +32,7 @@ import {
     EditorProvider,
     Toolbar
 } from 'react-simple-wysiwyg';
-import { getEmailTemplate, getAllContracts, setDefaultTemplate, updateTemplate } from '../controllers/planController';
+import { getEmailTemplate, getAllContracts, updateTemplate} from '../controllers/planController';
 import { sendWinnerEmail } from '../controllers/mail'
 import { authenticate } from '../shopify.server';
 import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
@@ -63,8 +63,8 @@ export default function EmailCustomizer() {
     const [reCheckWinner, setReCheckWinner] = useState(false);
     const submit = useSubmit()
     useEffect(() => {
+        console.log("loaderData?.data==", loaderData)
         if (loaderData) {
-            console.log("loaderData?.data==", loaderData?.data)
             setTemplates(loaderData?.data)
             let details = []
             loaderData?.contractDetails?.map((itm) => {
@@ -174,9 +174,8 @@ export default function EmailCustomizer() {
                     <Tabs fitted tabs={tabMenu} selected={tabSelected} onSelect={handleTabSelect} />
                 </Grid.Cell>
                 <Grid.Cell columnSpan={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}>
-                    {/* <div style={{ height: '200px' }}> */}
                     <Card sectioned>
-                        <BlockStack vertical>
+                        <BlockStack>
                             <InlineStack align='space-between'>
                                 <Text as="h2" variant="headingSm">
                                     Parameters
@@ -206,7 +205,6 @@ export default function EmailCustomizer() {
                             </Collapsible>
                         </BlockStack >
                     </Card>
-                    {/* </div> */}
                 </Grid.Cell>
 
                 <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 4, lg: 4, xl: 4 }}>
@@ -242,12 +240,6 @@ export default function EmailCustomizer() {
                                         value={winnerAccount}
                                         onChange={(value) => setWinnerAccount(value)}
                                     />
-                                    {/* <TextField
-                                        label="Enter Winner Ticket Number"
-                                        value={winnerTicket}
-                                        onChange={(value) => setWinnerTicket(value)}
-                                        autoComplete="off"
-                                    /> */}
                                     <Button variant="primary" loading={mailBtnLoader}
                                         onClick={() => setReCheckWinner(true)}>Send Mail To Winner</Button>
                                 </BlockStack>}
@@ -334,7 +326,7 @@ export const action = async ({ request }) => {
             drawIds: JSON.parse(data?.drawIds),
             billing_policy: JSON.parse(data?.billing_policy),
         }
-        res = await sendWinnerEmail(data)
+        // res = await sendWinnerEmail(data)
     }
     else {
         data = {

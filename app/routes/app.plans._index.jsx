@@ -75,7 +75,7 @@ export default function PlanData() {
     <Text> {plans?.length} subscription option</Text>,
     <InlineStack as="span">
       <span onClick={() => {
-        setContentSkel(true)
+        setContentSkel(true),
         navigate(`/app/plans/${_id}`);
       }} >
         <Icon source={EditIcon} />
@@ -136,16 +136,23 @@ export default function PlanData() {
       setSkip(0)
     }
   };
+
+  const handleCreate = () => {
+    setContentSkel(true),
+    navigate("/app/plans/create");
+  }
   return (
     <>
       {tableSkel ?
         <TableSkeleton /> :
         contentSkel ? <ContentSkeleton /> :
-          <Page title="Plans" primaryAction={<Button variant="primary" onClick={() => {
-            navigate("/app/plans/create")
-            setContentSkel(true)
-          }
-          }>Create new</Button>}>
+          // <Page title="Plans" primaryAction={<Button variant="primary" onClick={() => {
+          //   // setContentSkel(true),
+          //   console.log("clicked===>>>")
+          //   // navigate("/app/plans/create")
+          //   navigate("/app/plans/create")
+          // }
+          <Page title="Plans" primaryAction={{content : 'Create new', onAction : handleCreate}}>
 
             <Card>
               {tableData.length > 0 ? (

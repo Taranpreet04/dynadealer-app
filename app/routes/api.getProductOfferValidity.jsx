@@ -47,11 +47,6 @@ export const action = async ({ request }) => {
                     })
                 })
             }) 
-
-
-
-
-            
             return new Response(JSON.stringify({ message: "success", data:result}), {
                 status: 200,
                 headers

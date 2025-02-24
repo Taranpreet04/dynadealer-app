@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://disable-ladder-submitting-filter.trycloudflare.com";
+    let serverPath = "https://grams-message-potentially-san.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let totalPages = 0
     let currentPage = 1
     let canCancelSubscription = false;
+    let activeDraws = []
     let mainDIv = document.getElementById('subscription-main-body')
     let contentDiv = document.createElement('div');
     contentDiv.id = 'main-content'
@@ -36,16 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
             AUD: "A$", // Australian Dollar
             CAD: "C$", // Canadian Dollar
         };
-        // if(currencyCode){
         return currencySymbols[currencyCode?.toUpperCase() || "USD"] || `Symbol not found for ${currencyCode}`;
-        // }else{
-        //     return currencySymbols[Shopify?.currrency?.active] || `Symbol not found for ${currencyCode}`;
-        // }
+        
 
     }
 
     let currencySymbol = getCurrencySymbol(Shopify?.currrency?.active || 'USD')
-    console.log(getCurrencySymbol(Shopify?.currrency?.active));
     let tableStructure = `<table>
         <thead class='sub-table-head'>
             <tr>
@@ -68,8 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h3 id='cancelModalHead'>Cancel Subscription Plan</h3>
                     <div id='cancelModalBody'>
                         <p>Are you sure you want to cancel this plan?</p>
-                    <div>
-                    </div id='cancelModalfooter'>
+                    </div>
+                    <div id='cancelModalfooter'>
                         <button class="yesBtn btn" id="yesBtn">YES</button>
                         <button class="closeBtn btn" id="closeBtn">NO</button>
                     </div>
@@ -79,9 +76,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h3 id='cancelModalHead'>Alert!</h3>
                     <div id='cancelModalBody'>
                         <p>Sorry, you are not able to cancel subscription as your minimum subscription cycles are not completed.</p>
-                    <div>
-                    </div id='cancelModalfooter'>
+                    </div>
+                    <div id='cancelModalfooter'>
                         <button class="yesBtn btn" id="okBtn">Ok</button>
+                    </div>
+                </div>`
+    let modalContentToApplyTickets = `<div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3 id='cancelModalHead'>Apply Confirmation</h3>
+                    <div id='cancelModalBody'>
+                        <p> Are you sure you want to apply for this draw?
+                        Once you apply, you won’t be able to change it.</p>
+                    </div>
+                   <div id='cancelModalfooter'>
+                        <button class="yesBtn btn" id="yesBtn">Apply</button>
+                        <button class="closeBtn btn" id="closeBtn">Cancel</button>
                     </div>
                 </div>`
     const loaderStart = () => {
@@ -101,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        // body: JSON.stringify({ cid: 22313014296870 }),
                         body: JSON.stringify({ cid: customerId }),
                     }
                 );
@@ -228,19 +236,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(selectedSubscription?.contractId),
+                    body: JSON.stringify({ id: selectedSubscription?.contractId, shop: selectedSubscription?.shop }),
                 }
             );
 
             const result = await response.json();
             if (result.message == "success") {
-                console.log("result?.details==", result?.details)
                 contractDetailDb = result?.details
+                activeDraws = result?.activeDraws
                 if (contractDetailDb?.length >= selectedSubscription?.billing_policy?.min_cycles) {
                     canCancelSubscription = true;
                 } else {
                     canCancelSubscription = false;
                 }
+
             }
         } catch (error) {
             loaderStop();
@@ -263,11 +272,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (result.message == "success") {
-                console.log("result?.details==", result?.details)
                 let applyBtn = document.getElementById(`${item?._id}`)
-                console.log("applyBtn== check id", applyBtn)
+                let appliedFor = document.getElementById(`appliedFor-${item?._id}`)
                 applyBtn.disabled = true
                 applyBtn.innerText = 'Applied'
+                appliedFor.innerText = result?.details?.appliedFor?.productName
                 showToast("Successfully applied for the current giveaway.")
                 // contractDetailDb= result?.details
                 // if (contractDetailDb?.length >= selectedSubscription?.billing_policy?.min_cycles) {
@@ -285,7 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateRows = () => {
         let tbody = document.getElementById("sub-row")
         tbody.innerHTML = ''
-        console.log("tableData=", tableData)
         tableData?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = item?.contractId
@@ -351,6 +359,51 @@ document.addEventListener("DOMContentLoaded", () => {
             updateTableData()
         }
     }
+    const resetModalContent = () => {
+        let footer = document.getElementById("contract-footer")
+        // footer.innerHTML=''
+        let modal = document.getElementById("myModal")
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = "myModal";
+            modal.className = "modal"
+        }
+        if (canCancelSubscription) {
+            modal.innerHTML = modalContentToCancel
+        } else {
+            modal.innerHTML = modalContentToAlert
+        }
+        footer ?
+            footer.appendChild(modal) : ''
+
+        var span = document.getElementsByClassName("close")[0];
+        if (span) {
+            span.onclick = function () {
+                modal.style.display = "none";
+            }
+        }
+
+        let yesBtn = document.getElementById("yesBtn")
+        let closeBtn = document.getElementById("closeBtn")
+        let okBtn = document.getElementById("okBtn")
+
+        if (okBtn) {
+            okBtn.onclick = function () {
+                modal.style.display = "none";
+            }
+        }
+        if (closeBtn) {
+            closeBtn.onclick = function () {
+                modal.style.display = "none";
+            }
+        }
+        if (yesBtn) {
+            yesBtn.onclick = function () {
+                modal.style.display = "none";
+                cancelStatus()
+            }
+        }
+    }
     const generateProductRows = () => {
         let tbody = document.getElementById("product-row")
         let products = contractDetailShopify?.lines?.edges
@@ -381,70 +434,41 @@ document.addEventListener("DOMContentLoaded", () => {
             productCell.appendChild(p)
         })
 
-        let footer = document.getElementById("contract-footer")
+        // let footer = document.getElementById("contract-footer")
         let status = contractDetailShopify?.status?.toLowerCase()
+        let btn = document.getElementById("cancelBtn")
+        btn.style.display = "block";
+        resetModalContent()
         if (status == "active") {
-            let btnDiv = document.createElement('div');
-            btnDiv.id = "cancelBtnDiv";
-            let btn = document.createElement('button');
-            btn.innerText = "cancel"
-            btn.id = "cancelBtn"
-            btn.className = "btn"
-            btnDiv.appendChild(btn)
-            footer.appendChild(btnDiv)
-
-
-            let modal = document.createElement('div');
-            modal.id = "myModal";
-            modal.className = "modal"
-            if (canCancelSubscription) {
-
-                modal.innerHTML = modalContentToCancel
-            } else {
-                modal.innerHTML = modalContentToAlert
-            }
-
-            footer.appendChild(modal)
-
-            var span = document.getElementsByClassName("close")[0];
-
+            // let btnDiv = document.createElement('div');
+            // btnDiv.id = "cancelBtnDiv";
+            // let btn = document.createElement('button');
+            // btn.innerText = "cancel"
+            // btn.id = "cancelBtn"
+            // btn.className = "btn"
+            // btnDiv.appendChild(btn)
+            // footer.appendChild(btnDiv)
+          
+            let modal = document.getElementById('myModal')
             btn.onclick = function () {
                 modal.style.display = "block";
             }
-
-            span.onclick = function () {
-                modal.style.display = "none";
-            }
-
-            let yesBtn = document.getElementById("yesBtn")
-            let closeBtn = document.getElementById("closeBtn")
-            let okBtn = document.getElementById("okBtn")
-
-            if (okBtn) {
-                okBtn.onclick = function () {
-                    modal.style.display = "none";
-                }
-            }
-            if (closeBtn) {
-                closeBtn.onclick = function () {
-                    modal.style.display = "none";
-                }
-            }
-            if (yesBtn) {
-                yesBtn.onclick = function () {
-                    modal.style.display = "none";
-                    cancelStatus()
-                }
-            }
         } else {
-            footer.remove()
+            btn.innerText = 'Canclled'
+            btn.disabled = true;
+            // footer.remove()
         }
     }
     const generateTicketsrow = () => {
         let tbody = document.getElementById("ticket-listing-row")
         // let products = contractDetailShopify?.lines?.edges
         contractDetailDb?.map((item, index) => {
-            console.log("item=", item)
+            !(item?.applied) ?
+                item.appliedFor = {
+                    productName: activeDraws[0]?.title,
+                    productId: activeDraws[0]?.id
+                }
+                : ''
             let tr = document.createElement('tr');
             tr.id = index
             tbody.appendChild(tr)
@@ -452,27 +476,116 @@ document.addEventListener("DOMContentLoaded", () => {
             ticketIdsCell.id = "ticketIds"
             ticketIdsCell.colSpan = 2;
             let content = item?.drawIds.join(', ')
-            console.log("content=", content)
             ticketIdsCell.innerText = content
+            let selectCell = document.createElement('td');
+            selectCell.id = `appliedFor-${item?._id}`
+            item?.applied ? selectCell.innerText = item?.appliedFor?.productName :
+                selectCell.innerHTML = ` <select id='drawsList${index}' name="drawsList" class='drawsList'>
+                         </select>`
             let dateCell = document.createElement('td');
             dateCell.innerText = formatISOToDate(item?.createdAt)
             let applyBtnCell = document.createElement('td');
             applyBtnCell.innerHTML = `<button class='applyBtn btn' id='${item?._id}' ${item?.applied ? 'disabled' : ''}>Apply Now</button>`;
             tbody.appendChild(tr)
             tr.appendChild(ticketIdsCell)
+            tr.appendChild(selectCell)
             tr.appendChild(dateCell)
             tr.appendChild(applyBtnCell)
             let applyBtn = applyBtnCell.getElementsByClassName('applyBtn')[0]
-            console.log("applyBtn==", applyBtn)
             item?.applied ? applyBtn.innerText = 'Applied' : applyBtn.innerText = 'Apply Now'
             applyBtn.onclick = function () {
-                // modal.style.display = "block";
-                // alert(item?._id)
-                console.log("item clicked==", item)
-                applyTickets(item)
+                let modal = document.getElementById("myModal")
+                console.log("modal=", modal)
+                if (modal) {
+                    modal.innerHTML = modalContentToApplyTickets
+                    var span = modal.getElementsByClassName("close")[0];
+                    if(span){
+                        span.onclick = function () {
+                            modal.style.display = "none";
+                        }
+                    }
+    
+                    let yesBtn = document.getElementById("yesBtn")
+                    let closeBtn = document.getElementById("closeBtn")
+                    let okBtn = document.getElementById("okBtn")
+    
+                    if (okBtn) {
+                        okBtn.onclick = function () {
+                            modal.style.display = "none";
+                        }
+                    }
+                    if (closeBtn) {
+                        closeBtn.onclick = function () {
+                            modal.style.display = "none";
+                        }
+                    }
+                    if (yesBtn) {
+                        yesBtn.onclick = function () {
+                            modal.style.display = "none";
+                            applyTickets(item)
+                            resetModalContent()
+                        }
+                    }
+                    let body = document.getElementById('cancelModalBody')
+                    if (body) {
+                        body.innerHTML = `<p>Are you sure you want to apply for <span class="red-bold">${item?.appliedFor?.productName}</span> draw?
+                        Once you apply, you won’t be able to change it.</p>`
+                    }
+                    modal.style.display = "block";
+                }
+            }
+
+
+            let selectElement = document.getElementById(`drawsList${index}`)
+            if (selectElement) {
+                activeDraws.map(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.title;
+                    opt.id = option.id;
+                    opt.textContent = option.title;
+                    opt.className = 'draw-option';
+                    selectElement.appendChild(opt);
+                })
+                selectElement.addEventListener("change", (e) => {
+                    let data = activeDraws.filter(itm => itm?.title == e.target.value)
+                    contractDetailDb.map((itm, index) => {
+                        if (itm?._id == item?._id) {
+                            itm.appliedFor = {
+                                productName: data[0]?.title,
+                                productId: data[0]?.id
+                            }
+                        }
+                    })
+                });
             }
         })
 
+    }
+
+
+    const generateActiveDraws = () => {
+        let mainDiv = document.getElementById('main-active-draws')
+        let h3 = document.createElement('h3')
+        h3.innerText = `We have ${activeDraws?.length} active draws. You can apply now.`
+        mainDiv.appendChild(h3)
+        let parentCard = document.createElement('div')
+        mainDiv.appendChild(parentCard)
+        parentCard.className = 'draw-cards'
+        activeDraws?.map((product) => {
+            let card = document.createElement('div')
+            parentCard.appendChild(card)
+            card.className = 'active-draw-card'
+            card.id = 'active-draw-card'
+            let p = document.createElement('p')
+            p.innerText = `Active ${product?.title} draw.`
+            let p2 = document.createElement('p')
+            p2.innerText = `Limited Spots ${product?.totalInventory}`
+            let p3 = document.createElement('p')
+            p3.innerText = `Don't miss your chance.`
+            card.appendChild(p)
+            card.appendChild(p2)
+            card.appendChild(p3)
+        })
     }
 
     const showListData = () => {
@@ -535,6 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p>Hi ${capitalize(contractDetailShopify?.customer?.firstName)}</p>
             </div>
             <div id="contractId">
+                <button class='btn' id="cancelBtn">Cancel</button>
                 <button class='btn' id="backBtn"> Back To List</button>
             </div>
         </div>
@@ -557,12 +671,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 </tbody>
             </table>
+            <div class='main-active-draws' id='main-active-draws'>
+
+            </div>
             <div class='ticketIds-listing'>
 
             <table>
                 <thead class='ticket-listing-table-head'>
                     <tr>
                         <td colspan="2">Your Ticket ids</td>
+                        <td >Apply For</td>
                         <td >Created Date</td>
                         <td ></td>
                     </tr>
@@ -572,10 +690,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tbody>
             </table>
             </div>
-            <div id="contract-footer">
+           
+        </div>
+         <div id="contract-footer">
                
-            </div>
-        </div>`
+            </div>`
             let backBtn = document.getElementById("backBtn")
 
             backBtn.onclick = () => main();
@@ -584,6 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 pTag.style.display = 'none'
             }
             generateProductRows()
+            generateActiveDraws()
             generateTicketsrow()
         }
 

@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { useActionData, useLoaderData, useSubmit, useNavigate, useParams } from "@remix-run/react";
+import { useActionData, useLoaderData, useSubmit, useParams, useNavigate } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { checkProductSubscription, createPlan, getPlanById, updatePlanById } from "../controllers/planController";
 import { authenticate } from "../shopify.server";
@@ -13,15 +13,17 @@ import DateRangePicker from "../components/datePicking";
 export const links = () => [
     { rel: "stylesheet", href: planStyles }
 ];
+
 export const loader = async ({ params, request }) => {
-    const { admin } = await authenticate.admin(request);
+    const { admin, session } = await authenticate.admin(request);
+
+    console.log(params, "session in plan id====>", session)
     if (params?.id == "create") {
         return null;
     } else {
         const data = await getPlanById(admin, params?.id);
         return json(data?.response);
     }
-
 };
 
 
@@ -69,10 +71,10 @@ console.log(newPlanDetails)
 
 
 export default function CreateUpdatePlan() {
+    const navigate = useNavigate();
     const loaderData = useLoaderData();
     const submit = useSubmit();
     const actionData = useActionData()
-    const navigate = useNavigate();
     let { id } = useParams()
     const [sellingPlanModal, setSellingPlanModal] = useState(false)
     const [deleteSellingPlan, setDeleteSellingPlan] = useState('')
@@ -245,7 +247,7 @@ export default function CreateUpdatePlan() {
                 shopify.toast.show("Plan successfully updated.", { duration: 5000 });
             setBtnLoader(false)
             setTableSkel(true)
-            navigate('../plans')
+            navigate('/app/plans')
         } else if (actionData?.success == false) {
             shopify.toast.show(`${actionData?.error}`, { duration: 5000 })
             shopify.loading(false)
@@ -293,21 +295,16 @@ export default function CreateUpdatePlan() {
             setMinCycleErr(false)
         }
 
-        // if (name == "entries") {
-        //     planName = newPlan?.name?.split('-entries-')[0] + '-entries-' + val
-        // }
         if (val == 'day') {
             setNewPlan({
                 ...newPlan,
                 [name]: name === 'price' ? (val ? parseFloat(val) : '') : val,
                 mincycle: 1,
-                // name: name === 'entries' ? planName : newPlan?.name
             })
         } else {
             setNewPlan({
                 ...newPlan,
                 [name]: name === 'price' ? (val ? parseFloat(val) : '') : val,
-                // name: name === 'entries' ? planName : newPlan?.name
             })
         }
     }
@@ -404,17 +401,27 @@ export default function CreateUpdatePlan() {
             }
         }
     }
+
+    const handleBack = () => {
+        console.log("clicked back btn")
+         shopify.loading(true)
+         setTableSkel(true);
+        navigate("/app/plans")
+    }
     return (
         <>
             {tableSkel ? <TableSkeleton /> :
                 contentSkel ? <ContentSkeleton /> :
                     <Page
-                        backAction={{
-                            content: '', url: '../plans', onAction: () => {
-                                shopify.loading(true)
-                                setTableSkel(true)
-                            }
-                        }}
+                        // backAction={{
+                        //     content: '', onAction: () => {
+                        //         shopify.loading(true)
+                        //         setTableSkel(true);
+                        //         console.log("clicked back btn")
+                        //         navigate("/app/plans")
+                        //     }
+                        // }}
+                        backAction={{content : "", onAction : handleBack}}
                         title={id == "create" ? "Create subscription plan" : "Update subscription plan"}
                         primaryAction={<Button loading={btnLoader} onClick={handleSavePlan}>{(id == "create") ? "Save plan" : "Update plan"}</Button>}
                     >

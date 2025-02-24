@@ -97,7 +97,7 @@ console.log("data==", data[i])
                         customerName: data[i]?.customerName,
                         drawIds: drawIds,
                         entries: entries || 1,
-                        applied: false
+                        applied: false,
                     });
                     const originalDate = new Date(currentDate);
                     let nextDate;

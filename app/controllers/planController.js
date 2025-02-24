@@ -1,5 +1,6 @@
 import { billingModel, planDetailsModel, raffleProductsModel, subscriptionContractModel, templateModel } from '../schema'
 import fs from "fs";
+// import { raffleAnnouncementMail } from './mail';
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
     try {
@@ -898,10 +899,27 @@ const toIST = (dateString) => {
     return new Date(date.getTime() + offsetInMinutes * 60 * 1000);
 };
 
-export const checkMincycleComplete = async (contractId) => {
+export const checkMincycleComplete = async (detail) => {
     try {
-        let data = await billingModel.find({ contractId: contractId, status: "done" })
-        return { message: "success", data }
+        console.log("data==", detail)
+        let data = await billingModel.find({ contractId: detail?.id, status: "done" })
+        let activeDraws = await raffleProductsModel.aggregate([
+            { $match: { shop: detail?.shop } },
+            {
+              $project: {
+                _id: 0,
+                products: {
+                  $filter: {
+                    input: "$products",
+                    as: "product",
+                    cond: { $eq: ["$$product.status", true] }
+                  }
+                }
+              }
+            }
+          ]);
+        //   console.log("activeDraws==", activeDraws)
+        return { message: "success", data , activeDraws: activeDraws[0]?.products}
     } catch (error) {
         console.error("Error processing POST request:", error);
         return { message: "Error processing request", status: 500 };
@@ -1336,6 +1354,46 @@ export const getRaffleProducts=async (admin)=>{
         return { message: "Error processing request", status: 500 };
   }
 }
+export const sendMailToAll=async (admin, data)=>{
+  try{
+    const { shop } = admin.rest.session;
+    console.log("shop==", shop, data)
+    const contractData = await subscriptionContractModel.find(
+        { shop },{contractId: 1, orderId: 1, customerId: 1, customerEmail: 1}
+    );
+    console.log("data===", contractData)
+  
+    //     if (!acc.some(item => item.customerId === order.customerId)) {
+    //       acc.push(order);
+    //     }
+    //     return acc;
+    //   }, []);
+      const uniqueEmails = [
+        ...new Set(contractData.map(order => order.customerEmail))
+      ];
+                                                                                                                                                                                                                                    
+      console.log(uniqueEmails);
+      const mailTo = uniqueEmails.join(", ");                 
+        console.log(mailTo); 
+        let detail= {...data, mailTo}
+        console.log("detail-", detail)
+        // await raffleAnnouncementMail(detail)
+    return { message: "success" }
+  }catch(error){
+    console.error("Error processing POST request:", error);
+        return { message: "Error processing request", status: 500 };
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

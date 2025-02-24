@@ -18,12 +18,12 @@ export const action = async ({ request }) => {
     try {
         let details = await checkMincycleComplete(data)
         if (details?.message == "success") {
-            return new Response(JSON.stringify({ message: "success", details: details?.data }), {
+            return new Response(JSON.stringify({ message: "success", details: details?.data, activeDraws: details?.activeDraws}), {
                 status: 200,
                 headers
             });
         } else {
-            return new Response(JSON.stringify({ message: "failed", details: details.data }), {
+            return new Response(JSON.stringify({ message: "failed", details: details.data , activeDraws: details?.activeDraws}), {
                 status: 200,
                 headers
             });

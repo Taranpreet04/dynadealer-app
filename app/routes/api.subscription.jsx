@@ -1,10 +1,5 @@
 
 //APp--proxy
-const headers = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-}
 export const loader = async ({ request }) => {
   try {
     
@@ -31,17 +26,15 @@ export const loader = async ({ request }) => {
       </html>`;
 
     const response = new Response(liquidContent, {
-      headers
+      headers: {
+        "Content-Type": "application/liquid",
+      },
     });
 
     return response;
 
   } catch (error) {
     console.error("Error in loader:", error);
-    // return new Response("Internal Server Error", { status: 500 });
-    return json({ message: "Internal Server Error" }, {
-      status: 500,
-      headers,
-  });
+    return new Response("Internal Server Error", { status: 500 });
   }
 };

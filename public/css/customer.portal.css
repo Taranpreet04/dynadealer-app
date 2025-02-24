@@ -118,6 +118,32 @@ button:disabled{
   color : black;
 }
 
+.draw-cards{
+  display: grid;
+   grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.active-draw-card{
+  /* width: 100%; */
+  background-color: #f22600;
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px;
+}
+.main-active-draws h3{
+  margin-bottom: .7rem;
+}
+.active-draw-card p{
+  line-height: 1.5;
+}
+.red-bold{
+  color: #f22600;
+  font-weight: 500;
+}
+#cancelBtn{
+  display: none;
+}
+
 
 
 

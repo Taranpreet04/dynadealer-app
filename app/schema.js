@@ -86,6 +86,7 @@ const billingSchema = new mongoose.Schema({
   drawIds: Object,
   status: String,
   applied: Boolean,
+  appliedFor: Object,
   billing_attempt_date: Date,
   renewal_date: Date,
   billing_attempt_id: String,
