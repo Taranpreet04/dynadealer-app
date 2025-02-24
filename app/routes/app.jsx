@@ -5,7 +5,12 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "../shopify.server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import enTranslations from '@shopify/polaris/locales/en.json';
-export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
+import knobStyle from '../components/knob.css?url';
+
+export const links = () => [
+  { rel: "stylesheet", href: polarisStyles },
+  { rel: "stylesheet", href: knobStyle }
+];
 
 
 export const loader = async ({ request }) => {
