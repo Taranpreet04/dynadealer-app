@@ -32,7 +32,7 @@ const shopify = shopifyApp({
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.October24,
   scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
+  appUrl: process.env.SHOPIFY_APP_URL || "https://dynadealersapp.com",
   authPathPrefix: "/auth",
   sessionStorage: new MongoDBSessionStorage("mongodb://localhost:27017/subscription"),
   distribution: AppDistribution.AppStore,
