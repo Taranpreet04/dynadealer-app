@@ -1,10 +1,13 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "07e3473dc2dcdd369e270027501fc1ee"
+application_url = "https://publications-hungarian-supporting-appearance.trycloudflare.com"
+embedded = true
 name = "Dynadealer Raffle app"
 handle = "dynadealer-raffle-app"
-application_url = "https://bool-variable-greensboro-electrical.trycloudflare.com"
-embedded = true
+
+[webhooks]
+api_version = "2024-10"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -12,16 +15,13 @@ scopes = "read_customers,read_orders,read_products,write_own_subscription_contra
 
 [auth]
 redirect_urls = [
-  "https://bool-variable-greensboro-electrical.trycloudflare.com/auth/callback",
-  "https://bool-variable-greensboro-electrical.trycloudflare.com/auth/shopify/callback",
-  "https://bool-variable-greensboro-electrical.trycloudflare.com/api/auth/callback"
+  "https://publications-hungarian-supporting-appearance.trycloudflare.com/auth/callback",
+  "https://publications-hungarian-supporting-appearance.trycloudflare.com/auth/shopify/callback",
+  "https://publications-hungarian-supporting-appearance.trycloudflare.com/api/auth/callback"
 ]
 
-[webhooks]
-api_version = "2024-10"
-
 [app_proxy]
-url = "https://bool-variable-greensboro-electrical.trycloudflare.com/api/subscription"
+url = "https://treated-virtue-nothing-broadcasting.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
@@ -29,6 +29,4 @@ prefix = "apps"
 embedded = false
 
 [build]
-dev_store_url = "dynadealer-test.myshopify.com"
-automatically_update_urls_on_dev = true
-include_config_on_deploy = true
+automatically_update_urls_on_dev = false
