@@ -1,3 +1,9 @@
+import styles from './knob.css?url';
+
+export const links = () => [
+  { rel: "stylesheet", href: styles }
+];
+
 export const Knob = ({ ariaLabel, selected, onClick }) => {
   return (
     <button

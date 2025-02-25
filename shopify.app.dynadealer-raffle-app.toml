@@ -3,7 +3,7 @@
 client_id = "07e3473dc2dcdd369e270027501fc1ee"
 name = "Dynadealer Raffle app"
 handle = "dynadealer-raffle-app"
-application_url = "https://bool-variable-greensboro-electrical.trycloudflare.com"
+application_url = "https://dynadealersapp.com"
 embedded = true
 
 [access_scopes]
@@ -12,16 +12,16 @@ scopes = "read_customers,read_orders,read_products,write_own_subscription_contra
 
 [auth]
 redirect_urls = [
-  "https://bool-variable-greensboro-electrical.trycloudflare.com/auth/callback",
-  "https://bool-variable-greensboro-electrical.trycloudflare.com/auth/shopify/callback",
-  "https://bool-variable-greensboro-electrical.trycloudflare.com/api/auth/callback"
+  "https://dynadealersapp.com/auth/callback",
+  "https://dynadealersapp.com/auth/shopify/callback",
+  "https://dynadealersapp.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2024-10"
 
 [app_proxy]
-url = "https://bool-variable-greensboro-electrical.trycloudflare.com/api/subscription"
+url = "https://dynadealersapp.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
@@ -29,6 +29,6 @@ prefix = "apps"
 embedded = false
 
 [build]
-dev_store_url = "dynadealer-test.myshopify.com"
-automatically_update_urls_on_dev = true
+dev_store_url = "dynadealer.myshopify.com"
+automatically_update_urls_on_dev = false
 include_config_on_deploy = true

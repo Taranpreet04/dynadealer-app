@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://grams-message-potentially-san.trycloudflare.com";
+    let serverPath = "https://salon-models-instructions-owen.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
