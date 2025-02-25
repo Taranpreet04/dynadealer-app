@@ -1,15 +1,21 @@
+// import styles from './knob.module.css';
+
+// export const links = () => [
+//   { rel: "stylesheet", href: styles }
+// ];
+
 export const Knob = ({ ariaLabel, selected, onClick }) => {
   return (
     <button
       id=':rgi:'
-      className={`${styles.track} ${selected && styles.track_on}`}
+      className={`track ${selected && 'track_on'}`}
       aria-label={ariaLabel}
       role='switch'
       type='button'
       aria-checked='false'
       onClick={onClick}
     >
-      <div className={`${styles.knob} ${selected && styles.knob_on}`}></div>
+      <div className={`knob ${selected && 'knob_on'}`}></div>
     </button>
   );
 };

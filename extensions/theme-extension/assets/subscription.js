@@ -1,6 +1,6 @@
 console.log("js--__________=")
 
-let serverPath = "https://grams-message-potentially-san.trycloudflare.com";
+let serverPath = "https://salon-models-instructions-owen.trycloudflare.com";
 let allProductId = []
 let allOffers = []
 let activeCurrency = Shopify?.currency?.active;

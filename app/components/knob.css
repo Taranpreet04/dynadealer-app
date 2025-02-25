@@ -1,4 +1,6 @@
-.track {
+
+ 
+ .track {
     height: var(--track-height);
     width: 2rem;
     background: var(--p-color-icon-secondary);
