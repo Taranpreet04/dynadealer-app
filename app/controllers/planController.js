@@ -1,124 +1,144 @@
-import { billingModel, planDetailsModel, raffleProductsModel, subscriptionContractModel, templateModel } from '../schema'
+import {
+  billingModel,
+  planDetailsModel,
+  raffleProductsModel,
+  subscriptionContractModel,
+  templateModel,
+} from "../schema";
 import fs from "fs";
 // import { raffleAnnouncementMail } from './mail';
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
-    try {
-        console.log(newPlanDetails?.shop,newPlanDetails?.products);
-        const check = await planDetailsModel.find({
-            shop: newPlanDetails?.shop,
-            products: { $in: newPlanDetails?.products },
-        });
-        console.log("check=", check)
-        let idMatch = 0
-        let notMatch = 0
-        if (check && id != "create") {
-
-            check.map((itm) => {
-                if (itm._id.toString() === id.toString()) {
-                    idMatch = idMatch + 1
-                } else {
-                    notMatch = notMatch + 1
-                }
-            })
-            if (notMatch > 0) {
-                return true;
-            } else if (idMatch == 1) {
-                return false;
-            }
-        }
-        return false;
-    } catch (err) {
-        console.error("Error checking product subscription:", err);
-        throw err;
+  try {
+    // console.log(newPlanDetails?.shop, newPlanDetails?.products, id);
+    let check;
+    // const check = await planDetailsModel.find({
+    //   shop: newPlanDetails?.shop,
+    //   products: { $in: newPlanDetails?.products },
+    // });
+    // console.log("check===", check);
+    if (id == "create") {
+      check = await planDetailsModel.find({
+        shop: newPlanDetails?.shop,
+        products: {
+          $elemMatch: {
+            product_id: {
+              $in: newPlanDetails?.products.map((p) => p.product_id),
+            }, // Check if any product_id exists in products array
+          },
+        },
+      });
+    } else {
+      check = await planDetailsModel.find({
+        shop: newPlanDetails?.shop,
+        _id: { $ne: id },
+        products: {
+          $elemMatch: {
+            product_id: {
+              $in: newPlanDetails?.products.map((p) => p.product_id),
+            }, // Check if any product_id exists in products array
+          },
+        },
+      });
     }
-}
+
+    console.log("check===", check);
+
+    return check?.length > 0 ? true : false;
+  } catch (err) {
+    console.error("Error checking product subscription:", err);
+    throw err;
+  }
+};
 export const createPlan = async (admin, newPlanDetail) => {
-    const { shop } = admin.rest.session;
-    const newPlanDetails = {
-        ...newPlanDetail,
-        shop: shop
+  const { shop } = admin.rest.session;
+  const newPlanDetails = {
+    ...newPlanDetail,
+    shop: shop,
+  };
+
+  try {
+    const date = newPlanDetails?.offerValidity;
+    const startIST = toIST(date.start);
+    let endIST = toIST(date.end);
+    endIST.setHours(23, 59, 59, 999);
+    endIST = toIST(endIST);
+
+    let dateRange = {
+      start: startIST,
+      end: endIST,
     };
 
+    let storefrontDescription = {
+      dateRange: dateRange,
+      raffleType: newPlanDetail?.raffleType,
+      spotsPerPerson: newPlanDetail?.spots,
+    };
 
-    try {
-        const date = newPlanDetails?.offerValidity
-        const startIST = toIST(date.start);
-        let endIST = toIST(date.end);
-        endIST.setHours(23, 59, 59, 999);
-        endIST = toIST(endIST);
+    let allOptions = [];
+    newPlanDetails?.plans?.map((item) => {
+      let unique =
+        Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+      allOptions?.push(item?.name);
+    });
+    const topOptions = allOptions.join(",");
 
-        let dateRange = {
-            start: startIST,
-            end: endIST,
-        };
-
-        let allOptions = [];
-        newPlanDetails?.plans?.map((item) => {
-            let unique =
-                Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-            allOptions?.push(
-                item?.name
-            );
+    let sellPlan = [];
+    newPlanDetails?.plans?.map((item) => {
+      let pricingPolicy = [];
+      if (item?.price) {
+        pricingPolicy.push({
+          fixed: {
+            adjustmentType: "PRICE",
+            adjustmentValue: {
+              fixedValue: parseFloat(item?.price),
+            },
+          },
         });
-        const topOptions = allOptions.join(",");
+      }
 
-        let sellPlan = []
-        newPlanDetails?.plans?.map((item) => {
-            let pricingPolicy = []
-            if (item?.price) {
-                pricingPolicy.push({
-                    fixed: {
-                        adjustmentType: "PRICE",
-                        adjustmentValue: {
-                            fixedValue: parseFloat(item?.price),
-                        },
-                    },
-                });
-            }
+      let additionData = JSON.stringify({
+        ...storefrontDescription,
+        entries: item.entries,
+      });
+      sellPlan.push({
+        name: item.name,
+        options: item.purchaseType + " " + item.mincycle + " " + item.name,
+        position: 1,
+        description: additionData,
+        category: "SUBSCRIPTION",
+        inventoryPolicy: {
+          reserve: "ON_FULFILLMENT",
+        },
+        billingPolicy: {
+          recurring: {
+            interval: item?.purchaseType?.toUpperCase(),
+            intervalCount: 1,
+            minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
+          },
+        },
+        deliveryPolicy: {
+          recurring: {
+            intent: "FULFILLMENT_BEGIN",
+            preAnchorBehavior: "ASAP",
+            interval: item?.purchaseType?.toUpperCase(),
+            intervalCount: 1,
+          },
+        },
+        pricingPolicies: pricingPolicy,
+      });
+    });
 
-            let additionData = JSON.stringify({
-                entries: item.entries,
-                exclusiveDraw: item.exclusiveDraw
-            })
-            sellPlan.push({
-                name: item.name,
-                options: item.purchaseType + " " + item.mincycle + " " + item.name,
-                position: 1,
-                description: additionData,
-                category: "SUBSCRIPTION",
-                inventoryPolicy: {
-                    reserve: "ON_FULFILLMENT",
-                },
-                billingPolicy: {
-                    recurring: {
-                        interval: item?.purchaseType?.toUpperCase(),
-                        intervalCount: 1,
-                        minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
-                    },
-                },
-                deliveryPolicy: {
-                    recurring: {
-                        intent: "FULFILLMENT_BEGIN",
-                        preAnchorBehavior: "ASAP",
-                        interval: item?.purchaseType?.toUpperCase(),
-                        intervalCount: 1
-                    },
-                },
-                pricingPolicies: pricingPolicy,
-            });
-        })
+    const allVariants = newPlanDetails?.products?.reduce((acc, product) => {
+      return acc.concat(product.variants);
+    }, []);
+    let varientIds = [];
+    allVariants.map((item) => {
+      varientIds.push(item.id);
+    });
 
-        const allVariants = newPlanDetails?.products?.reduce((acc, product) => {
-            return acc.concat(product.variants);
-        }, []);
-        let varientIds = [];
-        allVariants.map((item) => {
-            varientIds.push(item.id);
-        });
-
-        const response = await admin.graphql(
-            `#graphql
+    const response = await admin.graphql(
+      `#graphql
                     mutation createSellingPlanGroup($input: SellingPlanGroupInput!, $resources: SellingPlanGroupResourceInput) {
                     sellingPlanGroupCreate(input: $input, resources: $resources) {
                     sellingPlanGroup {
@@ -138,74 +158,80 @@ export const createPlan = async (admin, newPlanDetail) => {
                 }
             }
         }`,
-            {
-                variables: {
-                    "input": {
-                        "appId": "SubscriptionApp2k24",
-                        "name": newPlanDetails?.name,
-                        "description": JSON.stringify(dateRange),
-                        "merchantCode": newPlanDetails?.name,
-                        "options": [topOptions],
-                        "sellingPlansToCreate": sellPlan
-                    },
-                    "resources": {
-                        "productVariantIds": varientIds
-                    }
-                },
-            },
-        );
+      {
+        variables: {
+          input: {
+            appId: "SubscriptionApp2k24",
+            name: newPlanDetails?.name,
+            description: JSON.stringify(storefrontDescription),
+            merchantCode: newPlanDetails?.name,
+            options: [topOptions],
+            sellingPlansToCreate: sellPlan,
+          },
+          resources: {
+            productVariantIds: varientIds,
+          },
+        },
+      },
+    );
 
-        const data = await response.json();
-        if (data?.data?.sellingPlanGroupCreate?.userErrors.length < 1) {
-            let planGroupId =
-                data?.data?.sellingPlanGroupCreate?.sellingPlanGroup?.id;
-            let planIds =
-                data?.data?.sellingPlanGroupCreate?.sellingPlanGroup?.sellingPlans
-                    .edges;
-            let plansWids = []
-            if (newPlanDetails?.plans && planIds) {
-                newPlanDetails.plans.map((plan) => {
-                    const matchedItem = planIds.find((item) => plan?.name === item?.node?.name);
-                    if (matchedItem) {
-                        plansWids.push({ ...plan, plan_id: matchedItem.node.id });
-                    } else {
-                        plansWids.push({ ...plan })
-                    }
-                });
-            }
-            let newData = { ...newPlanDetails, plans: plansWids, plan_group_id: planGroupId, offerValidity: dateRange }
-            const planDetails = await planDetailsModel.create(newData);
-            return { success: true, planDetails };
-        }
-    } catch (error) {
-        console.error("Error creating plan details:", error);
-        return { success: false, error: "Failed to create plan details." };
+    const data = await response.json();
+    if (data?.data?.sellingPlanGroupCreate?.userErrors.length < 1) {
+      let planGroupId =
+        data?.data?.sellingPlanGroupCreate?.sellingPlanGroup?.id;
+      let planIds =
+        data?.data?.sellingPlanGroupCreate?.sellingPlanGroup?.sellingPlans
+          .edges;
+      let plansWids = [];
+      if (newPlanDetails?.plans && planIds) {
+        newPlanDetails.plans.map((plan) => {
+          const matchedItem = planIds.find(
+            (item) => plan?.name === item?.node?.name,
+          );
+          if (matchedItem) {
+            plansWids.push({ ...plan, plan_id: matchedItem.node.id });
+          } else {
+            plansWids.push({ ...plan });
+          }
+        });
+      }
+      let newData = {
+        ...newPlanDetails,
+        plans: plansWids,
+        plan_group_id: planGroupId,
+        offerValidity: dateRange,
+      };
+      const planDetails = await planDetailsModel.create(newData);
+      return { success: true, planDetails };
     }
+  } catch (error) {
+    console.error("Error creating plan details:", error);
+    return { success: false, error: "Failed to create plan details." };
+  }
 };
 
 export const getAllPlans = async (admin) => {
-    try {
-        const { shop } = admin.rest.session;
-        const planDetails = await planDetailsModel.find({ shop });
-        return { success: true, planDetails };
-    } catch (error) {
-        console.error("Error getting plan details:", error);
-        return { success: false, error: "Failed to create plan details." };
-    }
-}
-
+  try {
+    const { shop } = admin.rest.session;
+    const planDetails = await planDetailsModel.find({ shop });
+    return { success: true, planDetails };
+  } catch (error) {
+    console.error("Error getting plan details:", error);
+    return { success: false, error: "Failed to create plan details." };
+  }
+};
 
 export const deletePlanById = async (admin, data) => {
-    try {
-        // console.log("data--", data)
-        const { shop } = admin.rest.session;
-        const deletingID = data?._id
+  try {
+    // console.log("data--", data)
+    const { shop } = admin.rest.session;
+    const deletingID = data?._id;
 
-        const planId = {
-            id: data?.plan_group_id,
-        };
-        const response = await admin.graphql(
-            `#graphql
+    const planId = {
+      id: data?.plan_group_id,
+    };
+    const response = await admin.graphql(
+      `#graphql
                     mutation sellingPlanGroupDelete($id: ID!) {
                     sellingPlanGroupDelete(id: $id) {
                         deletedSellingPlanGroupId
@@ -215,198 +241,210 @@ export const deletePlanById = async (admin, data) => {
                     }
                 }
             }`,
-            {
-                variables: planId,
-            },
-        );
+      {
+        variables: planId,
+      },
+    );
 
-        const result = await response.json();
-        // const dataString = typeof result === "string" ? result : JSON.stringify(result);
-        // fs.writeFile("checkkkk.txt", dataString, (err) => {
-        //     if (err) {
-        //         console.error("Error writing to file:", err);
-        //     } else {
-        //         console.log("Data written to file successfully!");
-        //     }
-        // });
-        let deletedPlanId = result?.data?.sellingPlanGroupDelete?.deletedSellingPlanGroupId
-        // console.log("bdeletedPlanId--", deletedPlanId)
-        if (deletedPlanId) {
-            const dbResult = await planDetailsModel.deleteOne({ _id: deletingID, shop: shop, plan_group_id: deletedPlanId });
-            console.log("dbResult==", dbResult)
-            if (dbResult) {
-                return { status: true, data: "Plan Deleted" };
-            } else {
-                return { status: false, data: "Error Deleting File" };
-            }
-        } else {
-            return { status: false, data: "Error Deleting File..." };
-        }
-    } catch (err) {
-        console.error(err);
-        return { status: false, data: "Something went wrong!!!" };
+    const result = await response.json();
+    // const dataString = typeof result === "string" ? result : JSON.stringify(result);
+    // fs.writeFile("checkkkk.txt", dataString, (err) => {
+    //     if (err) {
+    //         console.error("Error writing to file:", err);
+    //     } else {
+    //         console.log("Data written to file successfully!");
+    //     }
+    // });
+    let deletedPlanId =
+      result?.data?.sellingPlanGroupDelete?.deletedSellingPlanGroupId;
+    // console.log("bdeletedPlanId--", deletedPlanId)
+    if (deletedPlanId) {
+      const dbResult = await planDetailsModel.deleteOne({
+        _id: deletingID,
+        shop: shop,
+        plan_group_id: deletedPlanId,
+      });
+      console.log("dbResult==", dbResult);
+      if (dbResult) {
+        return { status: true, data: "Plan Deleted" };
+      } else {
+        return { status: false, data: "Error Deleting File" };
+      }
+    } else {
+      return { status: false, data: "Error Deleting File..." };
     }
-}
+  } catch (err) {
+    console.error(err);
+    return { status: false, data: "Something went wrong!!!" };
+  }
+};
 
 export const getPlanById = async (admin, id) => {
-    try {
-        const { shop } = admin.rest.session;
-        const planId = id
-        const data = await planDetailsModel.findOne({ _id: planId });
-        return (
-            data
-                ? {
-                    status: true,
-                    response: data,
-                }
-                : { status: false, response: "Error Fetching data" }
-        );
-    } catch (err) {
-        console.log(err, "err");
-        return { status: false, response: "Something Went wrong" };
-    }
-}
+  try {
+    const { shop } = admin.rest.session;
+    const planId = id;
+    const data = await planDetailsModel.findOne({ _id: planId });
+    return data
+      ? {
+          status: true,
+          response: data,
+        }
+      : { status: false, response: "Error Fetching data" };
+  } catch (err) {
+    console.log(err, "err");
+    return { status: false, response: "Something Went wrong" };
+  }
+};
 
 export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
-    try {
-        const { shop } = admin.rest.session;
-        let dbproductlist = data?.dbProducts
-        const date = newPlanDetails?.offerValidity
-        const startIST = toIST(date.start);
-        let endIST = toIST(date.end);
-        endIST.setHours(23, 59, 59, 999);
-        endIST = toIST(endIST);
+  console.log("newPlanDetails==", newPlanDetails);
+  console.log("ids==", ids);
+  console.log("data==", data);
+  try {
+    const { shop } = admin.rest.session;
+    let dbproductlist = data?.dbProducts;
+    const date = newPlanDetails?.offerValidity;
+    const startIST = toIST(date.start);
+    let endIST = toIST(date.end);
+    endIST.setHours(23, 59, 59, 999);
+    endIST = toIST(endIST);
 
-        let dateRange = {
-            start: startIST,
-            end: endIST,
-        };
-        const allVariants = newPlanDetails?.products.reduce((acc, product) => {
-            return acc.concat(product.variants);
-        }, []);
-        let varientIds = [];
-        allVariants.map((item) => {
-            varientIds.push(item.id);
+    let dateRange = {
+      start: startIST,
+      end: endIST,
+    };
+
+    let storefrontDescription = {
+      dateRange: dateRange,
+      raffleType: newPlanDetails?.raffleType,
+      spotsPerPerson: newPlanDetails?.spots,
+    };
+    const allVariants = newPlanDetails?.products.reduce((acc, product) => {
+      return acc.concat(product.variants);
+    }, []);
+    let varientIds = [];
+    allVariants.map((item) => {
+      varientIds.push(item.id);
+    });
+
+    const alldbvarients = dbproductlist.reduce((acc, product) => {
+      return acc.concat(product.variants);
+    }, []);
+    let dbvarientIds = [];
+    alldbvarients.map((item) => {
+      dbvarientIds.push(item.id);
+    });
+
+    const variantsToDelete = dbvarientIds.filter(
+      (x) => !varientIds?.includes(x),
+    );
+    const varientsToAdd = varientIds.filter((x) => !dbvarientIds?.includes(x));
+
+    let allOptions = [];
+    newPlanDetails?.plans?.map((item) => {
+      let unique =
+        Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+      allOptions?.push(item?.name);
+    });
+    const topOptions = allOptions.join(",");
+
+    let plansToCreate = [];
+    data?.newPlans?.map((item) => {
+      let pricingPolicy = [];
+      if (item?.price) {
+        pricingPolicy.push({
+          fixed: {
+            adjustmentType: "PRICE",
+            adjustmentValue: {
+              fixedValue: parseFloat(item?.price),
+            },
+          },
         });
+      }
+      let additionData = JSON.stringify({
+        ...storefrontDescription,
+        entries: item.entries,
+      });
+      plansToCreate?.push({
+        name: item.name,
+        options: item.purchaseType + " " + item.mincycle + " " + item.name,
+        position: 1,
+        description: additionData,
+        category: "SUBSCRIPTION",
+        inventoryPolicy: {
+          reserve: "ON_FULFILLMENT",
+        },
+        billingPolicy: {
+          recurring: {
+            interval: item?.purchaseType?.toUpperCase(),
+            intervalCount: 1,
+            minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
+          },
+        },
+        deliveryPolicy: {
+          recurring: {
+            intent: "FULFILLMENT_BEGIN",
+            preAnchorBehavior: "ASAP",
+            intervalCount: 1,
+            interval: item?.purchaseType?.toUpperCase(),
+          },
+        },
+        pricingPolicies: pricingPolicy,
+      });
+    });
 
-        const alldbvarients = dbproductlist.reduce((acc, product) => {
-            return acc.concat(product.variants);
-        }, []);
-        let dbvarientIds = [];
-        alldbvarients.map((item) => {
-            dbvarientIds.push(item.id);
+    let plansToUpdate = [];
+    data?.updatePlans?.map((item) => {
+      let pricingPolicy = [];
+      if (item?.price) {
+        pricingPolicy.push({
+          fixed: {
+            adjustmentType: "PRICE",
+            adjustmentValue: {
+              fixedValue: parseFloat(item?.price),
+            },
+          },
         });
+      }
 
-        const variantsToDelete = dbvarientIds.filter((x) => !varientIds?.includes(x));
-        const varientsToAdd = varientIds.filter((x) => !dbvarientIds?.includes(x));
-
-        let allOptions = [];
-        newPlanDetails?.plans?.map((item) => {
-            let unique =
-                Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-            allOptions?.push(
-                item?.name
-            );
-        });
-        const topOptions = allOptions.join(",");
-
-        let plansToCreate = []
-        data?.newPlans?.map((item) => {
-            let pricingPolicy = []
-            if (item?.price) {
-                pricingPolicy.push({
-                    fixed: {
-                        adjustmentType: "PRICE",
-                        adjustmentValue: {
-                            fixedValue: parseFloat(item?.price),
-                        },
-                    },
-                });
-            }
-            let additionData = JSON.stringify({
-                entries: item.entries,
-                exclusiveDraw: item.exclusiveDraw
-            })
-            plansToCreate?.push({
-                name: item.name,
-                options: item.purchaseType + " " + item.mincycle + " " + item.name,
-                position: 1,
-                description: additionData,
-                category: "SUBSCRIPTION",
-                inventoryPolicy: {
-                    reserve: "ON_FULFILLMENT",
-                },
-                billingPolicy: {
-                    recurring: {
-                        interval: item?.purchaseType?.toUpperCase(),
-                        intervalCount: 1,
-                        minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
-                    },
-                },
-                deliveryPolicy: {
-                    recurring: {
-                        intent: "FULFILLMENT_BEGIN",
-                        preAnchorBehavior: "ASAP",
-                        intervalCount: 1,
-                        interval: item?.purchaseType?.toUpperCase(),
-                    },
-                },
-                pricingPolicies: pricingPolicy,
-            })
-        })
-
-        let plansToUpdate = []
-        data?.updatePlans?.map((item) => {
-            let pricingPolicy = []
-            if (item?.price) {
-                pricingPolicy.push({
-                    fixed: {
-                        adjustmentType: "PRICE",
-                        adjustmentValue: {
-                            fixedValue: parseFloat(item?.price),
-                        },
-                    },
-                });
-            }
-
-            let additionData = JSON.stringify({
-                entries: item.entries,
-                exclusiveDraw: item.exclusiveDraw
-            })
-            plansToUpdate?.push({
-                id: item?.plan_id,
-                name: item.name,
-                options: item.purchaseType + " " + item.mincycle + " " + item.name,
-                position: 1,
-                description: additionData,
-                category: "SUBSCRIPTION",
-                inventoryPolicy: {
-                    reserve: "ON_FULFILLMENT",
-                },
-                billingPolicy: {
-                    recurring: {
-                        interval: item?.purchaseType?.toUpperCase(),
-                        intervalCount: 1,
-                        minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
-                    },
-                },
-                deliveryPolicy: {
-                    recurring: {
-                        intent: "FULFILLMENT_BEGIN",
-                        preAnchorBehavior: "ASAP",
-                        intervalCount: 1,
-                        interval: item?.purchaseType?.toUpperCase(),
-                    },
-                },
-                pricingPolicies: pricingPolicy,
-            })
-        })
-        let planToDelete = []
-        data?.deletePlans?.map((item) => {
-            planToDelete?.push(item?.plan_id.trim())
-        })
-        const response = await admin.graphql(
-            `#graphql
+      let additionData = JSON.stringify({
+        ...storefrontDescription,
+        entries: item.entries,
+      });
+      plansToUpdate?.push({
+        id: item?.plan_id,
+        name: item.name,
+        options: item.purchaseType + " " + item.mincycle + " " + item.name,
+        position: 1,
+        description: additionData,
+        category: "SUBSCRIPTION",
+        inventoryPolicy: {
+          reserve: "ON_FULFILLMENT",
+        },
+        billingPolicy: {
+          recurring: {
+            interval: item?.purchaseType?.toUpperCase(),
+            intervalCount: 1,
+            minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
+          },
+        },
+        deliveryPolicy: {
+          recurring: {
+            intent: "FULFILLMENT_BEGIN",
+            preAnchorBehavior: "ASAP",
+            intervalCount: 1,
+            interval: item?.purchaseType?.toUpperCase(),
+          },
+        },
+        pricingPolicies: pricingPolicy,
+      });
+    });
+    let planToDelete = [];
+    data?.deletePlans?.map((item) => {
+      planToDelete?.push(item?.plan_id.trim());
+    });
+    const response = await admin.graphql(
+      `#graphql
           mutation sellingPlanGroupUpdate($id: ID!, $input: SellingPlanGroupInput!) {
             sellingPlanGroupUpdate(id: $id, input: $input) {
               sellingPlanGroup {
@@ -442,43 +480,50 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
               }
             }
           }`,
-            {
-                variables: {
-                    "id": ids?.plan_group_id,
-                    "input": {
-                        "appId": "SubscriptionApp2k24",
-                        "name": newPlanDetails?.name,
-                        "description": JSON.stringify(dateRange),
-                        "merchantCode": newPlanDetails?.name,
-                        "options": [topOptions],
-                        "sellingPlansToUpdate": plansToUpdate,
-                        "sellingPlansToDelete": planToDelete,
-                        "sellingPlansToCreate": plansToCreate
-                    },
-                },
-            },
-        );
+      {
+        variables: {
+          id: ids?.plan_group_id,
+          input: {
+            appId: "SubscriptionApp2k24",
+            name: newPlanDetails?.name,
+            description: JSON.stringify(storefrontDescription),
+            merchantCode: newPlanDetails?.name,
+            options: [topOptions],
+            sellingPlansToUpdate: plansToUpdate,
+            sellingPlansToDelete: planToDelete,
+            sellingPlansToCreate: plansToCreate,
+          },
+        },
+      },
+    );
 
-        const resData = await response.json();
+    const resData = await response.json();
 
-        let planIds = resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans?.edges
-        if (planIds) {
-
-            let plansWids = []
-            if (newPlanDetails?.plans && planIds) {
-                newPlanDetails.plans.map((plan) => {
-                    const matchedItem = planIds.find((item) => plan?.name === item?.node?.name);
-                    if (matchedItem) {
-                        plansWids.push({ ...plan, plan_id: matchedItem.node.id })
-                    } else {
-                        plansWids.push({ ...plan })
-                    }
-                });
-            }
-            let newData = { ...newPlanDetails, plans: plansWids, offerValidity: dateRange }
-            if (variantsToDelete?.length > 0) {
-                const delVariantresponse = await admin.graphql(
-                    `#graphql
+    let planIds =
+      resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans
+        ?.edges;
+    if (planIds) {
+      let plansWids = [];
+      if (newPlanDetails?.plans && planIds) {
+        newPlanDetails.plans.map((plan) => {
+          const matchedItem = planIds.find(
+            (item) => plan?.name === item?.node?.name,
+          );
+          if (matchedItem) {
+            plansWids.push({ ...plan, plan_id: matchedItem.node.id });
+          } else {
+            plansWids.push({ ...plan });
+          }
+        });
+      }
+      let newData = {
+        ...newPlanDetails,
+        plans: plansWids,
+        offerValidity: dateRange,
+      };
+      if (variantsToDelete?.length > 0) {
+        const delVariantresponse = await admin.graphql(
+          `#graphql
                         mutation sellingPlanGroupRemoveProductVariants($id: ID!, $productVariantIds: [ID!]!) {
                             sellingPlanGroupRemoveProductVariants(id: $id, productVariantIds: $productVariantIds) {
                             removedProductVariantIds
@@ -488,19 +533,19 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                             }
                         }
                     }`,
-                    {
-                        variables: {
-                            "id": ids?.plan_group_id,
-                            "productVariantIds": variantsToDelete
-                        },
-                    },
-                );
-                const delVariantRes = await delVariantresponse.json();
-            }
+          {
+            variables: {
+              id: ids?.plan_group_id,
+              productVariantIds: variantsToDelete,
+            },
+          },
+        );
+        const delVariantRes = await delVariantresponse.json();
+      }
 
-            if (varientsToAdd?.length > 0) {
-                const addVariantresponse = await admin.graphql(
-                    `#graphql
+      if (varientsToAdd?.length > 0) {
+        const addVariantresponse = await admin.graphql(
+          `#graphql
                         mutation sellingPlanGroupAddProductVariants($id: ID!, $productVariantIds: [ID!]!) {
                             sellingPlanGroupAddProductVariants(id: $id, productVariantIds: $productVariantIds) {
                                 sellingPlanGroup {
@@ -512,46 +557,50 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
                             }
                         }
                     }`,
-                    {
-                        variables: {
-                            "id": ids?.plan_group_id,
-                            "productVariantIds": varientsToAdd
-                        },
-                    },
-                );
+          {
+            variables: {
+              id: ids?.plan_group_id,
+              productVariantIds: varientsToAdd,
+            },
+          },
+        );
 
-                const addVariantRes = await addVariantresponse.json();
-            }
-            const query = { _id: ids?.id };
-            const update = {
-                ...newData, shop: shop
-            };
+        const addVariantRes = await addVariantresponse.json();
+      }
+      const query = { _id: ids?.id };
+      console.log("newData==", newData);
+      const update = {
+        ...newData,
+        shop: shop,
+      };
 
-            const options = { upsert: true, new: true, useFindAndModify: false };
-            const doc = await planDetailsModel.findOneAndUpdate(query, update, options);
+      const options = { upsert: true, new: true, useFindAndModify: false };
+      const doc = await planDetailsModel.findOneAndUpdate(
+        query,
+        update,
+        options,
+      );
 
-            if (doc) {
-                return {
-                    success: true,
-                    result: "Successfully update plan",
-                };
-            } else {
-                return { success: false, error: "Failed to update plan details." };
-            }
-
-        } else {
-            return { success: false, error: "Failed to update plan details." };
-        }
-
-    } catch (error) {
-        console.error("Error:", error);
+      if (doc) {
+        return {
+          success: true,
+          result: "Successfully update plan",
+        };
+      } else {
         return { success: false, error: "Failed to update plan details." };
+      }
+    } else {
+      return { success: false, error: "Failed to update plan details." };
     }
-}
+  } catch (error) {
+    console.error("Error:", error);
+    return { success: false, error: "Failed to update plan details." };
+  }
+};
 
 export const cancelContract = async (admin, data) => {
-    try {
-        const query = `{
+  try {
+    const query = `{
               subscriptionContract(id: "${data?.id}") {
                 id
                 status
@@ -564,27 +613,27 @@ export const cancelContract = async (admin, data) => {
                 }
               }
             }`;
-        const contractResponse = await admin.graphql(query);
-        const contractResult = await contractResponse.json();
-        if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
-            return {
-                message: "error",
-                data: contractResult.data.subscriptionContract.userErrors[0].message,
-                status: 400
-            }
-        }
-        const contractStatus = contractResult?.data?.subscriptionContract?.status;
-        if (!['ACTIVE', 'PAUSED', 'FAILED']?.includes(contractStatus?.toUpperCase())) {
-            return {
-                success: false,
-                message: `Cannot cancel contract with status: ${contractStatus}`,
-                status: 400,
-            };
-        }
+    const contractResponse = await admin.graphql(query);
+    const contractResult = await contractResponse.json();
+    if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
+      return {
+        message: "error",
+        data: contractResult.data.subscriptionContract.userErrors[0].message,
+        status: 400,
+      };
+    }
+    const contractStatus = contractResult?.data?.subscriptionContract?.status;
+    if (
+      !["ACTIVE", "PAUSED", "FAILED"]?.includes(contractStatus?.toUpperCase())
+    ) {
+      return {
+        success: false,
+        message: `Cannot cancel contract with status: ${contractStatus}`,
+        status: 400,
+      };
+    }
 
-
-
-        const mutationQuery = `#graphql
+    const mutationQuery = `#graphql
             mutation subscriptionContractCancel($subscriptionContractId: ID!) {
                 subscriptionContractCancel(subscriptionContractId: $subscriptionContractId) {
                     contract {
@@ -597,71 +646,84 @@ export const cancelContract = async (admin, data) => {
                         }
                     }
                 }`;
-        const variables = {
-            subscriptionContractId: data?.id,
-        };
+    const variables = {
+      subscriptionContractId: data?.id,
+    };
 
-        const response = await admin.graphql(mutationQuery,
-            { variables },
-        );
+    const response = await admin.graphql(mutationQuery, { variables });
 
-        const result = await response.json();
+    const result = await response.json();
 
-
-        if (result.data?.subscriptionContractCancel?.userErrors?.length > 0) {
-            return {
-                success: false,
-                message: result.data.subscriptionContractCancel.userErrors[0].message,
-                status: 400
-            }
-        } else {
-            console.log("data==", data)
-            let res = await subscriptionContractModel.findOneAndUpdate({ _id: data?.contractDbID },
-                { $set: { status: "CANCELLED" } },
-                { new: true }
-            )
-            return {
-                success: true,
-                result: "Successfully cancel plan.",
-                data: result.data.subscriptionContractCancel,
-                res: res
-            };
-        }
-    } catch (error) {
-        console.error("Error:ad", error);
-        return { success: false, error: "Failed to cancel plan." };
+    if (result.data?.subscriptionContractCancel?.userErrors?.length > 0) {
+      return {
+        success: false,
+        message: result.data.subscriptionContractCancel.userErrors[0].message,
+        status: 400,
+      };
+    } else {
+      console.log("data==", data);
+      let res = await subscriptionContractModel.findOneAndUpdate(
+        { _id: data?.contractDbID },
+        { $set: { status: "CANCELLED" } },
+        { new: true },
+      );
+      return {
+        success: true,
+        result: "Successfully cancel plan.",
+        data: result.data.subscriptionContractCancel,
+        res: res,
+      };
     }
-}
+  } catch (error) {
+    console.error("Error:ad", error);
+    return { success: false, error: "Failed to cancel plan." };
+  }
+};
 
 export const getSubscriptions = async (admin, page, search) => {
-    try {
-        const { shop } = admin.rest.session;
-        let skip = 0;
-        page > 1 ? skip = (page - 1) * 10 : skip = 0;
-        let total_data = 0
-        let details = []
-        if (search == '') {
-            details = await subscriptionContractModel.find({ shop }).skip(skip).limit(10)
-            total_data = await subscriptionContractModel.find({ shop }).countDocuments();
-        } else {
-            details = await subscriptionContractModel.find({
-                shop: shop,
-                customerName: { $regex: search, $options: "i" },
-            }).skip(skip).limit(10)
-            total_data = await subscriptionContractModel.find({
-                shop: shop,
-                customerName: { $regex: search, $options: "i" },
-            }).countDocuments();
-        }
-        return { message: "success", details: details, status: 200, total: total_data };
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
+  try {
+    const { shop } = admin.rest.session;
+    let skip = 0;
+    page > 1 ? (skip = (page - 1) * 10) : (skip = 0);
+    let total_data = 0;
+    let details = [];
+    if (search == "") {
+      details = await subscriptionContractModel
+        .find({ shop })
+        .skip(skip)
+        .limit(10);
+      total_data = await subscriptionContractModel
+        .find({ shop })
+        .countDocuments();
+    } else {
+      details = await subscriptionContractModel
+        .find({
+          shop: shop,
+          customerName: { $regex: search, $options: "i" },
+        })
+        .skip(skip)
+        .limit(10);
+      total_data = await subscriptionContractModel
+        .find({
+          shop: shop,
+          customerName: { $regex: search, $options: "i" },
+        })
+        .countDocuments();
     }
-}
+    return {
+      message: "success",
+      details: details,
+      status: 200,
+      total: total_data,
+    };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 
 export const getConstractDetailById = async (admin, id) => {
-    const query = `
+  const query = `
             query {
               subscriptionContract(id: "gid://shopify/SubscriptionContract/${id}") {
                 id
@@ -750,23 +812,23 @@ export const getConstractDetailById = async (admin, id) => {
               }
             }
           `;
-    const contractResponse = await admin.graphql(query);
-    const contractResult = await contractResponse.json();
-    if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
-        return {
-            message: "error",
-            data: contractResult.data.subscriptionContract.userErrors[0].message,
-            status: 400
-        }
-    }
+  const contractResponse = await admin.graphql(query);
+  const contractResult = await contractResponse.json();
+  if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
     return {
-        message: "success",
-        data: contractResult.data.subscriptionContract,
-        status: 200
-    }
-}
+      message: "error",
+      data: contractResult.data.subscriptionContract.userErrors[0].message,
+      status: 400,
+    };
+  }
+  return {
+    message: "success",
+    data: contractResult.data.subscriptionContract,
+    status: 200,
+  };
+};
 export const getCustomerDataByContractId = async (admin, id) => {
-    const query = `{
+  const query = `{
           subscriptionContract(id: "gid://shopify/SubscriptionContract/${id}") {
                 id
                 status
@@ -853,88 +915,97 @@ export const getCustomerDataByContractId = async (admin, id) => {
                 }
               }
             }`;
-    const contractResponse = await admin.graphql(query);
-    const contractResult = await contractResponse.json();
-    if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
-        return {
-            message: "error",
-            data: contractResult.data.subscriptionContract.userErrors[0].message,
-            status: 400
-        }
-    }
+  const contractResponse = await admin.graphql(query);
+  const contractResult = await contractResponse.json();
+  if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
     return {
-        message: "success",
-        data: contractResult.data.subscriptionContract,
-        status: 200
-    }
-}
+      message: "error",
+      data: contractResult.data.subscriptionContract.userErrors[0].message,
+      status: 400,
+    };
+  }
+  return {
+    message: "success",
+    data: contractResult.data.subscriptionContract,
+    status: 200,
+  };
+};
 
 export const getExportData = async (admin, data, date) => {
-    try {
-        const startIST = toIST(date.start);
-        let endIST = toIST(date.end);
-        endIST.setHours(23, 59, 59, 999);
-        endIST = toIST(endIST);
+  try {
+    const startIST = toIST(date.start);
+    let endIST = toIST(date.end);
+    endIST.setHours(23, 59, 59, 999);
+    endIST = toIST(endIST);
 
-        let dateRange = {
-            $gte: startIST,
-            $lte: endIST,
-        };
-        const matchingDocuments = await billingModel.find({
-            "products.productId": { $in: data },
-            createdAt: dateRange,
-            status: "done",
-            applied: true
-        })
-        return { success: true, data: matchingDocuments };
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
-    }
-}
+    let dateRange = {
+      $gte: startIST,
+      $lte: endIST,
+    };
+    const matchingDocuments = await billingModel.find({
+      "appliedFor.productId": data[0],
+      createdAt: dateRange,
+      status: "done",
+      applied: true,
+    });
+    // const matchingDocuments = await billingModel.find({
+    //   "products.productId": { $in: data },
+    //   createdAt: dateRange,
+    //   status: "done",
+    //   applied: true,
+    // });
+    return { success: true, data: matchingDocuments };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 
 const toIST = (dateString) => {
-    const date = new Date(dateString);
-    const offsetInMinutes = 330;
-    return new Date(date.getTime() + offsetInMinutes * 60 * 1000);
+  const date = new Date(dateString);
+  const offsetInMinutes = 330;
+  return new Date(date.getTime() + offsetInMinutes * 60 * 1000);
 };
 
 export const checkMincycleComplete = async (detail) => {
-    try {
-        console.log("data==", detail)
-        let data = await billingModel.find({ contractId: detail?.id, status: "done" })
-        let activeDraws = await raffleProductsModel.aggregate([
-            { $match: { shop: detail?.shop } },
-            {
-              $project: {
-                _id: 0,
-                products: {
-                  $filter: {
-                    input: "$products",
-                    as: "product",
-                    cond: { $eq: ["$$product.status", true] }
-                  }
-                }
-              }
-            }
-          ]);
-        //   console.log("activeDraws==", activeDraws)
-        return { message: "success", data , activeDraws: activeDraws[0]?.products}
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
-    }
-}
+  try {
+    console.log("data==", detail);
+    let data = await billingModel.find({
+      contractId: detail?.id,
+      status: "done",
+    });
+    let activeDraws = await raffleProductsModel.aggregate([
+      { $match: { shop: detail?.shop } },
+      {
+        $project: {
+          _id: 0,
+          products: {
+            $filter: {
+              input: "$products",
+              as: "product",
+              cond: { $eq: ["$$product.status", true] },
+            },
+          },
+        },
+      },
+    ]);
+    //   console.log("activeDraws==", activeDraws)
+    return { message: "success", data, activeDraws: activeDraws[0]?.products };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 export const getAllContracts = async (admin) => {
-    try {
-        const { shop } = admin.rest.session;
-        const details = await subscriptionContractModel.find({ shop })
-        return { message: "success", details: details, status: 200 };
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
-    }
-}
+  try {
+    const { shop } = admin.rest.session;
+    const details = await subscriptionContractModel.find({ shop });
+    return { message: "success", details: details, status: 200 };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 
 // const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
 // fs.writeFile("checkkkk.txt", dataString, (err) => {
@@ -946,15 +1017,15 @@ export const getAllContracts = async (admin) => {
 // });
 
 export const setDefaultTemplate = async (shop) => {
-    try {
-        // console.log("email template set", shop)
-        let orderTemplate = {
-            subject: "Your order is successfully done",
-            from: "Membership App",
-            footer: `Best Regards,
+  try {
+    // console.log("email template set", shop)
+    let orderTemplate = {
+      subject: "Your order is successfully done",
+      from: "Membership App",
+      footer: `Best Regards,
             Dyna dealers`,
-            html: `p>Hi {{customerName}},</p>
-            <p>Thankyou to order for <b>{{productName}}</b> which is your${' '}
+      html: `p>Hi {{customerName}},</p>
+            <p>Thankyou to order for <b>{{productName}}</b> which is your${" "}
             <b>{{interval}}</b> plan.</p>
             <p>Your have {{drawIdsLength}} chances for winning.</p>
             <p>Your Entry Numbers are:</p>
@@ -979,72 +1050,65 @@ export const setDefaultTemplate = async (shop) => {
                 <pre>
                 {{footer}}
                 </pre>`,
-            dummyData: {
-                "shop": "virendertesting.myshopify.com",
-                "orderId": "6486463742142",
-                "customerId": "7979103453374",
-                "customerName": "Taran preet",
-                "customerEmail": "taranpreet@shinedezign.com",
-                "contractId": "24182882494",
-                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
-                "sellingPlanName": "New plan22-entries-7",
-                "billing_policy": {
-                    "interval": "month",
-                    "interval_count": 1,
-                    "min_cycles": 1,
-                    "max_cycles": null
-                },
-                "products": [
-                    {
-                        "productId": "gid://shopify/Product/7837187014846",
-                        "productName": "Antique Drawers",
-                        "quantity": 1
-                    }
-                ],
-                "drawIds": [
-                    "M6LQWQG",
-                    "M6LQCEC",
-                ],
-            },
-            orderMailParameters: [
-                {
-                    term: '{{customerName}}',
-                    description:
-                        `This specifies the customer's name.`,
-                },
-                {
-                    term: '{{productName}}',
-                    description:
-                        'This specifies the name of the product for which the order is placed.',
-                },
-                {
-                    term: '{{billingInterval}}',
-                    description:
-                        'It Shows the billing interval of subscription.',
-                },
-                {
-                    term: '{{drawsLength}}',
-                    description:
-                        'It denotes the total number of entries (chances to win).',
-                },
-                {
-                    term: '{{drawIdsList}}',
-                    description:
-                        'This is list of the tickets.',
-                },
-                {
-                    term: '{{footer}}',
-                    description:
-                        'Email footer like contact or address.',
-                },
-            ]
-        }
-        let appliedTemplate = {
-            subject: "Your tickets are applied succesfully.",
-            from: "Membership App",
-            footer: `Best Regards,
+      dummyData: {
+        shop: "virendertesting.myshopify.com",
+        orderId: "6486463742142",
+        customerId: "7979103453374",
+        customerName: "Taran preet",
+        customerEmail: "taranpreet@shinedezign.com",
+        contractId: "24182882494",
+        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
+        sellingPlanName: "New plan22-entries-7",
+        billing_policy: {
+          interval: "month",
+          interval_count: 1,
+          min_cycles: 1,
+          max_cycles: null,
+        },
+        products: [
+          {
+            productId: "gid://shopify/Product/7837187014846",
+            productName: "Antique Drawers",
+            quantity: 1,
+          },
+        ],
+        drawIds: ["M6LQWQG", "M6LQCEC"],
+      },
+      orderMailParameters: [
+        {
+          term: "{{customerName}}",
+          description: `This specifies the customer's name.`,
+        },
+        {
+          term: "{{productName}}",
+          description:
+            "This specifies the name of the product for which the order is placed.",
+        },
+        {
+          term: "{{billingInterval}}",
+          description: "It Shows the billing interval of subscription.",
+        },
+        {
+          term: "{{drawsLength}}",
+          description:
+            "It denotes the total number of entries (chances to win).",
+        },
+        {
+          term: "{{drawIdsList}}",
+          description: "This is list of the tickets.",
+        },
+        {
+          term: "{{footer}}",
+          description: "Email footer like contact or address.",
+        },
+      ],
+    };
+    let appliedTemplate = {
+      subject: "Your tickets are applied succesfully.",
+      from: "Membership App",
+      footer: `Best Regards,
             Dyna dealers`,
-            html: `
+      html: `
             <p>Hi {{customerName}},</p>
 
             <p>Your orderId is: {{orderId}}</p>
@@ -1065,72 +1129,65 @@ export const setDefaultTemplate = async (shop) => {
             <pre>
                 {{footer}}
             </pre>`,
-            dummyData: {
-                "shop": "virendertesting.myshopify.com",
-                "orderId": "6486463742142",
-                "customerId": "7979103453374",
-                "customerName": "Taran preet",
-                "customerEmail": "taranpreet@shinedezign.com",
-                "contractId": "24182882494",
-                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
-                "sellingPlanName": "New plan22-entries-7",
-                "billing_policy": {
-                    "interval": "month",
-                    "interval_count": 1,
-                    "min_cycles": 1,
-                    "max_cycles": null
-                },
-                "products": [
-                    {
-                        "productId": "gid://shopify/Product/7837187014846",
-                        "productName": "Antique Drawers",
-                        "quantity": 1
-                    }
-                ],
-                "drawIds": [
-                    "M6LQWQG",
-                    "M6LQCEC",
-                ],
-            },
-            appliedMailParameters: [
-                {
-                    term: '{{customerName}}',
-                    description:
-                        `This specifies the customer's name.`,
-                },
-                {
-                    term: '{{productName}}',
-                    description:
-                        'This specifies the name of the product for which the order is placed.',
-                },
-                {
-                    term: '{{interval}}',
-                    description:
-                        'It Shows the billing interval of subscription.',
-                },
-                {
-                    term: '{{appliedLength}}',
-                    description:
-                        'It denotes the total number of entries (chances to win).',
-                },
-                {
-                    term: '{{appliedList}}',
-                    description:
-                        'This is list of the tickets.',
-                },
-                {
-                    term: '{{footer}}',
-                    description:
-                        'Email footer like contact or address.',
-                },
-            ]
-        }
-        let winningTemplate = {
-            subject: "Congratulations, YOU ARE A WINNER!",
-            from: "Membership App",
-            footer: `Best Regards,
+      dummyData: {
+        shop: "virendertesting.myshopify.com",
+        orderId: "6486463742142",
+        customerId: "7979103453374",
+        customerName: "Taran preet",
+        customerEmail: "taranpreet@shinedezign.com",
+        contractId: "24182882494",
+        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
+        sellingPlanName: "New plan22-entries-7",
+        billing_policy: {
+          interval: "month",
+          interval_count: 1,
+          min_cycles: 1,
+          max_cycles: null,
+        },
+        products: [
+          {
+            productId: "gid://shopify/Product/7837187014846",
+            productName: "Antique Drawers",
+            quantity: 1,
+          },
+        ],
+        drawIds: ["M6LQWQG", "M6LQCEC"],
+      },
+      appliedMailParameters: [
+        {
+          term: "{{customerName}}",
+          description: `This specifies the customer's name.`,
+        },
+        {
+          term: "{{productName}}",
+          description:
+            "This specifies the name of the product for which the order is placed.",
+        },
+        {
+          term: "{{interval}}",
+          description: "It Shows the billing interval of subscription.",
+        },
+        {
+          term: "{{appliedLength}}",
+          description:
+            "It denotes the total number of entries (chances to win).",
+        },
+        {
+          term: "{{appliedList}}",
+          description: "This is list of the tickets.",
+        },
+        {
+          term: "{{footer}}",
+          description: "Email footer like contact or address.",
+        },
+      ],
+    };
+    let winningTemplate = {
+      subject: "Congratulations, YOU ARE A WINNER!",
+      from: "Membership App",
+      footer: `Best Regards,
             Dyna dealers`,
-            html: `<p>Hi {{customerName}},</p>
+      html: `<p>Hi {{customerName}},</p>
             <h4>Congratulations,</h4>
             
             <p>We are thrilled to inform you that <b>YOU ARE A WINNER!</b> </p>
@@ -1145,62 +1202,56 @@ export const setDefaultTemplate = async (shop) => {
                 {{footer}}
             </pre>
          `,
-            dummyData: {
-                "shop": "virendertesting.myshopify.com",
-                "orderId": "6486463742142",
-                "customerId": "7979103453374",
-                "customerName": "Taran preet",
-                "customerEmail": "taranpreet@shinedezign.com",
-                "contractId": "24182882494",
-                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
-                "sellingPlanName": "New plan22-entries-7",
-                "billing_policy": {
-                    "interval": "month",
-                    "interval_count": 1,
-                    "min_cycles": 1,
-                    "max_cycles": null
-                },
-                "products": [
-                    {
-                        "productId": "gid://shopify/Product/7837187014846",
-                        "productName": "Antique Drawers",
-                        "quantity": 1
-                    }
-                ],
-                "drawIds": [
-                    "M6LQWQG",
-                    "M6LQCEC",
-                ],
-            },
-            winnerMailParameters: [
-                {
-                    term: '{{customerName}}',
-                    description:
-                        `This specifies the customer's name.`,
-                },
-                {
-                    term: '{{productName}}',
-                    description:
-                        'This specifies the name of the product for which the order is placed.',
-                },
-                {
-                    term: '{{interval}}',
-                    description:
-                        'It Shows the billing interval of subscription.',
-                },
-                {
-                    term: '{{footer}}',
-                    description:
-                        'Email footer like contact or address.',
-                },
-            ]
-        }
-        let announcementTemplate = {
-            subject: "🚨 Exclusive Raffle Alert – Don’t Miss Your Chance! 🚨",
-            from: "Membership App",
-            footer: `Best Regards,
+      dummyData: {
+        shop: "virendertesting.myshopify.com",
+        orderId: "6486463742142",
+        customerId: "7979103453374",
+        customerName: "Taran preet",
+        customerEmail: "taranpreet@shinedezign.com",
+        contractId: "24182882494",
+        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
+        sellingPlanName: "New plan22-entries-7",
+        billing_policy: {
+          interval: "month",
+          interval_count: 1,
+          min_cycles: 1,
+          max_cycles: null,
+        },
+        products: [
+          {
+            productId: "gid://shopify/Product/7837187014846",
+            productName: "Antique Drawers",
+            quantity: 1,
+          },
+        ],
+        drawIds: ["M6LQWQG", "M6LQCEC"],
+      },
+      winnerMailParameters: [
+        {
+          term: "{{customerName}}",
+          description: `This specifies the customer's name.`,
+        },
+        {
+          term: "{{productName}}",
+          description:
+            "This specifies the name of the product for which the order is placed.",
+        },
+        {
+          term: "{{interval}}",
+          description: "It Shows the billing interval of subscription.",
+        },
+        {
+          term: "{{footer}}",
+          description: "Email footer like contact or address.",
+        },
+      ],
+    };
+    let announcementTemplate = {
+      subject: "🚨 Exclusive Raffle Alert – Don’t Miss Your Chance! 🚨",
+      from: "Membership App",
+      footer: `Best Regards,
             Dyna dealers`,
-            html: `<p>Attention Valued Members!</p>
+      html: `<p>Attention Valued Members!</p>
            
             <br>
             <p>We’re excited to announce this month’s exclusive Members-Only Raffle! 🎉</p>
@@ -1220,207 +1271,127 @@ export const setDefaultTemplate = async (shop) => {
                 {{footer}}
             </pre>
          `,
-         
-            dummyData: {
-                "shop": "virendertesting.myshopify.com",
-                "orderId": "6486463742142",
-                "customerId": "7979103453374",
-                "customerName": "Taran preet",
-                "customerEmail": "taranpreet@shinedezign.com",
-                "contractId": "24182882494",
-                "sellingPlanId": "gid://shopify/SellingPlan/7428407486",
-                "sellingPlanName": "New plan22-entries-7",
-                "billing_policy": {
-                    "interval": "month",
-                    "interval_count": 1,
-                    "min_cycles": 1,
-                    "max_cycles": null
-                },
-                "products": [
-                    {
-                        "productId": "gid://shopify/Product/7837187014846",
-                        "productName": "Antique Drawers",
-                        "quantity": 1
-                    }
-                ],
-                "drawIds": [
-                    "M6LQWQG",
-                    "M6LQCEC",
-                ],
-            },
-            announcementMailParameters: [
-                {
-                    term: '{{productName}}',
-                    description:
-                        'This specifies the name of the product for which the order is placed.',
-                },
-                {
-                    term: '{{date}}',
-                    description:
-                        'date start or end date',
-                },
-                {
-                    term: '{{footer}}',
-                    description:
-                        'Email footer like contact or address.',
-                },
-            ]
-        }
-        const templateExist = await templateModel?.findOne({ shop })
-        if (!templateExist) {
-            const newTemplate = await templateModel.create(
-                {
-                    shop: shop,
-                    orderTemplate: orderTemplate,
-                    appliedTemplate: appliedTemplate,
-                    winningTemplate: winningTemplate,
-                    announcementTemplate: announcementTemplate
-                })
-            return { message: "success", newTemplate }
-        } else {
-            const newTemplate = await templateModel.findOneAndUpdate(
-                { shop },
-                {
-                    $set: {
-                        orderTemplate: orderTemplate,
-                        appliedTemplate: appliedTemplate,
-                        winningTemplate: winningTemplate,
-                        announcementTemplate: announcementTemplate
-                    }
-                },
-                { upsert: true, new: true }
-            )
-            return { message: "success", newTemplate }
-        }
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
+
+      dummyData: {
+        shop: "virendertesting.myshopify.com",
+        orderId: "6486463742142",
+        customerId: "7979103453374",
+        customerName: "Taran preet",
+        customerEmail: "taranpreet@shinedezign.com",
+        contractId: "24182882494",
+        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
+        sellingPlanName: "New plan22-entries-7",
+        billing_policy: {
+          interval: "month",
+          interval_count: 1,
+          min_cycles: 1,
+          max_cycles: null,
+        },
+        products: [
+          {
+            productId: "gid://shopify/Product/7837187014846",
+            productName: "Antique Drawers",
+            quantity: 1,
+          },
+        ],
+        drawIds: ["M6LQWQG", "M6LQCEC"],
+      },
+      announcementMailParameters: [
+        {
+          term: "{{productName}}",
+          description:
+            "This specifies the name of the product for which the order is placed.",
+        },
+        {
+          term: "{{date}}",
+          description: "date start or end date",
+        },
+        {
+          term: "{{footer}}",
+          description: "Email footer like contact or address.",
+        },
+      ],
+    };
+    const templateExist = await templateModel?.findOne({ shop });
+    if (!templateExist) {
+      const newTemplate = await templateModel.create({
+        shop: shop,
+        orderTemplate: orderTemplate,
+        appliedTemplate: appliedTemplate,
+        winningTemplate: winningTemplate,
+        announcementTemplate: announcementTemplate,
+      });
+      return { message: "success", newTemplate };
+    } else {
+      const newTemplate = await templateModel.findOneAndUpdate(
+        { shop },
+        {
+          $set: {
+            orderTemplate: orderTemplate,
+            appliedTemplate: appliedTemplate,
+            winningTemplate: winningTemplate,
+            announcementTemplate: announcementTemplate,
+          },
+        },
+        { upsert: true, new: true },
+      );
+      return { message: "success", newTemplate };
     }
-}
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 export const getEmailTemplate = async (admin) => {
-    try {
-        const { shop } = admin.rest.session;
-        console.log("email template get", shop)
-
-        const data = await templateModel.findOne({ shop });
-        // console.log("template==", data)
-        return { message: "success", data }
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
-    }
-}
+  try {
+    const { shop } = admin.rest.session;
+    const data = await templateModel.findOne({ shop });
+    return { message: "success", data };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 export const updateTemplate = async (admin, data) => {
-    try {
-        const { shop } = admin.rest.session;
-        // console.log("email template get", shop)
+  try {
+    const { shop } = admin.rest.session;
+    const template = await templateModel.findOneAndUpdate(
+      { shop },
+      { $set: { ...data } },
+      { upsert: true, new: true },
+    );
+    return { message: "success", template };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+};
 
-        const template = await templateModel.findOneAndUpdate(
-            { shop },
-            { $set: { ...data } },
-            { upsert: true, new: true }
-        );
-        // console.log("template===", template)
-        return { message: "success", template }
-    } catch (error) {
-        console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
-    }
-}
-
-export const updateRaffleProducts=async (admin, products)=>{
-  try{
+export const updateRaffleProducts = async (admin, products) => {
+  try {
     const { shop } = admin.rest.session;
     const data = await raffleProductsModel.findOneAndUpdate(
-        { shop },
-        { $set: { products} },
-        { upsert: true, new: true }
+      { shop },
+      { $set: { products } },
+      { upsert: true, new: true },
     );
-    return { message: "success", data }
-  }catch(error){
+    return { message: "success", data };
+  } catch (error) {
     console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
+    return { message: "Error processing request", status: 500 };
   }
-}
-export const getRaffleProducts=async (admin)=>{
-  try{
+};
+export const getRaffleProducts = async (admin) => {
+  try {
     const { shop } = admin.rest.session;
-    const data = await raffleProductsModel.findOne(
-        { shop }
-    );
-    return { message: "success", data }
-  }catch(error){
+    const data = await raffleProductsModel.findOne({ shop });
+    return { message: "success", data };
+  } catch (error) {
     console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
+    return { message: "Error processing request", status: 500 };
   }
-}
-export const sendMailToAll=async (admin, data)=>{
-  try{
-    const { shop } = admin.rest.session;
-    console.log("shop==", shop, data)
-    const contractData = await subscriptionContractModel.find(
-        { shop },{contractId: 1, orderId: 1, customerId: 1, customerEmail: 1}
-    );
-    console.log("data===", contractData)
-  
-    //     if (!acc.some(item => item.customerId === order.customerId)) {
-    //       acc.push(order);
-    //     }
-    //     return acc;
-    //   }, []);
-      const uniqueEmails = [
-        ...new Set(contractData.map(order => order.customerEmail))
-      ];
-                                                                                                                                                                                                                                    
-      console.log(uniqueEmails);
-      const mailTo = uniqueEmails.join(", ");                 
-        console.log(mailTo); 
-        let detail= {...data, mailTo}
-        console.log("detail-", detail)
-        // await raffleAnnouncementMail(detail)
-    return { message: "success" }
-  }catch(error){
-    console.error("Error processing POST request:", error);
-        return { message: "Error processing request", status: 500 };
-  }
-}
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-// if(data?.check){
-//     let result = await billingModel.aggregate([
-//       {
-//         $match: {
-//           shop: "virendertesting.myshopify.com",
-//           contractId: "23374299326",
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "contractdetails", // Collection name
-//           localField: "contractId", // Field in billingModel
-//           foreignField: "contractId", // Field in contractDetailsModel
-//           as: "contractDetails", // Result stored here (array)
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: "$contractDetails", 
-//           preserveNullAndEmptyArrays: true, 
-//         },
-//       },
-//     ]);
-//     const dataString = typeof result === "string" ? result : JSON.stringify(result);
 // fs.writeFile("checkkkk.txt", dataString, (err) => {
 //   if (err) {
 //       console.error("Error writing to file:", err);
@@ -1428,7 +1399,7 @@ export const sendMailToAll=async (admin, data)=>{
 //       console.log("Data written to file successfully!");
 //   }
 // });
-    
+
 //     console.log("planDetailsv=", result)
 //     return json({ success: true, message: "no dtaa in action" });
 //   }

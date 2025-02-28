@@ -1,5 +1,5 @@
 import { json } from '@remix-run/node';
-import { sendApplyEmail } from '../controllers/mail';
+import { sendApplyEmail } from '../db.mailcontroller';
 import { billingModel } from '../schema';
 
 const headers = {

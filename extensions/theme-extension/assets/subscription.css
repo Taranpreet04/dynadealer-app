@@ -734,3 +734,11 @@ span.var-entries {
     display: flex;
     gap: 10px;
 }
+.additional-detail{
+        border: 1px solid white;
+        width: 70%;
+        margin: 1rem;
+        border-radius: 10px;
+        line-height: 1.5;
+        display: none;
+    }

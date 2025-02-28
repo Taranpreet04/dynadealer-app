@@ -26,7 +26,7 @@ var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });
 task.start();
-console.log("process.env", process.env)
+// console.log("process.env", process.env)
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",

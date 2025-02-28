@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://dynadealersapp.com";
+    let serverPath = "https://associate-briefly-malaysia-pizza.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
-
     let subscriptionDetails = []
     let tableData = []
     let contractDetailShopify = ''
@@ -587,6 +586,70 @@ document.addEventListener("DOMContentLoaded", () => {
             card.appendChild(p3)
         })
     }
+    const selectDraw=()=>{
+        let mainDiv = document.getElementById('main-active-draws')
+        let parentselect = document.createElement('div')
+       let content= `<div class="select">
+	    <div class="selectBtn" id='selectBtn' data-type="firstOption">${activeDraws[0]?.title}</div>
+	    <div class="selectDropdown" id="drawsList">
+		  
+	    </div>
+    </div>`
+    parentselect.innerHTML= content;
+    mainDiv.appendChild(parentselect)
+
+    let selectBtn = document.getElementById(`selectBtn`)
+    let selectElement = document.getElementById(`drawsList`)
+    if (selectElement) {
+        activeDraws.map(option => {
+            const opt = document.createElement('div');
+            opt.value = option.title;
+            opt.id = option.id;
+            opt.textContent = option.title;
+            opt.className = 'option';
+            // opt.data-type = option.title;
+            selectElement.appendChild(opt);
+        })
+        selectElement.addEventListener("change", (e) => {
+            let data = activeDraws.filter(itm => itm?.title == e.target.value)
+            console.log("data==", data)
+            selectBtn.innerText=e.target.value
+            // contractDetailDb.map((itm, index) => {
+            //     if (itm?._id == item?._id) {
+            //         itm.appliedFor = {
+            //             productName: data[0]?.title,
+            //             productId: data[0]?.id
+            //         }
+            //     }
+            // })
+        });
+    }
+
+
+
+            let index = 1;
+
+const on = (listener, query, fn) => {
+	document.querySelectorAll(query).forEach(item => {
+		item.addEventListener(listener, el => {
+			fn(el);
+		})
+	})
+}
+
+on('click', '.selectBtn', item => {
+	const next = item.target.nextElementSibling;
+	next.classList.toggle('toggle');
+	next.style.zIndex = index++;
+});
+on('click', '.option', item => {
+	item.target.parentElement.classList.remove('toggle');
+
+	const parent = item.target.closest('.select').children[0];
+	parent.setAttribute('data-type', item.target.getAttribute('data-type'));
+	parent.innerText = item.target.innerText;
+})
+    }
 
     const showListData = () => {
         let listDiv = document.createElement('div');
@@ -705,6 +768,7 @@ document.addEventListener("DOMContentLoaded", () => {
             generateProductRows()
             generateActiveDraws()
             generateTicketsrow()
+            selectDraw()
         }
 
     }

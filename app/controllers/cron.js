@@ -67,10 +67,11 @@ export async function recurringOrderCron() {
                         contractId: data[i]?.contractId,
                     }).sort({ createdAt: -1 });
 
+                    console.log("recentDocument==", recentDocument)
                     if (recentDocument[0]?.planUpdateDetail?.sellingPlanUpdate) {
                         entries = Number(recentDocument[0]?.planUpdateDetail?.futureEntries) * 1;
                     }
-                    console.log(recentDocument[0]);
+                    console.log("entries====", entries);
 
                     for (let i = 0; i < entries; i++) {
                         // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -79,7 +80,7 @@ export async function recurringOrderCron() {
                             .substring(0, 7);
                         drawIds.push(unique)
                     }
-console.log("data==", data[i])
+                    console.log("data==", data[i])
                     let saveToBillingAttempt = await billingModel.create({
                         shop: data[i].shop,
                         status: "PENDING",
@@ -113,11 +114,23 @@ console.log("data==", data[i])
                         nextDate = new Date(originalDate);
                         nextDate.setFullYear(nextDate.getFullYear() + 1 * parseInt(value));
                     }
+
+                    let allDrawIds= [...data[i]?.drawIds, ...drawIds ]
                     let updateNextBillingDate = await subscriptionContractModel.findOneAndUpdate(
                         { shop: data[i].shop, contractId: data[i].contractId },
                         {
                             $set: {
                                 nextBillingDate: nextDate.toISOString(),
+                                ticketDetails:{
+                                    total: allDrawIds?.length,
+                                    totalTicketsList: allDrawIds,
+                                    applied: data[i].ticketDetails?.applied,
+                                    appliedTicketsList: data[i].ticketDetails?.appliedTicketsList,
+                                    available: data[i].ticketDetails?.available,
+                                    availableTicketsList:data[i].ticketDetails?.availableTicketsList,
+                                    appliedForDetail:data[i].ticketDetails?.appliedForDetail,
+                                },
+                                drawIds: allDrawIds
                             },
                         }
                     );

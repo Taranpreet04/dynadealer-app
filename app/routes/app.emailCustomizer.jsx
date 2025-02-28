@@ -1,3 +1,4 @@
+// import nodemailer from 'nodemailer'
 import {
     Page,
     Button,
@@ -33,7 +34,7 @@ import {
     Toolbar
 } from 'react-simple-wysiwyg';
 import { getEmailTemplate, getAllContracts, updateTemplate} from '../controllers/planController';
-import { sendWinnerEmail } from '../controllers/mail'
+import { sendWinnerEmail } from '../db.mailcontroller'
 import { authenticate } from '../shopify.server';
 import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 
@@ -326,7 +327,7 @@ export const action = async ({ request }) => {
             drawIds: JSON.parse(data?.drawIds),
             billing_policy: JSON.parse(data?.billing_policy),
         }
-        // res = await sendWinnerEmail(data)
+        res = await sendWinnerEmail(data)
     }
     else {
         data = {

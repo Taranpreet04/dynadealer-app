@@ -7,6 +7,8 @@ const planDetailsSchema = new mongoose.Schema(
     sellingPlanUpdate: Boolean,
     upgradeTo: String,
     futureEntries: Number,
+    raffleType: String,
+    spots: Number,
     plans: Object,
     products: Object,
     plan_group_id: String,
@@ -50,6 +52,7 @@ const subscriptionContract = new mongoose.Schema({
   drawIds: Object,
   status: String,
   nextBillingDate: Date,
+  ticketDetails: Object
 }, {
   timestamps: true
 });
