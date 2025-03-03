@@ -1,6 +1,6 @@
 import { json } from '@remix-run/node';
-import { sendApplyEmail } from '../db.mailcontroller';
-import { billingModel, subscriptionContractModel } from '../schema';
+// import { sendApplyEmail } from '../db.mailcontroller';
+import { billingModel } from '../schema';
 
 const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -27,9 +27,13 @@ export const action = async ({ request }) => {
                 { $set: data },    
                 { new: true, upsert: true, setDefaultsOnInsert: true } 
             );
-          
-           let res= sendApplyEmail(details)
-            
+
+            console.log("details==", details)
+          //  let res= sendApplyEmail(data)
+            // return new Response(JSON.stringify({ message: "success", details: details }), {
+            //     status: 200,
+            //     headers,
+            // });
             return json({ message: "success", details: details }, {
                 status: 200,
                 headers,

@@ -1,12 +1,9 @@
 import {
   billingModel,
   planDetailsModel,
-  raffleProductsModel,
   subscriptionContractModel,
   templateModel,
 } from "../schema";
-// import fs from "fs";
-// import { raffleAnnouncementMail } from './mail';
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
@@ -1374,46 +1371,46 @@ export const updateTemplate = async (admin, data) => {
   }
 };
 
-export const addRaffleProducts = async (admin, data) => {
-  try {
-    const { shop } = admin.rest.session;
-    const dataExist = await raffleProductsModel.findOne({shop, productId: data.productId})
+// export const addRaffleProducts = async (admin, data) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const dataExist = await raffleProductsModel.findOne({shop, productId: data.productId})
    
-      return { message: "Raffle already created."};
+//       return { message: "Raffle already created."};
    
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
-export const updateRaffleProducts = async (admin, data) => {
-  try {
-    const { shop } = admin.rest.session;
-    const detail = await raffleProductsModel.findOneAndUpdate(
-      { shop, _id: data?._id },
-      { $set: { products } },
-      { upsert: true, new: true },
-    );
-    return { message: "success", data: detail };
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
-export const deleteRaffleProducts = async (admin, data) => {
-  try {
-    const { shop } = admin.rest.session;
-    const data = await raffleProductsModel.findOneAndUpdate(
-      { shop },
-      { $set: { products } },
-      { upsert: true, new: true },
-    );
-    return { message: "success", data };
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
+// export const updateRaffleProducts = async (admin, data) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const detail = await raffleProductsModel.findOneAndUpdate(
+//       { shop, _id: data?._id },
+//       { $set: { products } },
+//       { upsert: true, new: true },
+//     );
+//     return { message: "success", data: detail };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
+// export const deleteRaffleProducts = async (admin, data) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const data = await raffleProductsModel.findOneAndUpdate(
+//       { shop },
+//       { $set: { products } },
+//       { upsert: true, new: true },
+//     );
+//     return { message: "success", data };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
 // export const updateRaffleProducts = async (admin, products) => {
 //   try {
 //     const { shop } = admin.rest.session;
@@ -1428,16 +1425,16 @@ export const deleteRaffleProducts = async (admin, data) => {
 //     return { message: "Error processing request", status: 500 };
 //   }
 // };
-export const getRaffleProducts = async (admin) => {
-  try {
-    const { shop } = admin.rest.session;
-    const data = await raffleProductsModel.findOne({ shop });
-    return { message: "success", data };
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
+// export const getRaffleProducts = async (admin) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const data = await raffleProductsModel.findOne({ shop });
+//     return { message: "success", data };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
 
 // fs.writeFile("checkkkk.txt", dataString, (err) => {
 //   if (err) {

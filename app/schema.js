@@ -124,4 +124,4 @@ const subscriptionContractModel = mongoose.models?.contractDetails || mongoose.m
 const membershipsModel = mongoose.models?.memberships || mongoose.model("memberships", membershipSchema);
 // const raffleProductsModel = mongoose.models?.raffleProducts || mongoose.model("raffleProducts", raffleProductSchema);
 const billingModel = mongoose.models?.billingDetails || mongoose.model("billingDetails", billingSchema);
-export { planDetailsModel, raffleProductsModel, credentialModel, templateModel, subscriptionContractModel, membershipsModel, billingModel };
+export { planDetailsModel, credentialModel, templateModel, subscriptionContractModel, membershipsModel, billingModel };

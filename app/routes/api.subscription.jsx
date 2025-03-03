@@ -1,5 +1,11 @@
 
 //APp--proxy
+
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
 export const loader = async ({ request }) => {
   try {
     
@@ -26,9 +32,7 @@ export const loader = async ({ request }) => {
       </html>`;
 
     const response = new Response(liquidContent, {
-      headers: {
-        "Content-Type": "application/liquid",
-      },
+      headers: headers,
     });
 
     return response;
