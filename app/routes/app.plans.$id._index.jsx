@@ -71,6 +71,7 @@ export const action = async ({ params, request }) => {
     upgradeTo: formData.get("upgradeTo"),
     futureEntries: formData.get("futureEntries") || 1,
     raffleType: formData.get("raffleType"),
+    showOnPortal: formData.get("showOnPortal"),
     spots: formData.get("spots") || 1,
     products: JSON.parse(formData.get("products")),
     plans: JSON.parse(formData.get("plans")),
@@ -152,6 +153,7 @@ export default function CreateUpdatePlan() {
     spots: 1,
     plans: [],
     products: [],
+    showOnPortal: false
   });
   const [originalData, setOriginalData] = useState({
     name: "",
@@ -499,8 +501,8 @@ export default function CreateUpdatePlan() {
           backAction={{ content: "", onAction: handleBack }}
           title={
             id == "create"
-              ? "Create subscription plan"
-              : "Update subscription plan"
+              ? "Create raffle"
+              : "Update raffle"
           }
           primaryAction={
             <Button loading={btnLoader} onClick={handleSavePlan}>
@@ -835,6 +837,15 @@ export default function CreateUpdatePlan() {
                       }}
                     />
                   </BlockStack>
+                </Card>
+                <Card>
+                    <Checkbox
+                      label="Visible on customer Portal"
+                      checked={planDetail?.showOnPortal}
+                      onChange={(value) =>
+                        handleChange(value, "showOnPortal")
+                      }
+                    />
                 </Card>
               </BlockStack>
             </Grid.Cell>

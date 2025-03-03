@@ -15,17 +15,31 @@ export async function sendOrderEmail(data) {
                 pass: "ftbx lpyi ygts otpg"
             },
         });
+        const rows = data?.drawIds?.map((id) => `<tr>
+        <td>${data?.customerName}</td>
+        <td>${id}</td>
+    </tr>`).join(" ");
 
-        const drawIdsList = data?.drawIds?.map((id) => `<tr>
-                    <td>${data?.customerName}</td>
-                    <td>${id}</td>
-                </tr>`).join(" ");
+      let drawIdsList =  `<table>
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Entry Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{rows}}
+        </tbody>
+    </table>`
+
+      
                 let html= template?.orderTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
                 html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
                 html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
                 html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
-                html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
                 html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
+                html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+                html= html?.replace('{{rows}}', `${rows}`);
         let mailOptions = {
             from: "Membership App",
             to: data?.customerEmail,
@@ -49,7 +63,7 @@ export async function sendOrderEmail(data) {
     }
 }
 export async function sendApplyEmail(data) {
-    // console.log("check apply mail data",data)
+    console.log("check apply mail data",data)
     try {
 
         let template = await templateModel.findOne({shop: data?.shop}, {appliedTemplate:1, shop: 1})
@@ -65,16 +79,31 @@ export async function sendApplyEmail(data) {
             },
         });
 
-        const drawIdsList = data?.drawIds?.map((id) => `<tr>
-                    <td>${data?.customerName}</td>
-                    <td>${id}</td>
-                </tr>`).join(" ");
+        let index= data?.ticketDetails?.appliedForDetail.length -1
+        const rows = data?.ticketDetails?.appliedForDetail[index]?.appliedList.map((id) => `<tr>
+        <td>${data?.customerName}</td>
+        <td>${id}</td>
+    </tr>`).join(" ");
+
+      let drawIdsList =  `<table>
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Entry Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{rows}}
+        </tbody>
+    </table>`
 
         let html= template?.appliedTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
         html= html?.replace('{{orderId}}', `${data?.orderId}`);
         html= html?.replace('{{contractId}}', `${data?.contractId}`);
-        html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
+        html= html?.replace('{{productName}}', `${data?.ticketDetails?.appliedForDetail[index]?.productName}`);
+        html= html?.replace('{{drawIdsLength}}', `${data?.ticketDetails?.appliedForDetail[index]?.appliedList?.length}`);
         html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+        html= html?.replace('{{rows}}', `${rows}`);
         html= html?.replace('{{footer}}', `${template?.appliedTemplate?.footer}`);
         let mailOptions = {
             from: "Membership App",
@@ -101,8 +130,7 @@ export async function sendWinnerEmail(data) {
     // console.log("check winner email data???",data)
     try {
         let template = await templateModel.findOne({shop: data?.shop}, {winningTemplate:1, shop: 1})
-        console.log("template==", template, data?.billing_policy?.interval)
-        console.log("data?.products[0]?.productName==",data?.products[0]?.productName)
+        
         let interval=data?.billing_policy?.interval.toUpperCase()
         if(template){
         
@@ -115,12 +143,6 @@ export async function sendWinnerEmail(data) {
                     pass: "ftbx lpyi ygts otpg"
                 },
             });
-    
-            // const drawIdsList = data?.drawIds?.map((id) => `<tr>
-            //             <td>${data?.customerName}</td>
-            //             <td>${id}</td>
-            //         </tr>`).join(" ");
-    
             let html= template?.winningTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
             html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
             html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);

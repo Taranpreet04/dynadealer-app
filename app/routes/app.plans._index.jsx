@@ -152,7 +152,7 @@ export default function PlanData() {
           //   // navigate("/app/plans/create")
           //   navigate("/app/plans/create")
           // }
-          <Page title="Plans" primaryAction={{content : 'Create new', onAction : handleCreate}}>
+          <Page title="Raffles" primaryAction={{content : 'Create new', onAction : handleCreate}}>
 
             <Card>
               {tableData.length > 0 ? (

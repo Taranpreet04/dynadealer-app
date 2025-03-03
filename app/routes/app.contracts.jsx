@@ -104,17 +104,32 @@ export default function ContractData() {
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data;
+      console.log("detail==", detail)
       let dataToExport = [];
-      detail?.map((detail) => {
-        detail?.drawIds?.map((id) => {
+
+      detail.map((detail)=>{
+        console.log(detail)
+        detail?.appliedForDetail[0]?.appliedList.map((data)=>{
+          console.log("dataid==", data)
           dataToExport.push({
-            drawId: id,
+            drawId: data,
             customerId: detail?.customerId,
             customerName: detail?.customerName,
             orderId: detail?.orderId,
           });
-        });
-      });
+        })
+      })
+      // detail?.map((detail) => {
+      //   detail?.drawIds?.map((id) => {
+      //     dataToExport.push({
+      //       drawId: id,
+      //       customerId: detail?.customerId,
+      //       customerName: detail?.customerName,
+      //       orderId: detail?.orderId,
+      //     });
+      //   });
+      // });
+      console.log("dataToExport==", dataToExport)
       if (dataToExport?.length > 0) {
         let data = [
           {
@@ -155,6 +170,9 @@ export default function ContractData() {
   const rows = tableData?.map((itm, index) => [
     <Text>{itm?.contractId}</Text>,
     <Text> {itm?.customerName}</Text>,
+    <Text> {itm?.ticketDetails?.total}</Text>,
+    <Text> {itm?.ticketDetails?.applied}</Text>,
+    <Text> {itm?.ticketDetails?.available}</Text>,
     <Text>
       <Badge tone={itm?.status == "CANCELLED" ? "critical" : "success"}>
         {itm?.status}
@@ -244,7 +262,7 @@ export default function ContractData() {
         <ContentSkeleton />
       ) : (
         <Page
-          title="Contracts"
+          title="Subscribers"
           primaryAction={
             <Button
               variant="primary"
@@ -270,6 +288,18 @@ export default function ContractData() {
                     <Text variant="headingSm" as="h6">
                       {" "}
                       Customer Name
+                    </Text>,
+                    <Text variant="headingSm" as="h6">
+                      {" "}
+                      Total Tickets
+                    </Text>,
+                    <Text variant="headingSm" as="h6">
+                      {" "}
+                     Applied tickets
+                    </Text>,
+                    <Text variant="headingSm" as="h6">
+                      {" "}
+                      Available Tickets
                     </Text>,
                     <Text variant="headingSm" as="h6">
                       {" "}

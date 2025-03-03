@@ -26,8 +26,8 @@ export default function App() {
     <AppProvider isEmbeddedApp apiKey={apiKey} i18n={enTranslations}>
         <ui-nav-menu>
           <Link to="/app" rel="home" prefetch="viewport">Subscription</Link>
-          <Link to="/app/plans" prefetch="viewport">Plans</Link>
-          <Link to="/app/contracts" prefetch="viewport">Memberships</Link>
+          <Link to="/app/plans" prefetch="viewport">Raffles</Link>
+          <Link to="/app/contracts" prefetch="viewport">Subscribers</Link>
           <Link to="/app/emailCustomizer" prefetch="viewport">Email Customizer</Link>
         </ui-nav-menu>
        <Outlet />

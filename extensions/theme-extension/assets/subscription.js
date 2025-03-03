@@ -1,6 +1,6 @@
 console.log("js--__________=");
 
-let serverPath = "https://associate-briefly-malaysia-pizza.trycloudflare.com";
+let serverPath = "https://occasional-head-grove-psychological.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;

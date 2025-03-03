@@ -145,11 +145,11 @@ export const action = async ({ request }) => {
               ? new Date().toISOString()
               : cusRes?.data?.nextBillingDate,
           ticketDetails: {
-            total: drawIds?.length,
+            total: Number(drawIds?.length),
             totalTicketsList: drawIds,
             applied: 0,
             appliedTicketsList: [],
-            available: drawIds?.length,
+            available: Number(drawIds?.length),
             availableTicketsList: drawIds,
             appliedForDetail: [],
           },
