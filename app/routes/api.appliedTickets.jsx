@@ -20,10 +20,10 @@ const headers = {
 export const action = async ({ request }) => {
     const data = await request.json();
     try {
-        console.log("data?.flag==", data)
+       
         if (data) {
-            let details = await billingModel.findOneAndUpdate(
-                { _id: data._id }, 
+            let details = await subscriptionContractModel.findOneAndUpdate(
+                { _id: data._id , contractId: data.contractId }, 
                 { $set: data },    
                 { new: true, upsert: true, setDefaultsOnInsert: true } 
             );
@@ -41,10 +41,7 @@ export const action = async ({ request }) => {
         }
     } catch (error) {
         console.error("Error processing POST request:", error);
-        // return new Response(JSON.stringify(), {
-        //     status: 500,
-        //     headers
-        // });
+       
         return json({ message: "Error processing request" }, {
             status: 500,
             headers,

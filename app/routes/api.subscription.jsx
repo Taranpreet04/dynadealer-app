@@ -23,8 +23,8 @@ export const loader = async ({ request }) => {
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Document</title>   
-      <script src="${url.origin}/api/customerPortalJs"></script> 
-      <link rel="stylesheet" href="${url.origin}/api/customerPortalCss">
+      <script src="${shop}/api/customerPortalJs"></script> 
+      <link rel="stylesheet" href="${shop}/api/customerPortalCss">
       </head>
       <body>
       <div id="subscription-main-body"></div>
