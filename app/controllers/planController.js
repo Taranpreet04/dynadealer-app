@@ -5,7 +5,7 @@ import {
   subscriptionContractModel,
   templateModel,
 } from "../schema";
-import fs from "fs";
+// import fs from "fs";
 // import { raffleAnnouncementMail } from './mail';
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
