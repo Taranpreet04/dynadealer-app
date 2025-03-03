@@ -64,7 +64,7 @@ export default function EmailCustomizer() {
     const [reCheckWinner, setReCheckWinner] = useState(false);
     const submit = useSubmit()
     useEffect(() => {
-        console.log("loaderData?.data==", loaderData)
+     
         if (loaderData) {
             setTemplates(loaderData?.data)
             let details = []
@@ -85,7 +85,7 @@ export default function EmailCustomizer() {
         }
     }, [actionData])
     const handleEditorChange = (e) => {
-        console.log(" e.target.value==", e.target.value)
+     
         let data = templates
         tabSelected == 0 ?
             (data.orderTemplate.html = e.target.value)
@@ -154,18 +154,13 @@ export default function EmailCustomizer() {
             drawIds: JSON.stringify(winnerDetail?.drawIds),
             billing_policy: JSON.stringify(winnerDetail?.billing_policy),
         }
-        console.log("winnerDetail==", winnerDetail)
+     
         submit(formData, {
             method: "post"
         })
     }
     return (
         <Page
-            // backAction={{
-            //     content: 'Settings', url: '../plans', onAction: () => {
-            //         shopify.loading(true)
-            //     }
-            // }}
             title="Email customizer"
             primaryAction={<Button variant="primary" loading={btnLoader}
                 onClick={handleSave}>Save</Button>}

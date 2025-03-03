@@ -1,5 +1,5 @@
 import { json } from '@remix-run/node';
-import { sendApplyEmail } from '../db.mailcontroller';
+// import { sendApplyEmail } from '../db.mailcontroller';
 import { billingModel } from '../schema';
 
 const headers = {
@@ -29,7 +29,7 @@ export const action = async ({ request }) => {
             );
 
             console.log("details==", details)
-           let res= sendApplyEmail(data)
+          //  let res= sendApplyEmail(data)
             // return new Response(JSON.stringify({ message: "success", details: details }), {
             //     status: 200,
             //     headers,

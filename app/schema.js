@@ -10,6 +10,7 @@ const planDetailsSchema = new mongoose.Schema(
     raffleType: String,
     spots: Number,
     plans: Object,
+    showOnPortal: Boolean,
     products: Object,
     plan_group_id: String,
     offerValidity: Object
@@ -67,12 +68,23 @@ const membershipSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-const raffleProductSchema = new mongoose.Schema({
-  shop: String,
-  products: Object
-}, {
-  timestamps: true
-});
+// const raffleProductSchema = new mongoose.Schema({
+//   shop: String,
+//   productId: String,
+//   productname: String,
+//   inventory: Number,
+//   status: Boolean,
+//   raffleType: String,
+//   spots: Number
+// }, {
+//   timestamps: true
+// });
+// const raffleProductSchema = new mongoose.Schema({
+//   shop: String,
+//   products: Object
+// }, {
+//   timestamps: true
+// });
 
 
 const billingSchema = new mongoose.Schema({
@@ -102,7 +114,7 @@ planDetailsSchema.index({ shop: 1 });
 credentialSchema.index({ shop: 1 });
 subscriptionContract.index({ shop: 1 });
 membershipSchema.index({ shop: 1 });
-raffleProductSchema.index({ shop: 1 });
+// raffleProductSchema.index({ shop: 1 });
 billingSchema.index({ shop: 1 });
 
 const planDetailsModel = mongoose.models?.planDetails || mongoose.model("planDetails", planDetailsSchema);
@@ -110,6 +122,6 @@ const credentialModel = mongoose.models?.credential || mongoose.model("credentia
 const templateModel = mongoose.models?.template || mongoose.model("template", templateSchema);
 const subscriptionContractModel = mongoose.models?.contractDetails || mongoose.model("contractDetails", subscriptionContract);
 const membershipsModel = mongoose.models?.memberships || mongoose.model("memberships", membershipSchema);
-const raffleProductsModel = mongoose.models?.raffleProducts || mongoose.model("raffleProducts", raffleProductSchema);
+// const raffleProductsModel = mongoose.models?.raffleProducts || mongoose.model("raffleProducts", raffleProductSchema);
 const billingModel = mongoose.models?.billingDetails || mongoose.model("billingDetails", billingSchema);
-export { planDetailsModel, raffleProductsModel, credentialModel, templateModel, subscriptionContractModel, membershipsModel, billingModel };
+export { planDetailsModel, credentialModel, templateModel, subscriptionContractModel, membershipsModel, billingModel };

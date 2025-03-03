@@ -4,7 +4,7 @@ import { boundary } from "@shopify/shopify-app-remix/server";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "../shopify.server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
-import enTranslations from '@shopify/polaris/locales/en.json';
+// import enTranslations from '@shopify/polaris/locales/en.json';
 import knobStyle from '../components/knob.css?url';
 
 export const links = () => [
@@ -23,11 +23,11 @@ export default function App() {
   const { apiKey } = useLoaderData();
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey} i18n={enTranslations}>
+    <AppProvider isEmbeddedApp apiKey={apiKey}>
         <ui-nav-menu>
           <Link to="/app" rel="home" prefetch="viewport">Subscription</Link>
-          <Link to="/app/plans" prefetch="viewport">Plans</Link>
-          <Link to="/app/contracts" prefetch="viewport">Memberships</Link>
+          <Link to="/app/plans" prefetch="viewport">Raffles</Link>
+          <Link to="/app/contracts" prefetch="viewport">Subscribers</Link>
           <Link to="/app/emailCustomizer" prefetch="viewport">Email Customizer</Link>
         </ui-nav-menu>
        <Outlet />

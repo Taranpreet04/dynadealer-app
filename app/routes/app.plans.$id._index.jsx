@@ -71,6 +71,7 @@ export const action = async ({ params, request }) => {
     upgradeTo: formData.get("upgradeTo"),
     futureEntries: formData.get("futureEntries") || 1,
     raffleType: formData.get("raffleType"),
+    showOnPortal: formData.get("showOnPortal"),
     spots: formData.get("spots") || 1,
     products: JSON.parse(formData.get("products")),
     plans: JSON.parse(formData.get("plans")),
@@ -87,7 +88,7 @@ export const action = async ({ params, request }) => {
       newPlanDetails,
       params?.id,
     );
-    console.log("found product===", checkProduct)
+  
     if (!checkProduct) {
       if (params?.id == "create") {
         planDetails = await createPlan(admin, newPlanDetails);
@@ -152,6 +153,7 @@ export default function CreateUpdatePlan() {
     spots: 1,
     plans: [],
     products: [],
+    showOnPortal: false
   });
   const [originalData, setOriginalData] = useState({
     name: "",
@@ -167,7 +169,7 @@ export default function CreateUpdatePlan() {
       return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
     };
     if (loaderData !== null) {
-      console.log("loaderData==", loaderData);
+    
       const dates = {
         start: new Date(toIST(loaderData?.offerValidity?.start)),
         end: new Date(toIST(loaderData?.offerValidity?.end)),
@@ -218,7 +220,7 @@ export default function CreateUpdatePlan() {
         item?.plan_id ? updatePlans?.push(item) : newPlans?.push(item);
       });
       if (JSON.stringify(originalData) !== JSON.stringify(planDetail)) {
-        console.log("befortre post===planDetail==", planDetail);
+    
         let formData = {
           ...planDetail,
           plans: JSON.stringify(planDetail?.plans),
@@ -365,7 +367,7 @@ export default function CreateUpdatePlan() {
       [name]: val,
     });
   };
-  console.log("planDetails---", planDetail);
+ 
   const handleDeleteProduct = (id) => {
     let products = planDetail?.products?.filter(
       (item) => item?.product_id !== id,
@@ -374,7 +376,7 @@ export default function CreateUpdatePlan() {
   };
 
   const handleAddPlan = () => {
-    console.log("editSellingPlan", editSellingPlan);
+   
     if (!editSellingPlan) {
       let match = 0;
       let nameExist = 0;
@@ -384,7 +386,7 @@ export default function CreateUpdatePlan() {
           setPlanNameExist(true);
         }
       });
-      console.log(planDetail?.plans, "name exist==", nameExist);
+   
       if (newPlan?.name.trim() === "") {
         shopify.toast.show("Plan name is required", { duration: 5000 });
       } else if (planNameExist || nameExist === 1) {
@@ -499,8 +501,8 @@ export default function CreateUpdatePlan() {
           backAction={{ content: "", onAction: handleBack }}
           title={
             id == "create"
-              ? "Create subscription plan"
-              : "Update subscription plan"
+              ? "Create raffle"
+              : "Update raffle"
           }
           primaryAction={
             <Button loading={btnLoader} onClick={handleSavePlan}>
@@ -835,6 +837,15 @@ export default function CreateUpdatePlan() {
                       }}
                     />
                   </BlockStack>
+                </Card>
+                <Card>
+                    <Checkbox
+                      label="Visible on customer Portal"
+                      checked={planDetail?.showOnPortal}
+                      onChange={(value) =>
+                        handleChange(value, "showOnPortal")
+                      }
+                    />
                 </Card>
               </BlockStack>
             </Grid.Cell>

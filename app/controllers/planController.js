@@ -1,12 +1,9 @@
 import {
   billingModel,
   planDetailsModel,
-  raffleProductsModel,
   subscriptionContractModel,
   templateModel,
 } from "../schema";
-import fs from "fs";
-// import { raffleAnnouncementMail } from './mail';
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
@@ -41,8 +38,6 @@ export const checkProductSubscription = async (newPlanDetails, id) => {
         },
       });
     }
-
-    console.log("check===", check);
 
     return check?.length > 0 ? true : false;
   } catch (err) {
@@ -213,7 +208,7 @@ export const createPlan = async (admin, newPlanDetail) => {
 export const getAllPlans = async (admin) => {
   try {
     const { shop } = admin.rest.session;
-    const planDetails = await planDetailsModel.find({ shop });
+    const planDetails = await planDetailsModel.find({ shop }).sort({ createdAt: -1 });
     return { success: true, planDetails };
   } catch (error) {
     console.error("Error getting plan details:", error);
@@ -264,7 +259,7 @@ export const deletePlanById = async (admin, data) => {
         shop: shop,
         plan_group_id: deletedPlanId,
       });
-      console.log("dbResult==", dbResult);
+    
       if (dbResult) {
         return { status: true, data: "Plan Deleted" };
       } else {
@@ -297,9 +292,7 @@ export const getPlanById = async (admin, id) => {
 };
 
 export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
-  console.log("newPlanDetails==", newPlanDetails);
-  console.log("ids==", ids);
-  console.log("data==", data);
+
   try {
     const { shop } = admin.rest.session;
     let dbproductlist = data?.dbProducts;
@@ -568,7 +561,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         const addVariantRes = await addVariantresponse.json();
       }
       const query = { _id: ids?.id };
-      console.log("newData==", newData);
+
       const update = {
         ...newData,
         shop: shop,
@@ -661,7 +654,7 @@ export const cancelContract = async (admin, data) => {
         status: 400,
       };
     } else {
-      console.log("data==", data);
+   
       let res = await subscriptionContractModel.findOneAndUpdate(
         { _id: data?.contractDbID },
         { $set: { status: "CANCELLED" } },
@@ -675,7 +668,7 @@ export const cancelContract = async (admin, data) => {
       };
     }
   } catch (error) {
-    console.error("Error:ad", error);
+  
     return { success: false, error: "Failed to cancel plan." };
   }
 };
@@ -933,6 +926,7 @@ export const getCustomerDataByContractId = async (admin, id) => {
 
 export const getExportData = async (admin, data, date) => {
   try {
+   
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
@@ -942,18 +936,48 @@ export const getExportData = async (admin, data, date) => {
       $gte: startIST,
       $lte: endIST,
     };
-    const matchingDocuments = await billingModel.find({
-      "appliedFor.productId": data[0],
-      createdAt: dateRange,
-      status: "done",
-      applied: true,
-    });
-    // const matchingDocuments = await billingModel.find({
-    //   "products.productId": { $in: data },
-    //   createdAt: dateRange,
-    //   status: "done",
-    //   applied: true,
-    // });
+    const matchingDocuments = await subscriptionContractModel.aggregate([
+      {
+        $match: {
+          "ticketDetails.appliedForDetail.productId": data[0]
+        }
+      },
+      {
+        $project: {
+          _id: 0, // Exclude `_id` if not needed
+          shop: 1,
+          orderId: 1,
+          contractId: 1,
+          customerId: 1,
+          customerName: 1,
+          customerEmail: 1,
+          appliedForDetail: {
+            $filter: {
+              input: "$ticketDetails.appliedForDetail",
+              as: "detail",
+              cond: {
+                $and: [
+                  { $eq: ["$$detail.productId", data[0]] },
+                  { 
+                    $gte: [
+                      { $toDate: "$$detail.appliedDate" },
+                      startIST
+                    ]
+                  },
+                  { 
+                    $lte: [
+                      { $toDate: "$$detail.appliedDate" }, 
+                      endIST
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]);
+
     return { success: true, data: matchingDocuments };
   } catch (error) {
     console.error("Error processing POST request:", error);
@@ -969,28 +993,26 @@ const toIST = (dateString) => {
 
 export const checkMincycleComplete = async (detail) => {
   try {
-    console.log("data==", detail);
     let data = await billingModel.find({
       contractId: detail?.id,
       status: "done",
     });
-    let activeDraws = await raffleProductsModel.aggregate([
-      { $match: { shop: detail?.shop } },
-      {
-        $project: {
-          _id: 0,
-          products: {
-            $filter: {
-              input: "$products",
-              as: "product",
-              cond: { $eq: ["$$product.status", true] },
-            },
-          },
-        },
-      },
-    ]);
-    //   console.log("activeDraws==", activeDraws)
-    return { message: "success", data, activeDraws: activeDraws[0]?.products };
+    
+    let productAr=[]
+    let activeDraws= await planDetailsModel.find({shop: detail?.shop , showOnPortal: true})
+    activeDraws.map((item)=>{
+      item?.products.map((product)=>{
+        productAr.push({
+          id: product.product_id,
+          title: product.product_name,
+          image: product.product_image,
+          raffleType: item?.raffleType,
+          spots: item?.spots,
+        })
+      })
+    })
+    
+    return { message: "success", data, activeDraws: productAr };
   } catch (error) {
     console.error("Error processing POST request:", error);
     return { message: "Error processing request", status: 500 };
@@ -1029,17 +1051,7 @@ export const setDefaultTemplate = async (shop) => {
             <b>{{interval}}</b> plan.</p>
             <p>Your have {{drawIdsLength}} chances for winning.</p>
             <p>Your Entry Numbers are:</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Customer Name</th>
-                        <th>Entry Number</th>
-                    </tr>
-                </thead>
-                <tbody>
                     {{drawIdsList}}
-                </tbody>
-            </table>
             <p>Note: You must apply for tickets through the customer portal; otherwise, they will not be included in the lucky draw listing.</p>
                <p>Steps to apply for tickets-</p>
 
@@ -1114,18 +1126,10 @@ export const setDefaultTemplate = async (shop) => {
             <p>Your orderId is: {{orderId}}</p>
             <p>Your contractId is: {{contractId}}</p>
             <p>Your have {{drawIdsLength}} chances for winning.</p>
-            <p>Here, the list of your ticket Entries which are applied for upcomming lucky draw.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Customer Name</th>
-                        <th>Entry Number</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <p>Here, the list of your ticket Entries which are applied for {{productName}} giveaway</p>
+           
                 {{drawIdsList}}
-                </tbody>
-            </table>
+               
             <pre>
                 {{footer}}
             </pre>`,
@@ -1161,7 +1165,7 @@ export const setDefaultTemplate = async (shop) => {
         {
           term: "{{productName}}",
           description:
-            "This specifies the name of the product for which the order is placed.",
+            "This specifies the name of the product for which tickets are applied",
         },
         {
           term: "{{interval}}",
@@ -1197,7 +1201,7 @@ export const setDefaultTemplate = async (shop) => {
             <p>Thank you for being a valued part of our community. We appreciate your participation and look forward to more exciting moments with you!
 
                     If you have any questions, feel free to reach out.
-  </p>
+            </p>
           <pre>
                 {{footer}}
             </pre>
@@ -1367,30 +1371,70 @@ export const updateTemplate = async (admin, data) => {
   }
 };
 
-export const updateRaffleProducts = async (admin, products) => {
-  try {
-    const { shop } = admin.rest.session;
-    const data = await raffleProductsModel.findOneAndUpdate(
-      { shop },
-      { $set: { products } },
-      { upsert: true, new: true },
-    );
-    return { message: "success", data };
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
-export const getRaffleProducts = async (admin) => {
-  try {
-    const { shop } = admin.rest.session;
-    const data = await raffleProductsModel.findOne({ shop });
-    return { message: "success", data };
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
+// export const addRaffleProducts = async (admin, data) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const dataExist = await raffleProductsModel.findOne({shop, productId: data.productId})
+   
+//       return { message: "Raffle already created."};
+   
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
+// export const updateRaffleProducts = async (admin, data) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const detail = await raffleProductsModel.findOneAndUpdate(
+//       { shop, _id: data?._id },
+//       { $set: { products } },
+//       { upsert: true, new: true },
+//     );
+//     return { message: "success", data: detail };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
+// export const deleteRaffleProducts = async (admin, data) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const data = await raffleProductsModel.findOneAndUpdate(
+//       { shop },
+//       { $set: { products } },
+//       { upsert: true, new: true },
+//     );
+//     return { message: "success", data };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
+// export const updateRaffleProducts = async (admin, products) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const data = await raffleProductsModel.findOneAndUpdate(
+//       { shop },
+//       { $set: { products } },
+//       { upsert: true, new: true },
+//     );
+//     return { message: "success", data };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
+// export const getRaffleProducts = async (admin) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     const data = await raffleProductsModel.findOne({ shop });
+//     return { message: "success", data };
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
 
 // fs.writeFile("checkkkk.txt", dataString, (err) => {
 //   if (err) {

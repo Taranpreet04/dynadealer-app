@@ -15,14 +15,14 @@ const headers = {
   };
 export const action = async ({ request }) => {
     const data = await request.json();
-    console.log("data==", data)
+  
     try {
         if(data?.productId){
             const id = `gid://shopify/Product/${data?.productId}`
             const check = await planDetailsModel.findOne({
                 "products.product_id": id,
             });
-            console.log("check=", check, check.offerValidity)
+          
             return new Response(JSON.stringify({ message: "success", offerValidity: check.offerValidity }), {
                 status: 200,
                 headers

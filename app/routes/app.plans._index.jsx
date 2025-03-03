@@ -96,7 +96,7 @@ export default function PlanData() {
 
   let plan = tableData?.filter((item) => item?._id == deleteId)
   const deletePlan = (deleteId) => {
-    console.log("deleteId--", deleteId)
+   
     let data = {
       _id: deleteId,
       plan_group_id: plan[0]?.plan_group_id
@@ -152,7 +152,7 @@ export default function PlanData() {
           //   // navigate("/app/plans/create")
           //   navigate("/app/plans/create")
           // }
-          <Page title="Plans" primaryAction={{content : 'Create new', onAction : handleCreate}}>
+          <Page title="Raffles" primaryAction={{content : 'Create new', onAction : handleCreate}}>
 
             <Card>
               {tableData.length > 0 ? (

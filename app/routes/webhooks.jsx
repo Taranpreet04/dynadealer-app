@@ -16,19 +16,17 @@ export const action = async ({ request }) => {
   if (!admin) {
     return new Response("Unauthorised user!", { status: 401 });
   }
-  // const res=  shopify.registerWebhooks({ session });
-  // console.log("res==", res)
-  console.log("topic==", topic);
+ 
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
-        console.log("shop==", shop, session);
+      
         const deleteCredential = credentialModel.deleteOne({ shop });
-        // console.log("deleteCredential==", deleteCredential)
+      
         await Promise.all([deleteCredential]);
 
         const sessionId = session.id;
-        console.log("sessionId==", sessionId);
+       
         let check = await shopify.sessionStorage.deleteSession(sessionId);
         if (check) {
           return new Response("App uninstalled successfully", { status: 200 });
@@ -77,9 +75,7 @@ export const action = async ({ request }) => {
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
         if (planName?.toLowerCase()?.includes("level")) {
-          console.log(planName?.split("-")[0]);
-          // add level details in membership table
-          // memebershipLevel: planName?.toLowerCase()?.includes('level')? planName?.split('-')[0]: 'no',
+      
           let membership = await membershipsModel.findOneAndUpdate(
             { shop, customerId: customerId }, // Find by shop and customerId
             {
@@ -117,7 +113,7 @@ export const action = async ({ request }) => {
           shop: shop,
           "plans.plan_id": planId,
         });
-        console.log("planDetailsv=", planDetails);
+      
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
@@ -145,11 +141,11 @@ export const action = async ({ request }) => {
               ? new Date().toISOString()
               : cusRes?.data?.nextBillingDate,
           ticketDetails: {
-            total: drawIds?.length,
+            total: Number(drawIds?.length),
             totalTicketsList: drawIds,
             applied: 0,
             appliedTicketsList: [],
-            available: drawIds?.length,
+            available: Number(drawIds?.length),
             availableTicketsList: drawIds,
             appliedForDetail: [],
           },
