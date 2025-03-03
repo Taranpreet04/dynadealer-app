@@ -38,7 +38,7 @@ export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   // let data = await getRaffleProducts(admin);
   // return { data: data?.data };
-  return {data: 'ok'}
+  return null
 };
 
 export const action = async ({ request }) => {
