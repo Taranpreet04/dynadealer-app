@@ -1,6 +1,6 @@
 console.log("js--__________=");
 
-let serverPath = "https://hungary-casa-scanners-semiconductor.trycloudflare.com";
+let serverPath = "https://dynadealersapp.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
