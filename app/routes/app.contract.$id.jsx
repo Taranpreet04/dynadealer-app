@@ -49,7 +49,7 @@ export default function ContractDetails() {
   useEffect(() => {
     shopify.loading(true);
     setLoading(true);
-    console.log("loaderData?.data==", loaderData?.data)
+  
     loaderData?.data ? setData(loaderData?.data) : "";
     let products = [];
     loaderData?.data?.lines?.edges.map((itm) => {

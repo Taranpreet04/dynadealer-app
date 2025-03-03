@@ -40,7 +40,8 @@ p{
 }
 #subscription-footer {
   display: flex;
-  justify-content: space-between
+  justify-content: space-between;
+  align-items: center;
 }
 .right-div{
   text-align: right;
@@ -91,9 +92,9 @@ tr:hover {
 .btn {
   background: #f22600;
   color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 1px solid #f22600;
-  padding: 5px 10px;
+  padding: 10px 20px;
   cursor: pointer;
   margin: 5px;
 }
@@ -146,7 +147,9 @@ button:disabled{
 .drawsList{
   max-width: 100%;
 }
-
+.pagination{
+  margin-top: 1rem;
+}
 
 
 
@@ -405,6 +408,6 @@ body.modal-open {
   margin-top: 3rem;
 }
 #applied-tickets-input{
-  padding: 0;
+  padding: 0 10px;
   margin: 2px 20px 14px;
 }

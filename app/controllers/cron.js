@@ -2,7 +2,7 @@ import { billingModel, subscriptionContractModel } from "../schema";
 import { unauthenticated } from "../shopify.server";
 
 export async function recurringOrderCron() {
-  console.log("You will see this message every 10 minutes*******", new Date());
+  console.log("You will see this message every hour*******", new Date());
   const currentDate = new Date().toISOString();
   const targetDate = new Date(currentDate);
   try {
@@ -70,12 +70,12 @@ export async function recurringOrderCron() {
             })
             .sort({ createdAt: -1 });
 
-          console.log("recentDocument==", recentDocument);
+       
           if (recentDocument[0]?.planUpdateDetail?.sellingPlanUpdate) {
             entries =
               Number(recentDocument[0]?.planUpdateDetail?.futureEntries) * 1;
           }
-          console.log("entries====", entries);
+       
 
           for (let i = 0; i < entries; i++) {
             // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -87,7 +87,7 @@ export async function recurringOrderCron() {
               .substring(0, 7);
             drawIds.push(unique);
           }
-          console.log("data==", data[i]);
+      
           let saveToBillingAttempt = await billingModel.create({
             shop: data[i].shop,
             status: "PENDING",

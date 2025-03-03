@@ -104,13 +104,13 @@ export default function ContractData() {
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data;
-      console.log("detail==", detail)
+    
       let dataToExport = [];
 
       detail.map((detail)=>{
-        console.log(detail)
+      
         detail?.appliedForDetail[0]?.appliedList.map((data)=>{
-          console.log("dataid==", data)
+       
           dataToExport.push({
             drawId: data,
             customerId: detail?.customerId,
@@ -119,16 +119,6 @@ export default function ContractData() {
           });
         })
       })
-      // detail?.map((detail) => {
-      //   detail?.drawIds?.map((id) => {
-      //     dataToExport.push({
-      //       drawId: id,
-      //       customerId: detail?.customerId,
-      //       customerName: detail?.customerName,
-      //       orderId: detail?.orderId,
-      //     });
-      //   });
-      // });
       console.log("dataToExport==", dataToExport)
       if (dataToExport?.length > 0) {
         let data = [

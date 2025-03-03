@@ -36,8 +36,9 @@ import { sendMailToAll } from "../db.mailcontroller";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  let data = await getRaffleProducts(admin);
-  return { data: data?.data };
+  // let data = await getRaffleProducts(admin);
+  // return { data: data?.data };
+  return {data: 'ok'}
 };
 
 export const action = async ({ request }) => {
@@ -61,18 +62,18 @@ export default function Index() {
   useEffect(()=>{
     navigate('/app/plans')
   }, [])
-  const [products, setProducts] = useState([]);
-  const [productIds, setProductIds] = useState([]);
-  const [dltBtnLoader, setDltBtnLoader] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [statusChangeId, setStatusChangeId] = useState("");
-  const [raffleType, setRaffleType] = useState("unlimited");
-  const [spots, setSpots] = useState(0);
-  const [deleteId, setDeleteId] = useState("");
-  const [tableSkel, setTableSkel] = useState(false);
-  const [reCheck, setReCheck] = useState(false);
-  const [notifyId, setNotifyId] = useState("");
-  const [newProduct, setNewProduct] = useState({});
+  // const [products, setProducts] = useState([]);
+  // const [productIds, setProductIds] = useState([]);
+  // const [dltBtnLoader, setDltBtnLoader] = useState(false);
+  // const [openModal, setOpenModal] = useState(false);
+  // const [statusChangeId, setStatusChangeId] = useState("");
+  // const [raffleType, setRaffleType] = useState("unlimited");
+  // const [spots, setSpots] = useState(0);
+  // const [deleteId, setDeleteId] = useState("");
+  // const [tableSkel, setTableSkel] = useState(false);
+  // const [reCheck, setReCheck] = useState(false);
+  // const [notifyId, setNotifyId] = useState("");
+  // const [newProduct, setNewProduct] = useState({});
 
   // const submit = useSubmit();
   // const loaderData = useLoaderData();

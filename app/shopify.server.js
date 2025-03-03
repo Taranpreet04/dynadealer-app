@@ -21,12 +21,11 @@ dbConnect();
 let scheduledJobs = cron.getTasks();
 scheduledJobs.forEach((job) => job.stop());
 
-const cronTimeEvery1hr = '*/10 * * * *' //"0 * * * *"---1hrs
+const cronTimeEvery1hr = "0 * * * *" //'*/10 * * * *'
 var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });
 task.start();
-// console.log("process.env", process.env)
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
@@ -58,17 +57,11 @@ const shopify = shopifyApp({
   hooks: {
     afterAuth: async ({ session, admin }) => {
       console.log("✅ afterAuth hook is running...");
-      // console.log("session==", session)
-      // console.log("admin==", admin)
+     
       try {
         const res = shopify.registerWebhooks({ session });
-        console.log("res==", res)
         const { shop, accessToken, scope } = session;
-        console.log("👉 Shop:", shop, "Token:", accessToken);
-        // const credentials = credentialModel.create({
-        //   shop,
-        //   accessToken,
-        // });
+       
         const credentials = await credentialModel.findOneAndUpdate(
           { shop },
           { accessToken },

@@ -1,6 +1,6 @@
 console.log("js--__________=");
 
-let serverPath = "https://occasional-head-grove-psychological.trycloudflare.com";
+let serverPath = "https://hungary-casa-scanners-semiconductor.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;

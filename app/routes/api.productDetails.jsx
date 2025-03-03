@@ -17,7 +17,7 @@ const headers = {
 export const action = async ({ request }) => {
     try {
         const data = await request.json();
-        console.log("data==", data)
+     
         const shop = data?.shop;
         const productId = "gid://shopify/Product/" + data?.productId;
 
@@ -51,8 +51,6 @@ export const action = async ({ request }) => {
 
         const result = await response.json();
 
-
-        console.log("fetchDetail==", result.data)
 
 
         return new Response(JSON.stringify({ message: "success", data: result.data }), {

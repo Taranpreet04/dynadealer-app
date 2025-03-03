@@ -18,7 +18,7 @@ const headers = {
 export const action= async({request})=>{
     const data = await request.json();
     try{
-        console.log("data==", data)
+     
         const { admin } = await unauthenticated.admin(data.shop);
         if (!admin) {
             return new Response(

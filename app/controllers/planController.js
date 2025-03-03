@@ -42,8 +42,6 @@ export const checkProductSubscription = async (newPlanDetails, id) => {
       });
     }
 
-    console.log("check===", check);
-
     return check?.length > 0 ? true : false;
   } catch (err) {
     console.error("Error checking product subscription:", err);
@@ -264,7 +262,7 @@ export const deletePlanById = async (admin, data) => {
         shop: shop,
         plan_group_id: deletedPlanId,
       });
-      console.log("dbResult==", dbResult);
+    
       if (dbResult) {
         return { status: true, data: "Plan Deleted" };
       } else {
@@ -297,9 +295,7 @@ export const getPlanById = async (admin, id) => {
 };
 
 export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
-  console.log("newPlanDetails==", newPlanDetails);
-  console.log("ids==", ids);
-  console.log("data==", data);
+
   try {
     const { shop } = admin.rest.session;
     let dbproductlist = data?.dbProducts;
@@ -568,7 +564,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         const addVariantRes = await addVariantresponse.json();
       }
       const query = { _id: ids?.id };
-      console.log("newData==", newData);
+
       const update = {
         ...newData,
         shop: shop,
@@ -661,7 +657,7 @@ export const cancelContract = async (admin, data) => {
         status: 400,
       };
     } else {
-      console.log("data==", data);
+   
       let res = await subscriptionContractModel.findOneAndUpdate(
         { _id: data?.contractDbID },
         { $set: { status: "CANCELLED" } },
@@ -675,7 +671,7 @@ export const cancelContract = async (admin, data) => {
       };
     }
   } catch (error) {
-    console.error("Error:ad", error);
+  
     return { success: false, error: "Failed to cancel plan." };
   }
 };
@@ -933,8 +929,7 @@ export const getCustomerDataByContractId = async (admin, id) => {
 
 export const getExportData = async (admin, data, date) => {
   try {
-
-    console.log("data==", data)
+   
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
@@ -985,56 +980,7 @@ export const getExportData = async (admin, data, date) => {
         }
       }
     ]);
-    // const matchingDocuments = await subscriptionContractModel.find({
-    //   "ticketDetails.appliedForDetail.productId": data[0],
-    //   createdAt: dateRange,
-    // });
-    // const matchingDocuments = await subscriptionContractModel.aggregate([
-    //   {
-    //     $match: {
-    //       "ticketDetails.appliedForDetail.productId": data[0],
-    //       // "ticketDetails.appliedForDetail.appliedDate":  dateRange
-    //     }
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0, // Exclude `_id` if not needed
-    //       shop: 1,
-    //   orderId: 1,
-    //   contractId: 1,
-    //   customerId: 1,
-    //   customerName: 1,
-    //   customerEmail: 1,
-    //       appliedForDetail: {
-    //         $filter: {
-    //           input: "$ticketDetails.appliedForDetail",
-    //           as: "detail",
-    //           cond: { $eq: ["$$detail.productId", data[0]] }
-    //         }
-    //       }
-    //     }
-    //   }
-    // ]);
 
-
-
-    
-    console.log("matchingDocuments===", matchingDocuments)
-    const dataString = typeof matchingDocuments === "string" ? matchingDocuments : JSON.stringify(matchingDocuments);
-fs.writeFile("checkkkk.txt", dataString, (err) => {
-    if (err) {
-        console.error("Error writing to file:", err);
-    } else {
-        console.log("Data written to file successfully!");
-    }
-});
-
-    // const matchingDocuments = await billingModel.find({
-    //   "products.productId": { $in: data },
-    //   createdAt: dateRange,
-    //   status: "done",
-    //   applied: true,
-    // });
     return { success: true, data: matchingDocuments };
   } catch (error) {
     console.error("Error processing POST request:", error);
@@ -1050,26 +996,11 @@ const toIST = (dateString) => {
 
 export const checkMincycleComplete = async (detail) => {
   try {
-    console.log("data==", detail);
     let data = await billingModel.find({
       contractId: detail?.id,
       status: "done",
     });
-    // let activeDraws = await raffleProductsModel.aggregate([
-    //   { $match: { shop: detail?.shop } },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       products: {
-    //         $filter: {
-    //           input: "$products",
-    //           as: "product",
-    //           cond: { $eq: ["$$product.status", true] },
-    //         },
-    //       },
-    //     },
-    //   },
-    // ]);
+    
     let productAr=[]
     let activeDraws= await planDetailsModel.find({shop: detail?.shop , showOnPortal: true})
     activeDraws.map((item)=>{
@@ -1083,7 +1014,7 @@ export const checkMincycleComplete = async (detail) => {
         })
       })
     })
-      console.log("activeDraws==productAr", productAr)
+    
     return { message: "success", data, activeDraws: productAr };
   } catch (error) {
     console.error("Error processing POST request:", error);
@@ -1273,7 +1204,7 @@ export const setDefaultTemplate = async (shop) => {
             <p>Thank you for being a valued part of our community. We appreciate your participation and look forward to more exciting moments with you!
 
                     If you have any questions, feel free to reach out.
-  </p>
+            </p>
           <pre>
                 {{footer}}
             </pre>
@@ -1446,18 +1377,10 @@ export const updateTemplate = async (admin, data) => {
 export const addRaffleProducts = async (admin, data) => {
   try {
     const { shop } = admin.rest.session;
-    console.log("data==", data)
     const dataExist = await raffleProductsModel.findOne({shop, productId: data.productId})
-    console.log("dataExist==", dataExist)
-    // if(!dataExist){
-    //   const data = await raffleProductsModel.create(
-    //     shop,
-    //     productId: data?.p
-    //   );
-    //   return { message: "success", data };
-    // }else {
+   
       return { message: "Raffle already created."};
-    // }
+   
   } catch (error) {
     console.error("Error processing POST request:", error);
     return { message: "Error processing request", status: 500 };
