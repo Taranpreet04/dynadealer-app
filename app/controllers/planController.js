@@ -944,7 +944,7 @@ export const getExportData = async (admin, data, date) => {
       },
       {
         $project: {
-          _id: 0, // Exclude `_id` if not needed
+          _id: 0,
           shop: 1,
           orderId: 1,
           contractId: 1,
@@ -1029,18 +1029,9 @@ export const getAllContracts = async (admin) => {
   }
 };
 
-// const dataString = typeof resData === "string" ? resData : JSON.stringify(resData);
-// fs.writeFile("checkkkk.txt", dataString, (err) => {
-//     if (err) {
-//         console.error("Error writing to file:", err);
-//     } else {
-//         console.log("Data written to file successfully!");
-//     }
-// });
 
 export const setDefaultTemplate = async (shop) => {
   try {
-    // console.log("email template set", shop)
     let orderTemplate = {
       subject: "Your order is successfully done",
       from: "Membership App",
@@ -1062,30 +1053,7 @@ export const setDefaultTemplate = async (shop) => {
                 <pre>
                 {{footer}}
                 </pre>`,
-      dummyData: {
-        shop: "virendertesting.myshopify.com",
-        orderId: "6486463742142",
-        customerId: "7979103453374",
-        customerName: "Taran preet",
-        customerEmail: "taranpreet@shinedezign.com",
-        contractId: "24182882494",
-        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
-        sellingPlanName: "New plan22-entries-7",
-        billing_policy: {
-          interval: "month",
-          interval_count: 1,
-          min_cycles: 1,
-          max_cycles: null,
-        },
-        products: [
-          {
-            productId: "gid://shopify/Product/7837187014846",
-            productName: "Antique Drawers",
-            quantity: 1,
-          },
-        ],
-        drawIds: ["M6LQWQG", "M6LQCEC"],
-      },
+     
       orderMailParameters: [
         {
           term: "{{customerName}}",
@@ -1133,30 +1101,7 @@ export const setDefaultTemplate = async (shop) => {
             <pre>
                 {{footer}}
             </pre>`,
-      dummyData: {
-        shop: "virendertesting.myshopify.com",
-        orderId: "6486463742142",
-        customerId: "7979103453374",
-        customerName: "Taran preet",
-        customerEmail: "taranpreet@shinedezign.com",
-        contractId: "24182882494",
-        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
-        sellingPlanName: "New plan22-entries-7",
-        billing_policy: {
-          interval: "month",
-          interval_count: 1,
-          min_cycles: 1,
-          max_cycles: null,
-        },
-        products: [
-          {
-            productId: "gid://shopify/Product/7837187014846",
-            productName: "Antique Drawers",
-            quantity: 1,
-          },
-        ],
-        drawIds: ["M6LQWQG", "M6LQCEC"],
-      },
+     
       appliedMailParameters: [
         {
           term: "{{customerName}}",
@@ -1206,30 +1151,7 @@ export const setDefaultTemplate = async (shop) => {
                 {{footer}}
             </pre>
          `,
-      dummyData: {
-        shop: "virendertesting.myshopify.com",
-        orderId: "6486463742142",
-        customerId: "7979103453374",
-        customerName: "Taran preet",
-        customerEmail: "taranpreet@shinedezign.com",
-        contractId: "24182882494",
-        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
-        sellingPlanName: "New plan22-entries-7",
-        billing_policy: {
-          interval: "month",
-          interval_count: 1,
-          min_cycles: 1,
-          max_cycles: null,
-        },
-        products: [
-          {
-            productId: "gid://shopify/Product/7837187014846",
-            productName: "Antique Drawers",
-            quantity: 1,
-          },
-        ],
-        drawIds: ["M6LQWQG", "M6LQCEC"],
-      },
+     
       winnerMailParameters: [
         {
           term: "{{customerName}}",
@@ -1276,30 +1198,6 @@ export const setDefaultTemplate = async (shop) => {
             </pre>
          `,
 
-      dummyData: {
-        shop: "virendertesting.myshopify.com",
-        orderId: "6486463742142",
-        customerId: "7979103453374",
-        customerName: "Taran preet",
-        customerEmail: "taranpreet@shinedezign.com",
-        contractId: "24182882494",
-        sellingPlanId: "gid://shopify/SellingPlan/7428407486",
-        sellingPlanName: "New plan22-entries-7",
-        billing_policy: {
-          interval: "month",
-          interval_count: 1,
-          min_cycles: 1,
-          max_cycles: null,
-        },
-        products: [
-          {
-            productId: "gid://shopify/Product/7837187014846",
-            productName: "Antique Drawers",
-            quantity: 1,
-          },
-        ],
-        drawIds: ["M6LQWQG", "M6LQCEC"],
-      },
       announcementMailParameters: [
         {
           term: "{{productName}}",
@@ -1435,6 +1333,15 @@ export const updateTemplate = async (admin, data) => {
 //     return { message: "Error processing request", status: 500 };
 //   }
 // };
+
+
+
+
+
+
+
+
+
 
 // fs.writeFile("checkkkk.txt", dataString, (err) => {
 //   if (err) {

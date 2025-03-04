@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://dynadealersapp.com";
+    let serverPath = "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -127,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ cid: customerId }),
+                        mode: 'cors',
                     }
                 );
 

@@ -1,6 +1,6 @@
 console.log("js--__________=");
 
-let serverPath = "https://dynadealersapp.com";
+let serverPath = "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -234,7 +234,7 @@ if (subscription_page_type == "product") {
       getMembershipDetail();
     }
   } else if (giveawayProduct) {
-    if (allSellingPlans) {
+    if (allSellingPlans?.length == 1) {
       sendDataToCart(allSellingPlans[0]);
     }
   } else if (allSellingPlans?.length == 1) {
