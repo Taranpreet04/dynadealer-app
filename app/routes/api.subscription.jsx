@@ -16,15 +16,15 @@ export const loader = async ({ request }) => {
       message: "Subscription data for cid: " + cid,
     };
 
-    const shop= "https://dynadealersapp.com"
+    const app= "https://dynadealersapp.com"
     const liquidContent = `<html>
       <head>
       <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Document</title>   
-      <script src="${shop}/api/customerPortalJs"></script> 
-      <link rel="stylesheet" href="${shop}/api/customerPortalCss">
+      <script src="${app}/api/customerPortalJs"></script> 
+      <link rel="stylesheet" href="${app}/api/customerPortalCss">
       </head>
       <body>
       <div id="subscription-main-body"></div>
@@ -32,7 +32,9 @@ export const loader = async ({ request }) => {
       </html>`;
 
     const response = new Response(liquidContent, {
-      headers: headers,
+     headers: {
+        "Content-Type": "application/liquid",
+      },
     });
 
     return response;

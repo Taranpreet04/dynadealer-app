@@ -692,7 +692,7 @@ if (subscription_page_type == "product") {
             inventory = result.data.product.totalInventory;
             console.log("inventory==", inventory);
             showInventory();
-            inventory > 0 ? showWidget() : "";
+            // inventory > 0 ? showWidget() : "";
           }
         } catch (error) {
           console.error("Error:", error);
