@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com";
+    let serverPath = "https://maritime-ferrari-recipes-revealed.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -127,11 +127,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ cid: customerId }),
-                        mode: 'cors',
+                        // mode: 'no-cors',
                     }
                 );
 
-                const result = await response.json();
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const result = await response?.json();
                 if (result.message == "success") {
                     totalPlans = 0;
                     totalPages = 0;
@@ -362,7 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     tr1.appendChild(totalCell)
 
                     let totalListCell = document.createElement('td');
-                    console.log("show in new row===", selectedSubscription?.ticketDetails?.availableTicketsList.slice(0, Number(selectedAppliedFor?.applyTicketsCount)))
                     totalListCell.innerText = selectedSubscription?.ticketDetails?.availableTicketsList.slice(0, Number(selectedAppliedFor?.applyTicketsCount)).join(', ')
                     tr1.appendChild(totalListCell)
                 }
@@ -404,7 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
   <path stroke="white" stroke-width="1" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
 </svg>`;
             link.onclick = async () => {
-                console.log("selectedSubscription==eye", selectedSubscription)
                 selectedSubscription = item;
                 cappedraffle = true
                 await checkCancelPossible()
@@ -660,7 +659,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let parentCard = document.createElement('div')
         mainDiv.appendChild(parentCard)
         parentCard.className = 'draw-cards'
-        console.log("activeDraws===", activeDraws)
         activeDraws?.map((product) => {
             let card = document.createElement('div')
             parentCard.appendChild(card)
@@ -678,7 +676,6 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
     const selectDraw = () => {
-        console.log("selecctedAppliedFor==", selectedAppliedFor)
         let mainDiv = document.getElementById('main-active-draws')
         let parentselect = document.createElement('div')
         parentselect.id = 'user-input'
@@ -728,7 +725,6 @@ document.addEventListener("DOMContentLoaded", () => {
             parent.setAttribute('data-type', item.target.getAttribute('data-type'));
             parent.innerText = item.target.innerText;
             let data = activeDraws.filter(itm => itm?.title == item.target.innerText)
-            console.log("data==", data)
             selectedAppliedFor = {
                 ...selectedAppliedFor,
                 productId: data[0]?.id,
@@ -737,7 +733,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 spots: data[0].spots,
                 productImg: data[0].image,
             }
-            console.log(selectedSubscription?.ticketDetails?.available, "selectedAppliedFor==============", selectedAppliedFor)
             if (selectedAppliedFor?.spots <= selectedSubscription?.ticketDetails?.available) {
                 document.getElementById('applied-tickets-div').style.display = 'flex';
                 let content = document.getElementsByClassName('red-bold')[0]
@@ -750,10 +745,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
     const inputForApply = () => {
-        console.log("setotal==", selectedSubscription?.ticketDetails?.available)
-        console.log("selectedAppliedFor?.spots", selectedAppliedFor?.spots)
-
-
+     
         let inputDiv = document.getElementById('user-input')
 
         let input = document.createElement('input');
@@ -765,7 +757,6 @@ document.addEventListener("DOMContentLoaded", () => {
         span.id = 'err-msg'
         inputDiv.appendChild(span)
         input.addEventListener('change', (e) => {
-            console.log(e.target.value)
             selectedAppliedFor = {
                 ...selectedAppliedFor,
                 applyTicketsCount: e.target.value
@@ -791,14 +782,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             applyBtn.onclick = function () {
-                console.log("sele==total==", selectedSubscription?.ticketDetails?.available)
-                console.log("selectedAppliedFor====", selectedAppliedFor)
                 let spanh = document.getElementById('err-msg')
                 if (selectedAppliedFor?.applyTicketsCount > 0) {
                     if (selectedAppliedFor?.spots == selectedAppliedFor?.applyTicketsCount || selectedAppliedFor?.raffleType !== 'capped') {
 
                         let modal = document.getElementById("myModal")
-                        console.log("modal=", modal)
                         if (modal) {
                             modal.innerHTML = modalContentToApplyTickets
                             var span = modal.getElementsByClassName("close")[0];
@@ -846,7 +834,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     } else {
                         let modal = document.getElementById("myModal")
-                        console.log("modal=", modal)
                         if (modal) {
                             modal.innerHTML = modalContentToNotAllow
                             var span = modal.getElementsByClassName("close")[0];
@@ -896,7 +883,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         spanh.innerText = ""
                     }
                 } else {
-                    console.log(spanh)
                     if (spanh) {
                         spanh.innerText = "Enter any value to apply tickets."
                     }
@@ -911,7 +897,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const ticketDetail = () => {
-        console.log("selectedSubscription?.ticketDetails==", selectedSubscription?.ticketDetails)
         let tbody = document.getElementById("ticket-detail-row")
 
         let tr2 = document.createElement('tr');

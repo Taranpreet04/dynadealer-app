@@ -28,12 +28,6 @@ export const action = async ({ request }) => {
                 { new: true, upsert: true, setDefaultsOnInsert: true } 
             );
 
-            console.log("details==", details)
-          //  let res= sendApplyEmail(data)
-            // return new Response(JSON.stringify({ message: "success", details: details }), {
-            //     status: 200,
-            //     headers,
-            // });
             return json({ message: "success", details: details }, {
                 status: 200,
                 headers,

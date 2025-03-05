@@ -146,12 +146,6 @@ export default function PlanData() {
       {tableSkel ?
         <TableSkeleton /> :
         contentSkel ? <ContentSkeleton /> :
-          // <Page title="Plans" primaryAction={<Button variant="primary" onClick={() => {
-          //   // setContentSkel(true),
-          //   console.log("clicked===>>>")
-          //   // navigate("/app/plans/create")
-          //   navigate("/app/plans/create")
-          // }
           <Page title="Raffles" primaryAction={{content : 'Create new', onAction : handleCreate}}>
 
             <Card>

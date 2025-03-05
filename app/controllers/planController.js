@@ -7,13 +7,9 @@ import {
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
-    // console.log(newPlanDetails?.shop, newPlanDetails?.products, id);
+   
     let check;
-    // const check = await planDetailsModel.find({
-    //   shop: newPlanDetails?.shop,
-    //   products: { $in: newPlanDetails?.products },
-    // });
-    // console.log("check===", check);
+   
     if (id == "create") {
       check = await planDetailsModel.find({
         shop: newPlanDetails?.shop,
@@ -21,7 +17,7 @@ export const checkProductSubscription = async (newPlanDetails, id) => {
           $elemMatch: {
             product_id: {
               $in: newPlanDetails?.products.map((p) => p.product_id),
-            }, // Check if any product_id exists in products array
+            },
           },
         },
       });
@@ -218,7 +214,6 @@ export const getAllPlans = async (admin) => {
 
 export const deletePlanById = async (admin, data) => {
   try {
-    // console.log("data--", data)
     const { shop } = admin.rest.session;
     const deletingID = data?._id;
 
@@ -252,7 +247,6 @@ export const deletePlanById = async (admin, data) => {
     // });
     let deletedPlanId =
       result?.data?.sellingPlanGroupDelete?.deletedSellingPlanGroupId;
-    // console.log("bdeletedPlanId--", deletedPlanId)
     if (deletedPlanId) {
       const dbResult = await planDetailsModel.deleteOne({
         _id: deletingID,
@@ -1269,88 +1263,4 @@ export const updateTemplate = async (admin, data) => {
   }
 };
 
-// export const addRaffleProducts = async (admin, data) => {
-//   try {
-//     const { shop } = admin.rest.session;
-//     const dataExist = await raffleProductsModel.findOne({shop, productId: data.productId})
-   
-//       return { message: "Raffle already created."};
-   
-//   } catch (error) {
-//     console.error("Error processing POST request:", error);
-//     return { message: "Error processing request", status: 500 };
-//   }
-// };
-// export const updateRaffleProducts = async (admin, data) => {
-//   try {
-//     const { shop } = admin.rest.session;
-//     const detail = await raffleProductsModel.findOneAndUpdate(
-//       { shop, _id: data?._id },
-//       { $set: { products } },
-//       { upsert: true, new: true },
-//     );
-//     return { message: "success", data: detail };
-//   } catch (error) {
-//     console.error("Error processing POST request:", error);
-//     return { message: "Error processing request", status: 500 };
-//   }
-// };
-// export const deleteRaffleProducts = async (admin, data) => {
-//   try {
-//     const { shop } = admin.rest.session;
-//     const data = await raffleProductsModel.findOneAndUpdate(
-//       { shop },
-//       { $set: { products } },
-//       { upsert: true, new: true },
-//     );
-//     return { message: "success", data };
-//   } catch (error) {
-//     console.error("Error processing POST request:", error);
-//     return { message: "Error processing request", status: 500 };
-//   }
-// };
-// export const updateRaffleProducts = async (admin, products) => {
-//   try {
-//     const { shop } = admin.rest.session;
-//     const data = await raffleProductsModel.findOneAndUpdate(
-//       { shop },
-//       { $set: { products } },
-//       { upsert: true, new: true },
-//     );
-//     return { message: "success", data };
-//   } catch (error) {
-//     console.error("Error processing POST request:", error);
-//     return { message: "Error processing request", status: 500 };
-//   }
-// };
-// export const getRaffleProducts = async (admin) => {
-//   try {
-//     const { shop } = admin.rest.session;
-//     const data = await raffleProductsModel.findOne({ shop });
-//     return { message: "success", data };
-//   } catch (error) {
-//     console.error("Error processing POST request:", error);
-//     return { message: "Error processing request", status: 500 };
-//   }
-// };
 
-
-
-
-
-
-
-
-
-
-// fs.writeFile("checkkkk.txt", dataString, (err) => {
-//   if (err) {
-//       console.error("Error writing to file:", err);
-//   } else {
-//       console.log("Data written to file successfully!");
-//   }
-// });
-
-//     console.log("planDetailsv=", result)
-//     return json({ success: true, message: "no dtaa in action" });
-//   }

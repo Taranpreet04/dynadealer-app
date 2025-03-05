@@ -1,6 +1,6 @@
 console.log("js--__________=");
 
-let serverPath = "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com";
+let serverPath = "https://maritime-ferrari-recipes-revealed.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -21,6 +21,7 @@ let giveawayProduct = false;
 let inventory = 0;
 let showMemebershipLevels = false;
 let goldMembershipOffer = false;
+let offerDuration={};
 let commanData;
 let options = [
   { name: "Weekly", value: "week", class: "timePeriodList" },
@@ -32,13 +33,10 @@ let selectedPlan;
 
 if (currentUrl.includes("account")) {
   console.log("hello from account page");
-  // let targetElement = document.getElementsByClassName("order-container")[0];
   let targetElement = document.querySelector(".customer__title");
-  console.log("targetElement=", targetElement);
   if (targetElement) {
     let cusDiv = document.createElement("div");
     cusDiv.className = "mange-sub-container";
-    let linebreak = document.createElement("br");
     cusDiv.innerHTML = `<div class='subscription-manage'>
                 <div>
                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"  viewBox="0 0 24 24" fill="transparent">
@@ -57,10 +55,8 @@ if (currentUrl.includes("account")) {
     cusDiv.insertAdjacentHTML("afterend", "<br>");
   }
 }
-console.log("location====", window.location.pathname);
 
 if (subscription_page_type == "product") {
-  console.log("filtered_selling_plan_groups==", filtered_selling_plan_groups);
   if (filtered_selling_plan_groups?.length > 0) {
     filtered_selling_plan_groups?.forEach((item) => {
       allSellingPlans?.push(...item?.selling_plans);
@@ -538,7 +534,7 @@ if (subscription_page_type == "product") {
 
         const today = new Date(new Date().setHours(0, 0, 0, 0));
         const todayDate = today.getDate();
-        const offerValidity = new Date(offerDuartion?.end);
+        const offerValidity = new Date(offerDuration?.end);
         const offerValidityDate = offerValidity.getDate();
 
         const main = document.createElement("div");
@@ -613,29 +609,31 @@ if (subscription_page_type == "product") {
 
           const result = await response.json();
           if (result.message == "success") {
-            // const date = result?.offerValidity
-            // const startIST = toIST(date.start);
-            // let endIST = toIST(date.end);
-            // endIST.setHours(23, 59, 59, 999);
-            // let dateRange = {
-            //     start: startIST,
-            //     end: endIST,
-            // };
-            // offerDuartion = dateRange
-            // const now = new Date();
-            // const timeDifferenceToStart = new Date(startIST) - now;
-            // console.log(dateRange, "timeDifferenceToStart==", timeDifferenceToStart)
-            // if (timeDifferenceToStart < 0) {
-            //     showCountDown();
-            // }
+            const date = result?.offerValidity
+            const startIST = new Date(date.start); // Convert to Date object
+            let endIST = new Date(date.end); // Convert to Date object
+            endIST.setHours(23, 59, 59, 999); // Ensure the end time is at the end of the day
+        
+            let dateRange = {
+                start: startIST,
+                end: endIST,
+            };
+        
+            offerDuration = dateRange;
+            const now = new Date();
+            const timeDifferenceToStart = new Date(startIST) - now;
+            console.log(dateRange, "timeDifferenceToStart==", timeDifferenceToStart)
+            if (timeDifferenceToStart < 0) {
+                showCountDown();
+            }
           }
         } catch (error) {
           console.error("Error:", error);
         }
       };
-      // getOfferValidity();
-
+      
       if (commanData?.raffleType == "time-limit") {
+        // getOfferValidity();
         const date = commanData?.dateRange;
         const startIST = toIST(date.start);
         let endIST = toIST(date.end);
@@ -646,7 +644,8 @@ if (subscription_page_type == "product") {
           end: endIST,
         };
 
-        offerDuartion = dateRange;
+        offerDuration = dateRange;
+        console.log("offerDuration", offerDuration)
         const now = new Date();
         const timeDifferenceToStart = new Date(startIST) - now;
         console.log(
@@ -692,7 +691,7 @@ if (subscription_page_type == "product") {
             inventory = result.data.product.totalInventory;
             console.log("inventory==", inventory);
             showInventory();
-            inventory > 0 ? showWidget() : "";
+            // inventory > 0 ? showWidget() : "";
           }
         } catch (error) {
           console.error("Error:", error);

@@ -243,32 +243,3 @@ export async function sendWinnerEmail(data) {
 //           return { message: "Error processing request", status: 500 };
 //     }
 //   }
-
-
-
-
-
-
-
-
-
-
-// html: `
-//         <p>Hi ${data?.customerName || 'Sir/Mam'},</p>
-        
-//         <p>Your orderId is: ${data?.orderId}</p>
-//         <p>Your contractId is: ${data?.contractId}</p>
-//         <p>Your have ${data?.drawIds?.length} chances for winning</p>
-//         <p>Here, the list of your ticket Entries which are applied for upcomming lucky draw.</p>
-//         <table>
-//             <thead>
-//                 <tr>
-//                     <th>Customer Name</th>
-//                     <th>Entry Number</th>
-//                 </tr>
-//             </thead>
-//             <tbody>
-//             ${drawIdsList}
-//             </tbody>
-//         </table>
-//            `,

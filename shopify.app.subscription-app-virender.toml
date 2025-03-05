@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com"
+application_url = "https://maritime-ferrari-recipes-revealed.trycloudflare.com"
 embedded = true
 
 [build]
@@ -16,9 +16,9 @@ scopes = "read_customers,read_orders,read_products,write_own_subscription_contra
 
 [auth]
 redirect_urls = [
-  "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com/auth/callback",
-  "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com/auth/shopify/callback",
-  "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com/api/auth/callback"
+  "https://maritime-ferrari-recipes-revealed.trycloudflare.com/auth/callback",
+  "https://maritime-ferrari-recipes-revealed.trycloudflare.com/auth/shopify/callback",
+  "https://maritime-ferrari-recipes-revealed.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -29,7 +29,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://entrepreneurs-mounting-fo-rabbit.trycloudflare.com/api/subscription"
+url = "https://maritime-ferrari-recipes-revealed.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

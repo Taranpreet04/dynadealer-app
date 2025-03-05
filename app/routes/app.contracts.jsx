@@ -119,7 +119,6 @@ export default function ContractData() {
           });
         })
       })
-      console.log("dataToExport==", dataToExport)
       if (dataToExport?.length > 0) {
         let data = [
           {

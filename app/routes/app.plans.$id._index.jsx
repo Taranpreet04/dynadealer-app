@@ -434,7 +434,6 @@ export default function CreateUpdatePlan() {
           setPlanNameExist(true);
         }
       });
-      console.log("planNameExist", planNameExist);
       if (newPlan?.name === "") {
         shopify.toast.show("Plan name is required", { duration: 5000 });
       } else if (planNameExist || nameExist >= 1) {
@@ -506,7 +505,7 @@ export default function CreateUpdatePlan() {
           }
           primaryAction={
             <Button loading={btnLoader} onClick={handleSavePlan}>
-              {id == "create" ? "Save plan" : "Update plan"}
+              {id == "create" ? "Save raffle" : "Update raffle"}
             </Button>
           }
         >
@@ -698,7 +697,7 @@ export default function CreateUpdatePlan() {
             <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
               <BlockStack gap="200">
                 <Card>
-                  <Text>Add Your Plans</Text>
+                  <Text>Add Your Tickets</Text>
                   <BlockStack gap="300">
                     <Grid>
                       <Grid.Cell
@@ -706,6 +705,7 @@ export default function CreateUpdatePlan() {
                       >
                         <TextField
                           label="Name"
+                          placeholder="Enter your ticket name"
                           value={newPlan?.name?.split("-entries-")?.[0]}
                           onChange={(value) =>
                             handleModalValChange(value, "name")
@@ -753,7 +753,7 @@ export default function CreateUpdatePlan() {
                           }
                         />
                         {existPlanType && (
-                          <Text tone="critical">Plan already exists.</Text>
+                          <Text tone="critical">Ticket already exists.</Text>
                         )}
                       </Grid.Cell>
                       <Grid.Cell
@@ -783,7 +783,7 @@ export default function CreateUpdatePlan() {
                         editSellingPlan ? handleUpdatePlan : handleAddPlan
                       }
                     >
-                      {editSellingPlan ? "Update" : "Add"} plan
+                      {editSellingPlan ? "Update" : "Add"} Ticket
                     </Button>
                     <ResourceList
                       resourceName={{ singular: "plan", plural: "plans" }}

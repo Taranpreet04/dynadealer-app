@@ -40,8 +40,7 @@ import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 
 export const loader = async ({ request }) => {
     const { admin, session } = await authenticate.admin(request);
-    // let check = await setDefaultTemplate(session?.shop)
-    // console.log(check)
+    
     let contractData = await getAllContracts(admin)
     let data = await getEmailTemplate(admin)
     return {
