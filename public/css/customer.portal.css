@@ -40,7 +40,8 @@ p{
 }
 #subscription-footer {
   display: flex;
-  justify-content: space-between
+  justify-content: space-between;
+  align-items: center;
 }
 .right-div{
   text-align: right;
@@ -91,9 +92,9 @@ tr:hover {
 .btn {
   background: #f22600;
   color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 1px solid #f22600;
-  padding: 5px 10px;
+  padding: 10px 20px;
   cursor: pointer;
   margin: 5px;
 }
@@ -114,9 +115,121 @@ button:disabled{
 .ticketIds-listing{
   margin-top: 2rem;
 }
+#cancelModalHead, #cancelModalBody{
+  color : black;
+}
+
+.draw-cards{
+  display: grid;
+   grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.active-draw-card{
+  /* width: 100%; */
+  background-color: #f22600;
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px;
+}
+.main-active-draws h3{
+  margin-bottom: .7rem;
+}
+.active-draw-card p{
+  line-height: 1.5;
+}
+.red-bold{
+  color: #f22600;
+  font-weight: 500;
+}
+#cancelBtn{
+  display: none;
+}
+.drawsList{
+  max-width: 100%;
+}
+.pagination{
+  margin-top: 1rem;
+}
 
 
 
+
+.select {
+  position: relative;
+  margin-bottom: 15px;
+  width: 380px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.select h4{
+  color: #fff
+}
+.select .selectBtn {
+  background: var(--bg1);
+  padding: 5px 10px;
+  box-sizing: border-box;
+  border-radius: 3px;
+  width: 100%;
+  color: #000;
+  cursor: pointer;
+  position: relative;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  background: #fff;
+}
+.select .selectBtn:after {
+  content: "";
+  position: absolute;
+  top: 45%;
+  right: 15px;
+  width: 6px;
+  height: 6px;
+  -webkit-transform: translateY(-50%) rotate(45deg);
+          transform: translateY(-50%) rotate(45deg);
+  border-right: 2px solid #666;
+  border-bottom: 2px solid #666;
+  transition: 0.2s ease;
+}
+.select .selectBtn.toggle {
+  border-radius: 3px 3px 0 0;
+}
+.select .selectBtn.toggle:after {
+  -webkit-transform: translateY(-50%) rotate(-135deg);
+          transform: translateY(-50%) rotate(-135deg);
+}
+.select .selectDropdown {
+  color:#000;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  border-radius: 0 0 3px 3px;
+  overflow: hidden;
+  background: var(--bg1);
+  border-top: 1px solid #eee;
+  z-index: 1;
+  background: #fff;
+  -webkit-transform: scale(1, 0);
+          transform: scale(1, 0);
+  -webkit-transform-origin: top center;
+          transform-origin: top center;
+  visibility: hidden;
+  transition: 0.2s ease;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2);
+}
+.select .selectDropdown .option {
+  padding: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.select .selectDropdown .option:hover {
+  background: #f8f8f8;
+}
+.select .selectDropdown.toggle {
+  visibility: visible;
+  -webkit-transform: scale(1, 1);
+          transform: scale(1, 1);
+}
 
 
 
@@ -249,27 +362,21 @@ div:empty {
 /*modal css start****/
 .modal {
   display: none;
-  /*Hidden by default */
   position: fixed;
-  /* Stay in place */
   z-index: 1;
-  /* Sit on top */
-  padding-top: 120px;
-  /* Location of the box */
+  padding-top: 200px;
   left: 0;
   top: 0;
   width: 100%;
-  /* Full width */
   height: 100%;
-  /* Full height */
   overflow: auto;
-  /* Enable scroll if needed */
   background-color: rgb(0, 0, 0);
-  /* Fallback color */
   background-color: rgba(0, 0, 0, 0.4);
-  /* Black w/ opacity */
 }
-
+body.modal-open {
+  overflow: hidden;
+  height: 100%;
+}
 /* Modal Content */
 .modal-content {
   background-color: #fefefe;
@@ -282,7 +389,7 @@ div:empty {
 
 /* The Close Button */
 .close {
-  color: #22b388;
+  color: #f22600;
   float: right;
   font-size: 28px;
   font-weight: bold;
@@ -296,3 +403,11 @@ div:empty {
 }
 
 /*********modal css end*********/
+
+.ticket-details{
+  margin-top: 3rem;
+}
+#applied-tickets-input{
+  padding: 0 10px;
+  margin: 2px 20px 14px;
+}

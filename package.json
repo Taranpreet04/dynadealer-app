@@ -29,6 +29,7 @@
     "@shopify/polaris": "^12.0.0",
     "@shopify/shopify-app-remix": "^3.4.0",
     "@shopify/shopify-app-session-storage-mongodb": "^4.0.8",
+    "@tinymce/tinymce-react": "^5.1.1",
     "dotenv": "^16.4.5",
     "isbot": "^5.1.0",
     "json-as-xlsx": "^2.5.6",
@@ -37,6 +38,8 @@
     "nodemailer": "^6.9.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-simple-wysiwyg": "^3.2.0",
+    "tinymce": "^7.6.1",
     "vite-tsconfig-paths": "^5.0.1"
   },
   "devDependencies": {

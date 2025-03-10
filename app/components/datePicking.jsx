@@ -1,4 +1,4 @@
-import { BlockStack, Box, Button, DatePicker, Icon, InlineGrid, Popover, InlineStack, TextField, useBreakpoints } from "@shopify/polaris";
+import { BlockStack, Box, Button, DatePicker, Icon, InlineGrid, Popover, InlineStack, TextField, useBreakpoints, Scrollable } from "@shopify/polaris";
 import { useState, useEffect, useRef } from "react";
 import { CalendarIcon, ArrowRightIcon } from "@shopify/polaris-icons"
 export default function DateRangePicker({ setPlanDetail, planDetail }) {
@@ -181,6 +181,7 @@ export default function DateRangePicker({ setPlanDetail, planDetail }) {
             activeDateRange.period.end.toDateString()
             : activeDateRange.title;
     return (
+       
         <Popover
             active={popoverActive}
             autofocusTarget="none"
@@ -200,6 +201,7 @@ export default function DateRangePicker({ setPlanDetail, planDetail }) {
             }
             onClose={() => setPopoverActive(false)}
         >
+             <Scrollable shadow style={{height: '450px'}} focusable>
             <Popover.Pane fixed>
                 <InlineGrid
                     columns={{
@@ -267,6 +269,7 @@ export default function DateRangePicker({ setPlanDetail, planDetail }) {
                     </InlineStack>
                 </Popover.Section>
             </Popover.Pane>
+            </Scrollable>
         </Popover>
     )
 }

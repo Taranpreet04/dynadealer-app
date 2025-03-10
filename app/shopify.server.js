@@ -12,6 +12,7 @@ import { credentialModel } from "./schema";
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { recurringOrderCron } from './controllers/cron.js'
+import { setDefaultTemplate } from "./controllers/planController.js";
 dotenv.config()
 
 
@@ -20,18 +21,17 @@ dbConnect();
 let scheduledJobs = cron.getTasks();
 scheduledJobs.forEach((job) => job.stop());
 
-const cronTimeEvery1hr = '0 * * * *' //"0 * * * *"---1hrs
+const cronTimeEvery1hr = "0 * * * *" //'*/10 * * * *'
 var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });
 task.start();
-
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.October24,
   scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
+  appUrl: process.env.SHOPIFY_APP_URL || "https://dynadealersapp.com",
   authPathPrefix: "/auth",
   sessionStorage: new MongoDBSessionStorage("mongodb://localhost:27017/subscription"),
   distribution: AppDistribution.AppStore,
@@ -56,13 +56,18 @@ const shopify = shopifyApp({
   },
   hooks: {
     afterAuth: async ({ session, admin }) => {
+      console.log("✅ afterAuth hook is running...");
+     
       try {
-        shopify.registerWebhooks({ session });
+        const res = shopify.registerWebhooks({ session });
         const { shop, accessToken, scope } = session;
-        const credentials = credentialModel.create({
-          shop,
-          accessToken,
-        });
+       
+        const credentials = await credentialModel.findOneAndUpdate(
+          { shop },
+          { accessToken },
+          { upsert: true, new: true }
+        );
+        await setDefaultTemplate(shop)
         await Promise.all([credentials]);
       } catch (error) {
         console.log("Error in Installing", error)

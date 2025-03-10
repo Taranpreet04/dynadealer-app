@@ -1,5 +1,6 @@
-import { cancelContract } from "../controllers/planController";
-import { unauthenticated } from '../shopify.server';
+import { membershipsModel } from "../schema";
+import { unauthenticated } from "../shopify.server";
+
 const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
@@ -14,9 +15,10 @@ const headers = {
       });
     }
   };
-export const action = async ({ request }) => {
+export const action= async({request})=>{
     const data = await request.json();
-    try {
+    try{
+     
         const { admin } = await unauthenticated.admin(data.shop);
         if (!admin) {
             return new Response(
@@ -28,14 +30,19 @@ export const action = async ({ request }) => {
             );
         }
 
-        let res = await cancelContract(admin, data);
-
-        return new Response(JSON.stringify({ message: "success", data: res }), {
-            status: 200,
-            headers
-        });
-    }
-    catch (error) {
+        let res = await membershipsModel.findOne({shop: data?.shop, customerId: data?.customerId})
+        if(res){
+            return new Response(JSON.stringify({ message: "success", data: res }), {
+                status: 200,
+                headers
+            });
+        }else{
+            return new Response(JSON.stringify({ message: "success", data: {}  }), {
+                status: 200,
+                headers
+            });
+        }
+    }catch(error){
         console.error("Error processing POST request:", error);
         return json({ message: "Error processing request" }, {
             status: 500,

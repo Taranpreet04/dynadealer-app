@@ -218,23 +218,27 @@ h2#product-price {
 
 #entries-plans {
     display: flex;
-    gap: 5px;
+    gap: 15px;
     justify-content: normal;
 }
-#entries-plans input[type="radio"] {
-    -webkit-appearance: none; /* For Safari and Chrome */
-    -moz-appearance: none;    /* For Firefox */
-    appearance: none;         /* Standard syntax */
-  }
-.onetime-selling-plan {
+
+#entries-plans input[type="radio"],
+.plan-levels input[type="radio"]
+ {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.onetime-selling-plan, .level-plan {
     border: 2px solid #E6EDFF;
     border-radius: 18px;
     position: relative;
-    /* width: 50%; */
 }
 
 .subscription-body .var-entries {
     position: relative;
+    line-height: normal;
 }
 
 .subscription-body .var-entries:before {
@@ -249,16 +253,17 @@ h2#product-price {
     background-repeat: no-repeat;
 }
 
-.onetime-selling-plan label {
+.onetime-selling-plan label, .level-plan label {
     display: flex;
-    align-items: flex-start;
-    gap: 5px;
+    align-items: center;
+    /* gap: 5px; */
     flex-direction: column;
     cursor: pointer;
-    padding: 10px 20px;
+    padding: 10px 15px;
 }
 
 .onetime-selling-plan span,
+.level-plan span,
 .subscription-selling-plan span {
     margin: 0;
 }
@@ -274,12 +279,14 @@ div#subscription-plans {
     grid-template-columns: 1fr 1fr;
 }
 
-.onetime-selling-plan label input {
+.onetime-selling-plan label input,
+.level-plan label input {
     position: relative !important;
     top: 4px !important;
 }
 
 .onetime-selling-plan.active,
+.level-plan.active,
 .subscription-selling-plan.active {
     border-color: transparent;
 }
@@ -568,7 +575,8 @@ span.var-entries {
 
 
 .subscription-selling-plan.active:after,
-.onetime-selling-plan.active:after {
+.onetime-selling-plan.active:after,
+.level-plan.active:after{
     content: "";
     border-radius: 10px;
     border: 2px solid transparent;
@@ -643,36 +651,44 @@ span.var-entries {
 
 
 /***count down style*****/
-/* .countdown-main-div{
+.countdown-main-div {
     position: absolute;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     border-radius: 5px;
-    background-color: #fff;
+    /* background-color: #fff; */
     color: black;
     width: 40%;
     z-index: 999;
     top: -30px;
     left: 30%;
 }
-.countdown, .show-timer-div{
+
+.countdown,
+.show-timer-div {
     align-items: center;
     display: flex;
     justify-content: center;
     column-gap: 10px;
 }
-.countdown p{
+
+.countdown p {
     font-size: medium;
 }
+
 .time {
     display: flex;
     flex-direction: column;
-    align-items: center;  
-    justify-content: center; 
-    gap: 2px; 
-    border: 1px solid black;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    /* border: 2px solid white; */
     border-radius: 5px;
-    padding: 2px;
+    padding: 5px;
     margin: 5px 0;
+    color: white;
+    background-color: #f22600;
+    width: 55px;
+    font-weight: bold;
 }
 
 
@@ -680,19 +696,49 @@ span.var-entries {
     border: 1px solid black;
     border-radius: 5px;
     background-color: #fff;
-} */
-
-.onetime-purchase, .subscription-purchase{
-    border: 1px solid white;
-    width: 70%;
-    padding: .6rem;
-    margin: 5px;
-    display: flex;
 }
-.onetime-purchase label, .subscription-purchase label{
+
+.onetime-purchase,
+.subscription-purchase {
+    border: 2px solid white;
+    width: 70%;
+    padding: .8rem;
+    margin: 10px;
+    display: flex;
+    border-radius: 20px;
+}
+
+.oneTime-widget-box h5,
+#show-inventory,
+.other-options h5, 
+#entries-plans{
+    margin: 15px;
+}
+
+.onetime-purchase label,
+.subscription-purchase label {
     width: 100%
 }
-.label{
+
+.label {
     display: flex;
     justify-content: space-between;
 }
+
+#product-inventory {
+    padding: 5px 15px;
+    background-color: red;
+    border-radius: 15px;
+}
+.var-pill-wrapper{
+    display: flex;
+    gap: 10px;
+}
+.additional-detail{
+        border: 1px solid white;
+        width: 70%;
+        margin: 1rem;
+        border-radius: 10px;
+        line-height: 1.5;
+        display: none;
+    }

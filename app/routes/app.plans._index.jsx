@@ -30,7 +30,7 @@ export default function PlanData() {
   const [tableData, setTableData] = useState([])
   const [totaldocs, setTotaldocs] = useState(0);
   const [skip, setSkip] = useState(0)
-  const [limit, setLimit] = useState(10)
+  const [limit, setLimit] = useState(8)
   const [page, setPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const [reCheck, setReCheck] = useState(false)
@@ -43,6 +43,9 @@ export default function PlanData() {
     setTableSkel(true)
     loaderData?.planDetails ? setData(loaderData?.planDetails) : ''
     let table = loaderData?.planDetails?.slice(skip, limit)
+    if (loaderData?.planDetails?.length > 0 && table?.length <= 0) {
+      handlePrevPage()
+    }
     setTableData(table)
     let total = loaderData?.planDetails.length;
     setTotalRows(loaderData?.planDetails.length)
@@ -56,7 +59,10 @@ export default function PlanData() {
   }, [loaderData])
 
   useEffect(() => {
-    actionData?.status ? shopify.toast.show("Plan deleted", { duration: 5000 }) : ''
+    actionData?.status ?
+      shopify.toast.show("Plan deleted", { duration: 5000 }) :
+      actionData?.status == false ?
+        shopify.toast.show("Something went wrong", { duration: 5000 }) : ''
     shopify.loading(false)
     setTableSkel(false)
   }, [actionData])
@@ -69,7 +75,7 @@ export default function PlanData() {
     <Text> {plans?.length} subscription option</Text>,
     <InlineStack as="span">
       <span onClick={() => {
-        setContentSkel(true)
+        setContentSkel(true),
         navigate(`/app/plans/${_id}`);
       }} >
         <Icon source={EditIcon} />
@@ -90,6 +96,7 @@ export default function PlanData() {
 
   let plan = tableData?.filter((item) => item?._id == deleteId)
   const deletePlan = (deleteId) => {
+   
     let data = {
       _id: deleteId,
       plan_group_id: plan[0]?.plan_group_id
@@ -104,12 +111,12 @@ export default function PlanData() {
     if (data.length > 0) {
       let table = data?.slice(skip, skip + limit)
       setTableData(table)
-      tableSkel(false)
+      setTableSkel(false)
     }
   }, [skip])
 
   const handleNextPage = () => {
-    tableSkel(true)
+    setTableSkel(false)
     setPage(page + 1);
     if (page >= 1) {
       setSkip((page) * limit)
@@ -120,7 +127,7 @@ export default function PlanData() {
 
 
   const handlePrevPage = () => {
-    tableSkel(true)
+    setTableSkel(true)
     setPage(page - 1);
     if ((page - 1) > 1) {
       let skip = (page - 1) * limit
@@ -129,17 +136,18 @@ export default function PlanData() {
       setSkip(0)
     }
   };
+
+  const handleCreate = () => {
+    setContentSkel(true),
+    navigate("/app/plans/create");
+  }
   return (
     <>
       {tableSkel ?
         <TableSkeleton /> :
         contentSkel ? <ContentSkeleton /> :
-          <Page title="Plans" primaryAction={<Button variant="primary" onClick={() => {
-            navigate("/app/plans/create")
-            setContentSkel(true)
-          }
-          }>Create new</Button>}>
-            
+          <Page title="Raffles" primaryAction={{content : 'Create new', onAction : handleCreate}}>
+
             <Card>
               {tableData.length > 0 ? (
                 <>

@@ -1,5 +1,7 @@
-import { cancelContract } from "../controllers/planController";
-import { unauthenticated } from '../shopify.server';
+import { json } from '@remix-run/node';
+// import { sendApplyEmail } from '../db.mailcontroller';
+import { billingModel } from '../schema';
+
 const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
@@ -14,32 +16,29 @@ const headers = {
       });
     }
   };
+   
 export const action = async ({ request }) => {
     const data = await request.json();
     try {
-        const { admin } = await unauthenticated.admin(data.shop);
-        if (!admin) {
-            return new Response(
-                JSON.stringify({ message: "Invalid Shopify shop" }),
-                {
-                    status: 401,
-                    headers
-                }
+       
+        if (data) {
+            let details = await subscriptionContractModel.findOneAndUpdate(
+                { _id: data._id , contractId: data.contractId }, 
+                { $set: data },    
+                { new: true, upsert: true, setDefaultsOnInsert: true } 
             );
+
+            return json({ message: "success", details: details }, {
+                status: 200,
+                headers,
+              });
         }
-
-        let res = await cancelContract(admin, data);
-
-        return new Response(JSON.stringify({ message: "success", data: res }), {
-            status: 200,
-            headers
-        });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error processing POST request:", error);
+       
         return json({ message: "Error processing request" }, {
             status: 500,
             headers,
-        });
+          });
     }
 }
