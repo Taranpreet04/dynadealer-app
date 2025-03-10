@@ -16,6 +16,7 @@ export const loader = async ({ request }) => {
     };
 
     const app= "https://dynadealersapp.com"
+    // const app= url.origin
     const liquidContent = `<html>
       <head>
       <meta charset="UTF-8">

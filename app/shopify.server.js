@@ -56,8 +56,6 @@ const shopify = shopifyApp({
   },
   hooks: {
     afterAuth: async ({ session, admin }) => {
-      console.log("✅ afterAuth hook is running...");
-     
       try {
         const res = shopify.registerWebhooks({ session });
         const { shop, accessToken, scope } = session;

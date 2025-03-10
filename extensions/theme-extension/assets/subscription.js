@@ -46,7 +46,6 @@ if (currentUrl.includes("account")) {
                 <h3>Manage Memberships</h3>
                 </div>`;
 
-    // const id = ShopifyAnalytics.meta.page.customerId;
     cusDiv.addEventListener("click", function () {
       const targetUrl = `https://${shop}/apps/subscription?cid=${customerId}`;
       targetUrl ? (window.location.href = targetUrl) : "";
@@ -123,182 +122,185 @@ if (subscription_page_type == "product") {
       .find((x) => x.type === "currency");
     return symbol && symbol.value;
   };
-  let pName = productJson?.title.toUpperCase();
-  console.log("pName", pName, pName?.includes("GOLD"));
-  if (
-    pName?.includes("SILVER") ||
-    pName?.includes("GOLD") ||
-    pName?.includes("BRONZE") ||
-    pName?.includes("PLATINUM")
-  ) {
-    giveawayProduct = true;
-  }
-  console.log("goldMembershipOffer==", goldMembershipOffer, customerId);
-  if (goldMembershipOffer) {
-    if (customerId) {
-      const handlePlanType = (newPlan) => {
-        if (newPlan) {
-          let hasActive = document.getElementsByClassName("active");
-          Array.from(hasActive).forEach((itm) => {
-            itm.classList.remove("active");
-          });
+  // let pName = productJson?.title.toUpperCase();
+  // console.log("pName", pName, pName?.includes("GOLD"));
+  // if (
+  //   pName?.includes("SILVER") ||
+  //   pName?.includes("GOLD") ||
+  //   pName?.includes("BRONZE") ||
+  //   pName?.includes("PLATINUM")
+  // ) {
+  //   giveawayProduct = true;
+  // }
+  // console.log("goldMembershipOffer==", goldMembershipOffer, customerId);
+  // if (goldMembershipOffer) {
+  //   if (customerId) {
+  //     const handlePlanType = (newPlan) => {
+  //       if (newPlan) {
+  //         let hasActive = document.getElementsByClassName("active");
+  //         Array.from(hasActive).forEach((itm) => {
+  //           itm.classList.remove("active");
+  //         });
 
-          let nowActive = document.getElementById(`${newPlan?.id}`);
-          if (nowActive) {
-            nowActive.classList.add("active");
-          }
-          selectedPlan = newPlan;
-          // selectedEntries = getEntries(selectedPlan?.description)
-          sendDataToCart(selectedPlan);
-          // setPriceAndEntries(selectedPlan)
-        }
-      };
-      const showPlan = () => {
-        let subscriptionBlock = document.getElementById(
-          "subscription-app-block",
-        );
-        console.log("subscriptionBlock==", subscriptionBlock);
-        content = `<div id="levels-box" class="oneTime-widget-box">
-                             <h4>Offer for ${capitalize(membershipDetails?.membershipLevel)} membership only</h4>
-                            <div class='plan-levels var-pill-wrapper' id='special-plan-levels'>
+  //         let nowActive = document.getElementById(`${newPlan?.id}`);
+  //         if (nowActive) {
+  //           nowActive.classList.add("active");
+  //         }
+  //         selectedPlan = newPlan;
+  //         // selectedEntries = getEntries(selectedPlan?.description)
+  //         sendDataToCart(selectedPlan);
+  //         // setPriceAndEntries(selectedPlan)
+  //       }
+  //     };
+  //     const showPlan = () => {
+  //       let subscriptionBlock = document.getElementById(
+  //         "subscription-app-block",
+  //       );
+  //       console.log("subscriptionBlock==", subscriptionBlock);
+  //       content = `<div id="levels-box" class="oneTime-widget-box">
+  //                            <h4>Offer for ${capitalize(membershipDetails?.membershipLevel)} membership only</h4>
+  //                           <div class='plan-levels var-pill-wrapper' id='special-plan-levels'>
     
-                            </div>
-                    </div>`;
-        subscriptionBlock.innerHTML = content;
+  //                           </div>
+  //                   </div>`;
+  //       subscriptionBlock.innerHTML = content;
 
-        let entriesDiv = document.getElementById("special-plan-levels");
-        allSellingPlans?.map((item, index) => {
-          let planDiv = document.createElement("div");
-          planDiv.className =
-            item?.id == selectedPlan?.id ? `level-plan active` : `level-plan`;
-          planDiv.id = `${item?.id}`;
-          entriesDiv?.appendChild(planDiv);
-          let content = `
-          <label for="plan-${item?.id}" class="radio-wrapper-27">
-            <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? "checked" : ""} />
-            <span class="var-entries">Get ${getEntries(item?.description)} Entries</span>
-            <span class="var-plan">${getCurrencySymbol(activeCurrency)}${parseFloat(item?.price_adjustments[0]?.value / 100)}
-            ${
-              item?.options[0]?.value?.split(" ")[0] == "day"
-                ? "onetime plan"
-                : item?.options[0]?.value?.split(" ")[0] == "month"
-                  ? "/mo"
-                  : ""
-            } only</span>
-            </label>`;
-          planDiv.innerHTML = content;
-          planDiv
-            .querySelector(`#plan-${item?.id}`)
-            .addEventListener("change", () => {
-              handlePlanType(item);
-            });
-        });
-      };
-      const getMembershipDetail = async () => {
-        try {
-          let data = {
-            shop: shop,
-            customerId: customerId,
-          };
-          const response = await fetch(`${serverPath}/api/getMembership`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
+  //       let entriesDiv = document.getElementById("special-plan-levels");
+  //       allSellingPlans?.map((item, index) => {
+  //         let planDiv = document.createElement("div");
+  //         planDiv.className =
+  //           item?.id == selectedPlan?.id ? `level-plan active` : `level-plan`;
+  //         planDiv.id = `${item?.id}`;
+  //         entriesDiv?.appendChild(planDiv);
+  //         let content = `
+  //         <label for="plan-${item?.id}" class="radio-wrapper-27">
+  //           <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? "checked" : ""} />
+  //           <span class="var-entries">Get ${getEntries(item?.description)} Entries</span>
+  //           <span class="var-plan">${getCurrencySymbol(activeCurrency)}${parseFloat(item?.price_adjustments[0]?.value / 100)}
+  //           ${
+  //             item?.options[0]?.value?.split(" ")[0] == "day"
+  //               ? "onetime plan"
+  //               : item?.options[0]?.value?.split(" ")[0] == "month"
+  //                 ? "/mo"
+  //                 : ""
+  //           } only</span>
+  //           </label>`;
+  //         planDiv.innerHTML = content;
+  //         planDiv
+  //           .querySelector(`#plan-${item?.id}`)
+  //           .addEventListener("change", () => {
+  //             handlePlanType(item);
+  //           });
+  //       });
+  //     };
+  //     const getMembershipDetail = async () => {
+  //       try {
+  //         let data = {
+  //           shop: shop,
+  //           customerId: customerId,
+  //         };
+  //         const response = await fetch(`${serverPath}/api/getMembership`, {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify(data),
+  //         });
 
-          const result = await response.json();
-          console.log("result==", result);
-          if (result.message == "success") {
-            membershipDetails = result?.data;
+  //         const result = await response.json();
+  //         console.log("result==", result);
+  //         if (result.message == "success") {
+  //           membershipDetails = result?.data;
 
-            if (
-              membershipDetails.membershipLevel.toLowerCase() == "gold" &&
-              allSellingPlans
-            ) {
-              sendDataToCart(allSellingPlans[0]);
-              selectedPlan = allSellingPlans[0];
-              showPlan();
-            }
-          }
-        } catch (error) {
-          console.error("Error:", error);
-        }
-      };
-      console.log("goldMembershipOffer==", goldMembershipOffer);
-      getMembershipDetail();
-    }
-  } else if (giveawayProduct) {
-    if (allSellingPlans?.length == 1) {
-      sendDataToCart(allSellingPlans[0]);
-    }
-  } else if (allSellingPlans?.length == 1) {
+  //           if (
+  //             membershipDetails.membershipLevel.toLowerCase() == "gold" &&
+  //             allSellingPlans
+  //           ) {
+  //             sendDataToCart(allSellingPlans[0]);
+  //             selectedPlan = allSellingPlans[0];
+  //             showPlan();
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error:", error);
+  //       }
+  //     };
+  //     console.log("goldMembershipOffer==", goldMembershipOffer);
+  //     getMembershipDetail();
+  //   }
+  // } else if (giveawayProduct) {
+  //   if (allSellingPlans?.length == 1) {
+  //     sendDataToCart(allSellingPlans[0]);
+  //   }
+  // } 
+   if (allSellingPlans?.length == 1) {
     if (allSellingPlans) {
       sendDataToCart(allSellingPlans[0]);
     }
-  } else if (showMemebershipLevels) {
-    selectedPlan = allSellingPlans[0];
-    sendDataToCart(selectedPlan);
-    const handlePlanLevel = (newPlan) => {
-      if (newPlan) {
-        let hasActive = document.getElementsByClassName("active");
-        Array.from(hasActive).forEach((itm) => {
-          itm.classList.remove("active");
-        });
+  } 
+  // else if (showMemebershipLevels) {
+  //   selectedPlan = allSellingPlans[0];
+  //   sendDataToCart(selectedPlan);
+  //   const handlePlanLevel = (newPlan) => {
+  //     if (newPlan) {
+  //       let hasActive = document.getElementsByClassName("active");
+  //       Array.from(hasActive).forEach((itm) => {
+  //         itm.classList.remove("active");
+  //       });
 
-        let nowActive = document.getElementById(`${newPlan?.id}`);
-        if (nowActive) {
-          nowActive.classList.add("active");
-        }
-        selectedPlan = newPlan;
-        // selectedEntries = getEntries(selectedPlan?.description)
-        sendDataToCart(selectedPlan);
-        // setPriceAndEntries(selectedPlan)
-      }
+  //       let nowActive = document.getElementById(`${newPlan?.id}`);
+  //       if (nowActive) {
+  //         nowActive.classList.add("active");
+  //       }
+  //       selectedPlan = newPlan;
+  //       // selectedEntries = getEntries(selectedPlan?.description)
+  //       sendDataToCart(selectedPlan);
+  //       // setPriceAndEntries(selectedPlan)
+  //     }
 
-      // else {
-      //     let hasActive = document.getElementsByClassName('active');
-      //     Array.from(hasActive).forEach(itm => {
-      //         itm.classList.remove('active');
-      //     });
-      //     cartClear()
-      // }
-    };
-    const showLevels = () => {
-      let entriesDiv = document.getElementById("plan-levels");
-      allSellingPlans?.map((item, index) => {
-        let planDiv = document.createElement("div");
-        planDiv.className =
-          item?.id == selectedPlan?.id ? `level-plan active` : `level-plan`;
-        planDiv.id = `${item?.id}`;
-        entriesDiv?.appendChild(planDiv);
-        let content = `
-          <label for="plan-${item?.id}" class="radio-wrapper-27">
-            <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? "checked" : ""} />
-            <span class="var-plan">${capitalize(item?.name.split("-")[0])}</span>
-            <span class="var-entries">${getEntries(item?.description)} Entries</span>
-            </label>`;
-        planDiv.innerHTML = content;
-        planDiv
-          .querySelector(`#plan-${item?.id}`)
-          .addEventListener("change", () => {
-            handlePlanLevel(item);
-          });
-      });
-    };
-    let subscriptionBlock = document.getElementById("subscription-app-block");
-    console.log("subscriptionBlock==", subscriptionBlock);
-    content = `<div id="levels-box" class="oneTime-widget-box">
-                         <h4>Membership level</h4>
-                        <div class='plan-levels var-pill-wrapper' id='plan-levels'>
+  //     // else {
+  //     //     let hasActive = document.getElementsByClassName('active');
+  //     //     Array.from(hasActive).forEach(itm => {
+  //     //         itm.classList.remove('active');
+  //     //     });
+  //     //     cartClear()
+  //     // }
+  //   };
+  //   const showLevels = () => {
+  //     let entriesDiv = document.getElementById("plan-levels");
+  //     allSellingPlans?.map((item, index) => {
+  //       let planDiv = document.createElement("div");
+  //       planDiv.className =
+  //         item?.id == selectedPlan?.id ? `level-plan active` : `level-plan`;
+  //       planDiv.id = `${item?.id}`;
+  //       entriesDiv?.appendChild(planDiv);
+  //       let content = `
+  //         <label for="plan-${item?.id}" class="radio-wrapper-27">
+  //           <input type="radio" name="sub-option" id="plan-${item?.id}" ${item?.id === selectedPlan?.id ? "checked" : ""} />
+  //           <span class="var-plan">${capitalize(item?.name.split("-")[0])}</span>
+  //           <span class="var-entries">${getEntries(item?.description)} Entries</span>
+  //           </label>`;
+  //       planDiv.innerHTML = content;
+  //       planDiv
+  //         .querySelector(`#plan-${item?.id}`)
+  //         .addEventListener("change", () => {
+  //           handlePlanLevel(item);
+  //         });
+  //     });
+  //   };
+  //   let subscriptionBlock = document.getElementById("subscription-app-block");
+  //   console.log("subscriptionBlock==", subscriptionBlock);
+  //   content = `<div id="levels-box" class="oneTime-widget-box">
+  //                        <h4>Membership level</h4>
+  //                       <div class='plan-levels var-pill-wrapper' id='plan-levels'>
 
-                        </div>
-                </div>`;
-    subscriptionBlock.innerHTML = content;
-    showLevels();
-  } else {
-    if (allSellingPlans?.length > 1) {
+  //                       </div>
+  //               </div>`;
+  //   subscriptionBlock.innerHTML = content;
+  //   showLevels();
+  // } 
+  else {
+    if (allSellingPlans?.length > 1 ) {
       commanData = JSON.parse(allSellingPlans[0]?.description);
       console.log("commanData==", commanData);
 
