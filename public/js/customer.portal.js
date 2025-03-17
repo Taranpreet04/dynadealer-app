@@ -344,15 +344,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 let totalList = document.getElementById('total-tickets-list')
                 if (totalList) {
-                    totalList.innerText = result?.details?.ticketDetails?.totalTicketsList.join(', ');
+                    totalList.innerText = result?.details?.ticketDetails?.totalTicketsList?.join(', ');
                 }
                 let appliedList = document.getElementById('applied-tickets-list')
                 if (appliedList) {
-                    appliedList.innerText = result?.details?.ticketDetails?.appliedTicketsList.join(', ');
+                    appliedList.innerText = result?.details?.ticketDetails?.appliedTicketsList?.join(', ');
                 }
                 let availableList = document.getElementById('available-tickets-list')
                 if (availableList) {
-                    availableList.innerText = result?.details?.ticketDetails?.availableTicketsList.join(', ')
+                    availableList.innerText = result?.details?.ticketDetails?.availableTicketsList?.join(', ')
                 }
 
                 let tbody = document.getElementById("already-applied-row")
@@ -784,9 +784,59 @@ document.addEventListener("DOMContentLoaded", () => {
                 let spanh = document.getElementById('err-msg')
                 console.log("selectedAppliedFor==", selectedAppliedFor)
                 if (selectedAppliedFor?.applyTicketsCount > 0) {
-                    if (selectedAppliedFor?.spots == selectedAppliedFor?.applyTicketsCount || selectedAppliedFor?.raffleType !== 'capped') {
+                    let modal = document.getElementById("myModal")
+                    if(selectedAppliedFor?.raffleType=="membership"){
 
-                        let modal = document.getElementById("myModal")
+                        if (modal) {
+                            modal.innerHTML = modalContentToNotAllow
+                            var span = modal.getElementsByClassName("close")[0];
+                            if (span) {
+                                span.onclick = function () {
+                                    modal.style.display = "none";
+                                    resetModalContent()
+                                    document.body.classList.remove("modal-open");
+                                }
+                            }
+
+                            // let yesBtn = document.getElementById("yesBtn")
+                            let closeBtn = document.getElementById("closeBtn")
+                            let okBtn = document.getElementById("okBtn")
+
+                            if (okBtn) {
+                                okBtn.onclick = function () {
+                                    modal.style.display = "none";
+                                    document.body.classList.remove("modal-open");
+                                    resetModalContent()
+                                }
+                            }
+                            if (closeBtn) {
+                                closeBtn.onclick = function () {
+                                    modal.style.display = "none";
+                                    document.body.classList.remove("modal-open");
+                                    resetModalContent()
+                                }
+                            }
+                            let body = document.getElementById('cancelModalBody')
+                            console.log(selectedSubscription?.ticketDetails, "selectedAppliedFor==", selectedAppliedFor)
+                            if (body) {
+                                console.log("selectedSubscription?.ticketDetails?.available==", selectedSubscription?.ticketDetails?.available)
+                                console.log("selectedAppliedFor?.applyTicketsCount==", selectedAppliedFor?.applyTicketsCount)
+                                if (Number(selectedSubscription?.ticketDetails?.available) > Number(selectedAppliedFor?.applyTicketsCount)) {
+
+                                    body.innerHTML = `<p>
+                  Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets for <span class="red-bold">${selectedAppliedFor?.productName}</span> draw?
+                Once you apply, you won’t be able to change it.</p>`
+                                } else {
+                                    body.innerHTML = `<p>
+                    You are not able to apply tickets as you apply greater than ${selectedSubscription?.ticketDetails?.available} tickets.</p>`
+                                }
+                            }
+                            modal.style.display = "block";
+                            // document.body.classList.add("modal-open");
+                        }
+                    }else if (selectedAppliedFor?.spots == selectedAppliedFor?.applyTicketsCount || selectedAppliedFor?.raffleType !== 'capped') {
+
+                      
                         if (modal) {
                             modal.innerHTML = modalContentToApplyTickets
                             var span = modal.getElementsByClassName("close")[0];
@@ -826,14 +876,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                             let body = document.getElementById('cancelModalBody')
                             if (body) {
-                                body.innerHTML = `<p>Are you sure you want to apply for <span class="red-bold">${selectedAppliedFor?.productName}</span> draw?
+                                body.innerHTML = `<p>Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets for <span class="red-bold">${selectedAppliedFor?.productName}</span> draw?
                 Once you apply, you won’t be able to change it.</p>`
                             }
                             modal.style.display = "block";
                             // document.body.classList.add("modal-open");
                         }
                     } else {
-                        let modal = document.getElementById("myModal")
+                       
                         if (modal) {
                             modal.innerHTML = modalContentToNotAllow
                             var span = modal.getElementsByClassName("close")[0];
@@ -879,6 +929,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                     input.value = 0
+                    selectedAppliedFor = {
+                        ...selectedAppliedFor,
+                        applyTicketsCount:  0
+                    }
                     if (spanh) {
                         spanh.innerText = ""
                     }
@@ -910,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tr2.appendChild(appliedNumberCell)
         let appliedListCell = document.createElement('td');
         appliedListCell.id = 'applied-tickets-list'
-        appliedListCell.innerText = selectedSubscription?.ticketDetails?.appliedTicketsList.join(', ')
+        appliedListCell.innerText = selectedSubscription?.ticketDetails?.appliedTicketsList?.join(', ')
         tr2.appendChild(appliedListCell)
 
         let tr3 = document.createElement('tr');
@@ -924,7 +978,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tr3.appendChild(restNumberCell)
         let restListCell = document.createElement('td');
         restListCell.id = 'available-tickets-list'
-        restListCell.innerText = selectedSubscription?.ticketDetails?.availableTicketsList.join(', ')
+        restListCell.innerText = selectedSubscription?.ticketDetails?.availableTicketsList?.join(', ')
         tr3.appendChild(restListCell)
 
 
@@ -939,7 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tr1.appendChild(totalNumberCell)
         let totalListCell = document.createElement('td');
         totalListCell.id = 'total-tickets-list'
-        totalListCell.innerText = selectedSubscription?.ticketDetails?.totalTicketsList.join(', ')
+        totalListCell.innerText = selectedSubscription?.ticketDetails?.totalTicketsList?.join(', ')
         tr1.appendChild(totalListCell)
 
     }
@@ -1006,7 +1060,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 tr1.appendChild(totalCell)
 
                 let totalListCell = document.createElement('td');
-                totalListCell.innerText = item?.appliedList.join(', ')
+                totalListCell.innerText = item?.appliedList?.join(', ')
                 tr1.appendChild(totalListCell)
             })
         } else {

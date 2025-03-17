@@ -9,7 +9,7 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import {
   checkProductSubscription,
-  createPlan,
+  createPlan,createPlanAndVariants,
   getPlanById,
   updatePlanById,
 } from "../controllers/planController";
@@ -93,6 +93,7 @@ export const action = async ({ params, request }) => {
     if (!checkProduct) {
       if (params?.id == "create") {
         planDetails = await createPlan(admin, newPlanDetails);
+        // planDetails = await createPlanAndVariants(admin, newPlanDetails);
       } else {
         planDetails = await updatePlanById(
           admin,

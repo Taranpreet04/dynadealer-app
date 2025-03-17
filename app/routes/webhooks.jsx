@@ -100,7 +100,7 @@ export const action = async ({ request }) => {
           "plans.plan_id": planId,
         });
 
-        if (planName?.toLowerCase()?.includes("bronze")|| planName?.toLowerCase()?.includes("silver")|| planName?.toLowerCase()?.includes("gold")||planName?.toLowerCase()?.includes("platinum")) {
+        if (planName?.toLowerCase()?.includes("bronze-entries-")|| planName?.toLowerCase()?.includes("silver-entries-")|| planName?.toLowerCase()?.includes("gold-entries-")||planName?.toLowerCase()?.includes("platinum-entries-")) {
           let membership = await membershipsModel.create({
             shop: shop,
             customerId: customerId,
@@ -120,7 +120,8 @@ export const action = async ({ request }) => {
             availableTicketsList: drawIds,
             appliedForDetail: [],
           }
-        }else{
+        }
+        else{
           ticketDetails= {
             total: Number(drawIds?.length),
             totalTicketsList: drawIds,
@@ -139,6 +140,7 @@ export const action = async ({ request }) => {
             ],
           }
         }
+        console.log("ticketDetails==", ticketDetails)
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",

@@ -4,12 +4,14 @@ import {
   subscriptionContractModel,
   templateModel,
 } from "../schema";
+// import fs from "fs";
+
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
-   
+
     let check;
-   
+
     if (id == "create") {
       check = await planDetailsModel.find({
         shop: newPlanDetails?.shop,
@@ -41,6 +43,23 @@ export const checkProductSubscription = async (newPlanDetails, id) => {
     throw err;
   }
 };
+
+export const createPlanAndVariants = async (admin, newPlanDetail) => {
+  let onetimePlans=[]
+  let otherPlans=[]
+  // newPlanDetail?.plans?.map((plan)=>{
+  //   plan?.purchaseType=='day'? onetimePlans.push(newPlanDetail)
+  // })
+  let optionExist = await checkOptions(admin, newPlanDetail?.products[0]?.product_id)
+  console.log("result----checkOptions-exist", optionExist)
+  if (optionExist) {
+    console.log("time to create variants")
+    // createVariants()
+  } else {
+    let option = await createOption(admin, newPlanDetail?.products[0]?.product_id)
+    console.log("option==", option)
+  }
+}
 export const createPlan = async (admin, newPlanDetail) => {
   const { shop } = admin.rest.session;
   const newPlanDetails = {
@@ -201,19 +220,19 @@ export const createPlan = async (admin, newPlanDetail) => {
   }
 };
 
-export const getAllPlans = async (admin, type='other') => {
+export const getAllPlans = async (admin, type = 'other') => {
   try {
     const { shop } = admin.rest.session;
-    let planDetails=[]
-   if(type=="membership"){
-    planDetails = await planDetailsModel.find({ shop : shop, raffleType: type}).sort({ createdAt: -1 });
-   }else{
-    planDetails = await planDetailsModel.find({ 
-      shop: shop, 
-      raffleType: { $ne: "membership" } 
-    }).sort({ createdAt: -1 });
-    
-   }
+    let planDetails = []
+    if (type == "membership") {
+      planDetails = await planDetailsModel.find({ shop: shop, raffleType: type }).sort({ createdAt: -1 });
+    } else {
+      planDetails = await planDetailsModel.find({
+        shop: shop,
+        raffleType: { $ne: "membership" }
+      }).sort({ createdAt: -1 });
+
+    }
     return { success: true, planDetails };
   } catch (error) {
     console.error("Error getting plan details:", error);
@@ -262,7 +281,7 @@ export const deletePlanById = async (admin, data) => {
         shop: shop,
         plan_group_id: deletedPlanId,
       });
-    
+
       if (dbResult) {
         return { status: true, data: "Plan Deleted" };
       } else {
@@ -284,21 +303,119 @@ export const getPlanById = async (admin, id) => {
     const data = await planDetailsModel.findOne({ _id: planId });
     return data
       ? {
-          status: true,
-          response: data,
-        }
+        status: true,
+        response: data,
+      }
       : { status: false, response: "Error Fetching data" };
   } catch (err) {
     console.log(err, "err");
     return { status: false, response: "Something Went wrong" };
   }
 };
+const checkOptions = async (admin, productId) => {
+  try {
+    console.log("productId==", productId)
+    const query = `query {
+    product(id: "${productId}") {
+      options {
+        id
+        name
+        values
+      }
+    }
+  }`;
+    const response = await admin.graphql(query);
+    const productOptions = await response.json();
+    // const dataString = typeof productOptions === "string" ? productOptions : JSON.stringify(productOptions);
+    // fs.writeFile("checkkkk.txt", dataString, (err) => {
+    //   if (err) {
+    //     console.error("Error writing to file:", err);
+    //   } else {
+    //     console.log("Data written to file successfully!");
+    //   }
+    // });
+    let totalOptions = productOptions?.data?.product?.options.length
+    if (totalOptions > 0) {
+      const ticketOption = productOptions?.data?.product?.options?.find(
+        option => option?.name === "Tickets"
+      );
 
+      console.log("Ticket Option ID:", ticketOption?.id);
+      return ticketOption?.id;
+    }
+
+    return null;
+  } catch (err) {
+
+  }
+}
+export const createOption = async (admin, productId) => {
+  try {
+    const mutation = `#graphql
+  mutation createOptions($productId: ID!, $options: [OptionCreateInput!]!) {
+    productOptionsCreate(productId: $productId, options: $options) {
+      userErrors {
+        field
+        message
+        code
+      }
+      product {
+        id
+        title
+        options {
+          name
+          values
+        }
+      }
+    }
+  }`;
+
+    const variables = {
+      productId: productId,
+      options: [
+        {
+          name: "Tickets",
+          values: [
+            {
+              name: "1 Entry",
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await admin.graphql(mutation, { variables });
+
+    const data = await response.json();
+    const dataString = typeof data === "string" ? data : JSON.stringify(data);
+    // fs.writeFile("checkkkk.txt", dataString, (err) => {
+    //   if (err) {
+    //     console.error("Error writing to file:", err);
+    //   } else {
+    //     console.log("Data written to file successfully!");
+    //   }
+    // });
+    // console.log(data);
+    if (data?.data?.productOptionsCreate?.userErrors?.length <= 0) {
+      console.log("no reeor")
+      return true
+    }
+    console.log("err", data?.data?.productOptionsCreate?.userErrors)
+    return false
+  } catch (err) {
+    console.log(err)
+    return false
+  }
+
+
+}
 export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
 
   try {
     const { shop } = admin.rest.session;
+    console.log("data--", data)
     let dbproductlist = data?.dbProducts;
+    console.log("dbproductlist==", dbproductlist)
     const date = newPlanDetails?.offerValidity;
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
@@ -315,6 +432,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
       raffleType: newPlanDetails?.raffleType,
       spotsPerPerson: newPlanDetails?.spots,
     };
+
+    // checkOptions(admin, product_id)
     const allVariants = newPlanDetails?.products.reduce((acc, product) => {
       return acc.concat(product.variants);
     }, []);
@@ -657,7 +776,7 @@ export const cancelContract = async (admin, data) => {
         status: 400,
       };
     } else {
-   
+
       let res = await subscriptionContractModel.findOneAndUpdate(
         { _id: data?.contractDbID },
         { $set: { status: "CANCELLED" } },
@@ -671,7 +790,7 @@ export const cancelContract = async (admin, data) => {
       };
     }
   } catch (error) {
-  
+
     return { success: false, error: "Failed to cancel plan." };
   }
 };
@@ -929,7 +1048,7 @@ export const getCustomerDataByContractId = async (admin, id) => {
 
 export const getExportData = async (admin, data, date) => {
   try {
-   
+
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
@@ -961,15 +1080,15 @@ export const getExportData = async (admin, data, date) => {
               cond: {
                 $and: [
                   { $eq: ["$$detail.productId", data[0]] },
-                  { 
+                  {
                     $gte: [
                       { $toDate: "$$detail.appliedDate" },
                       startIST
                     ]
                   },
-                  { 
+                  {
                     $lte: [
-                      { $toDate: "$$detail.appliedDate" }, 
+                      { $toDate: "$$detail.appliedDate" },
                       endIST
                     ]
                   }
@@ -1000,11 +1119,11 @@ export const checkMincycleComplete = async (detail) => {
       contractId: detail?.id,
       status: "done",
     });
-    
-    let productAr=[]
-    let activeDraws= await planDetailsModel.find({shop: detail?.shop , showOnPortal: true})
-    activeDraws.map((item)=>{
-      item?.products.map((product)=>{
+
+    let productAr = []
+    let activeDraws = await planDetailsModel.find({ shop: detail?.shop, showOnPortal: true })
+    activeDraws.map((item) => {
+      item?.products.map((product) => {
         productAr.push({
           id: product.product_id,
           title: product.product_name,
@@ -1014,7 +1133,7 @@ export const checkMincycleComplete = async (detail) => {
         })
       })
     })
-    
+
     return { message: "success", data, activeDraws: productAr };
   } catch (error) {
     console.error("Error processing POST request:", error);
@@ -1056,7 +1175,7 @@ export const setDefaultTemplate = async (shop) => {
                 <pre>
                 {{footer}}
                 </pre>`,
-     
+
       orderMailParameters: [
         {
           term: "{{customerName}}",
@@ -1104,7 +1223,7 @@ export const setDefaultTemplate = async (shop) => {
             <pre>
                 {{footer}}
             </pre>`,
-     
+
       appliedMailParameters: [
         {
           term: "{{customerName}}",
@@ -1154,7 +1273,7 @@ export const setDefaultTemplate = async (shop) => {
                 {{footer}}
             </pre>
          `,
-     
+
       winnerMailParameters: [
         {
           term: "{{customerName}}",
