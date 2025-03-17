@@ -201,10 +201,19 @@ export const createPlan = async (admin, newPlanDetail) => {
   }
 };
 
-export const getAllPlans = async (admin) => {
+export const getAllPlans = async (admin, type='other') => {
   try {
     const { shop } = admin.rest.session;
-    const planDetails = await planDetailsModel.find({ shop }).sort({ createdAt: -1 });
+    let planDetails=[]
+   if(type=="membership"){
+    planDetails = await planDetailsModel.find({ shop : shop, raffleType: type}).sort({ createdAt: -1 });
+   }else{
+    planDetails = await planDetailsModel.find({ 
+      shop: shop, 
+      raffleType: { $ne: "membership" } 
+    }).sort({ createdAt: -1 });
+    
+   }
     return { success: true, planDetails };
   } catch (error) {
     console.error("Error getting plan details:", error);

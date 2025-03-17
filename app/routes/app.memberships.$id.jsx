@@ -49,6 +49,7 @@ export const loader = async ({ params, request }) => {
     return null;
   } else {
     const data = await getPlanById(admin, params?.id);
+    // return null;
     return json(data?.response);
   }
 };
@@ -131,7 +132,7 @@ export default function CreateUpdatePlan() {
   const [btnLoader, setBtnLoader] = useState(false);
   const [updatePlanIndex, setUpdatePlanIndex] = useState(-1);
   const [newPlan, setNewPlan] = useState({
-    name: "",
+    name: "bronze",
     entries: 1,
     purchaseType: "day",
     mincycle: 1,
@@ -147,9 +148,9 @@ export default function CreateUpdatePlan() {
   const [planDetail, setPlanDetail] = useState({
     name: "",
     sellingPlanUpdate: false,
-    upgradeTo: "bronze",
-    futureEntries: 5,
-    raffleType: "capped",
+    upgradeTo: "",
+    futureEntries: 0,
+    raffleType: "membership",
     spots: 1,
     plans: [],
     products: [],
@@ -168,6 +169,7 @@ export default function CreateUpdatePlan() {
       const offsetInMinutes = 330;
       return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
     };
+    console.log("loaderdaata---", loaderData)
     if (loaderData !== null) {
     
       const dates = {
@@ -300,7 +302,7 @@ export default function CreateUpdatePlan() {
         : shopify.toast.show("Plan successfully updated.", { duration: 5000 });
       setBtnLoader(false);
       setTableSkel(true);
-      navigate("/app/plans");
+      navigate("/app/memberships");
     } else if (actionData?.success == false) {
       shopify.toast.show(`${actionData?.error}`, { duration: 5000 });
       shopify.loading(false);
@@ -376,7 +378,7 @@ export default function CreateUpdatePlan() {
   };
 
   const handleAddPlan = () => {
-   
+   console.log("planDetail==in add", planDetail)
     if (!editSellingPlan) {
       let match = 0;
       let nameExist = 0;
@@ -387,7 +389,9 @@ export default function CreateUpdatePlan() {
         }
       });
    
-      if (newPlan?.name.trim() === "") {
+      if ( planDetail?.plans?.length > 1) {
+        shopify.toast.show("Only one ticket allowed", { duration: 5000 });
+      }else if (newPlan?.name.trim() === "") {
         shopify.toast.show("Plan name is required", { duration: 5000 });
       } else if (planNameExist || nameExist === 1) {
         shopify.toast.show("Plan name should be unique", { duration: 5000 });
@@ -412,7 +416,7 @@ export default function CreateUpdatePlan() {
         let newPlans = [...planDetail?.plans, editPlanName];
         setPlanDetail({ ...planDetail, plans: newPlans });
         setNewPlan({
-          name: "",
+          name: "bronze",
           entries: 1,
           purchaseType: "day",
           mincycle: 1,
@@ -423,6 +427,7 @@ export default function CreateUpdatePlan() {
     }
   };
   const handleUpdatePlan = () => {
+    console.log("planDetail==in update", planDetail)
     if (editSellingPlan) {
       let plans = [];
       let nameExist = 0;
@@ -434,7 +439,9 @@ export default function CreateUpdatePlan() {
           setPlanNameExist(true);
         }
       });
-      if (newPlan?.name === "") {
+      if ( planDetail?.plans.length > 1) {
+        shopify.toast.show("Only one ticket allowed", { duration: 5000 });
+      }else if (newPlan?.name === "") {
         shopify.toast.show("Plan name is required", { duration: 5000 });
       } else if (planNameExist || nameExist >= 1) {
         shopify.toast.show("Plan name should be unique", { duration: 5000 });
@@ -473,7 +480,7 @@ export default function CreateUpdatePlan() {
         });
         setPlanDetail({ ...planDetail, plans: plans });
         setNewPlan({
-          name: "",
+          name: "bronze",
           entries: 1,
           purchaseType: "day",
           mincycle: 1,
@@ -482,13 +489,16 @@ export default function CreateUpdatePlan() {
         });
       }
     }
+    setEditSellingPlan(false)
   };
 
   const handleBack = () => {
     shopify.loading(true);
     setTableSkel(true);
-    navigate("/app/plans");
+    navigate("/app/memberships");
   };
+
+  console.log("planDetail--", planDetail?.plans, planDetail?.plans.length)
   return (
     <>
       {tableSkel ? (
@@ -500,12 +510,12 @@ export default function CreateUpdatePlan() {
           backAction={{ content: "", onAction: handleBack }}
           title={
             id == "create"
-              ? "Create raffle"
-              : "Update raffle"
+              ? "Create membership"
+              : "Update membership"
           }
           primaryAction={
             <Button loading={btnLoader} onClick={handleSavePlan}>
-              {id == "create" ? "Save raffle" : "Update raffle"}
+              {id == "create" ? "Save membership" : "Update membership"}
             </Button>
           }
         >
@@ -521,15 +531,15 @@ export default function CreateUpdatePlan() {
                       autoComplete="off"
                     />
 
-                    <Checkbox
+                    {/* <Checkbox
                       label="Want to update plan after one month ?"
                       checked={planDetail?.sellingPlanUpdate}
                       onChange={(value) =>
                         handleChange(value, "sellingPlanUpdate")
                       }
-                    />
+                    /> */}
                   </BlockStack>
-                  {planDetail?.sellingPlanUpdate && (
+                  {/* {planDetail?.sellingPlanUpdate && (
                     <Box>
                       <InlineStack align="space-between">
                         <Select
@@ -549,9 +559,9 @@ export default function CreateUpdatePlan() {
                         />
                       </InlineStack>
                     </Box>
-                  )}
+                  )} */}
                 </Card>
-                <Card>
+                {/* <Card>
                   <Grid>
                     <Grid.Cell
                       columnSpan={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}
@@ -635,7 +645,7 @@ export default function CreateUpdatePlan() {
                       </>
                     )}
                   </Grid>
-                </Card>
+                </Card> */}
                 <Card>
                   <Grid>
                     <Grid.Cell
@@ -697,13 +707,15 @@ export default function CreateUpdatePlan() {
             <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
               <BlockStack gap="200">
                 <Card>
-                  <Text>Add Your Tickets</Text>
+                  <Text>{editSellingPlan? "Update":"Add"} Your Tickets</Text>
                   <BlockStack gap="300">
+                    {(planDetail?.plans.length < 1 || editSellingPlan) &&
+                    <>
                     <Grid>
                       <Grid.Cell
                         columnSpan={{ xs: 6, sm: 6, md: 9, lg: 6, xl: 6 }}
                       >
-                        <TextField
+                        {/* <TextField
                           label="Name"
                           placeholder="Enter your ticket name"
                           value={newPlan?.name?.split("-entries-")?.[0]}
@@ -711,6 +723,14 @@ export default function CreateUpdatePlan() {
                             handleModalValChange(value, "name")
                           }
                           autoComplete="off"
+                        /> */}
+                          <Select
+                          label="Membership level"
+                          options={upgradeOptions}
+                          value={newPlan?.name?.toLowerCase().split("-entries-")?.[0]}
+                          onChange={(value) =>
+                            handleModalValChange(value, "name")
+                          }
                         />
                       </Grid.Cell>
                       <Grid.Cell
@@ -726,6 +746,7 @@ export default function CreateUpdatePlan() {
                           prefix="$"
                           autoComplete="off"
                         />
+                       
                       </Grid.Cell>
                       <Grid.Cell
                         columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}
@@ -785,6 +806,7 @@ export default function CreateUpdatePlan() {
                     >
                       {editSellingPlan ? "Update" : "Add"} Ticket
                     </Button>
+                    </>}
                     <ResourceList
                       resourceName={{ singular: "plan", plural: "plans" }}
                       items={planDetail?.plans}
@@ -838,7 +860,7 @@ export default function CreateUpdatePlan() {
                     />
                   </BlockStack>
                 </Card>
-                <Card>
+                {/* <Card>
                     <Checkbox
                       label="Visible on customer Portal"
                       checked={planDetail?.showOnPortal}
@@ -846,12 +868,12 @@ export default function CreateUpdatePlan() {
                         handleChange(value, "showOnPortal")
                       }
                     />
-                </Card>
+                </Card> */}
               </BlockStack>
             </Grid.Cell>
           </Grid>
 
-          <div className="sd-ultimate-option-AlertModal">
+          {/* <div className="sd-ultimate-option-AlertModal">
             <Modal
               open={sellingPlanModal}
               onClose={() => {
@@ -896,34 +918,10 @@ export default function CreateUpdatePlan() {
                 </BlockStack>
               </Modal.Section>
             </Modal>
-            {/* <div style={{ height: "250px" }}>
-              <Popover
-                active={sellingPlanModal}
-                // activator={activator}
-                autofocusTarget="first-node"
-                onClose={() => {
-                    setSellingPlanModal(false), setDeleteSellingPlan("");
-                  }}
-              >
-                <Popover.Pane fixed>
-                  <Popover.Section>
-                    <p>Available sales channels</p>
-                  </Popover.Section>
-                </Popover.Pane>
-                <Popover.Pane>
-                  <ActionList
-                    actionRole="menuitem"
-                    items={[
-                      { content: "Online store" },
-                      { content: "Facebook" },
-                      { content: "Shopify POS" },
-                    ]}
-                  />
-                </Popover.Pane>
-              </Popover>
-            </div> */}
-          </div>
+           
+          </div> */}
         </Page>
+        
       )}
     </>
   );

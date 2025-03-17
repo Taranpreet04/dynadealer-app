@@ -27,7 +27,7 @@ export default function App() {
         <ui-nav-menu>
           <Link to="/app" rel="home" prefetch="viewport">Subscription</Link>
           <Link to="/app/plans" prefetch="viewport">Raffles</Link>
-          {/* <Link to="/app/memberships" prefetch="viewport">Memberships</Link> */}
+          <Link to="/app/memberships" prefetch="viewport">Memberships</Link>
           <Link to="/app/contracts" prefetch="viewport">Subscribers</Link>
           <Link to="/app/emailCustomizer" prefetch="viewport">Email Customizer</Link>
         </ui-nav-menu>

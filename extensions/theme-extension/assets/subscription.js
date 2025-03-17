@@ -1,6 +1,7 @@
 console.log("js--__________=");
 
-let serverPath = "https://dynadealersapp.com";
+// let serverPath = "https://dynadealersapp.com";
+let serverPath = "https://warriors-trainers-phoenix-und.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -692,7 +693,7 @@ if (subscription_page_type == "product") {
           if (result.message == "success") {
             inventory = result.data.product.totalInventory;
             console.log("inventory==", inventory);
-            showInventory();
+            // showInventory();
             // inventory > 0 ? showWidget() : "";
           }
         } catch (error) {

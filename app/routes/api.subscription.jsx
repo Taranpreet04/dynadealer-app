@@ -15,8 +15,8 @@ export const loader = async ({ request }) => {
       message: "Subscription data for cid: " + cid,
     };
 
-    const app= "https://dynadealersapp.com"
-    // const app= url.origin
+    // const app= "https://dynadealersapp.com"
+    const app= url.origin
     const liquidContent = `<html>
       <head>
       <meta charset="UTF-8">

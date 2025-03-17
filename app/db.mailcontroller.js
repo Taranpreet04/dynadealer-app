@@ -10,9 +10,13 @@ export async function sendOrderEmail(data) {
             port: 465,
             secure: true,
             auth: {
-                user: "tpreet504@gmail.com",
-                pass: "ftbx lpyi ygts otpg"
+                user: "kyle@dynadealer.com",
+                pass: "flux zfci tshc mfsm"
             },
+            // auth: {
+            //     user: "tpreet504@gmail.com",
+            //     pass: "ftbx lpyi ygts otpg"
+            // },
         });
         const rows = data?.drawIds?.map((id) => `<tr>
         <td>${data?.customerName}</td>
@@ -70,8 +74,8 @@ export async function sendApplyEmail(data) {
             port: 465,
             secure: true,
             auth: {
-                user: "tpreet504@gmail.com",
-                pass: "ftbx lpyi ygts otpg"
+                user: "kyle@dynadealer.com",
+                pass: "flux zfci tshc mfsm"
             },
         });
 
@@ -135,8 +139,8 @@ export async function sendWinnerEmail(data) {
                 port: 465,
                 secure: true,
                 auth: {
-                    user: "tpreet504@gmail.com",
-                    pass: "ftbx lpyi ygts otpg"
+                    user: "kyle@dynadealer.com",
+                    pass: "flux zfci tshc mfsm"
                 },
             });
             let html= template?.winningTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);

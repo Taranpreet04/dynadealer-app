@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
-    let serverPath = "https://dynadealersapp.com";
+    // let serverPath = "https://dynadealersapp.com";
+    let serverPath = "https://warriors-trainers-phoenix-und.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -779,10 +780,9 @@ document.addEventListener("DOMContentLoaded", () => {
         inputDiv.appendChild(applyBtnDiv)
         let applyBtn = document.getElementById('applyBtn')
         if (applyBtn) {
-
-
             applyBtn.onclick = function () {
                 let spanh = document.getElementById('err-msg')
+                console.log("selectedAppliedFor==", selectedAppliedFor)
                 if (selectedAppliedFor?.applyTicketsCount > 0) {
                     if (selectedAppliedFor?.spots == selectedAppliedFor?.applyTicketsCount || selectedAppliedFor?.raffleType !== 'capped') {
 

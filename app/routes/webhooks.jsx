@@ -16,17 +16,16 @@ export const action = async ({ request }) => {
   if (!admin) {
     return new Response("Unauthorised user!", { status: 401 });
   }
- 
+
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
-      
         const deleteCredential = credentialModel.deleteOne({ shop });
-      
+
         await Promise.all([deleteCredential]);
 
         const sessionId = session.id;
-       
+
         let check = await shopify.sessionStorage.deleteSession(sessionId);
         if (check) {
           return new Response("App uninstalled successfully", { status: 200 });
@@ -46,6 +45,7 @@ export const action = async ({ request }) => {
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy;
+        let  ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
         if (payload?.billing_policy?.interval === "day") {
           billing_policy = { ...billing_policy, interval: "oneTime" };
@@ -74,22 +74,8 @@ export const action = async ({ request }) => {
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
-        if (planName?.toLowerCase()?.includes("level")) {
-      
-          let membership = await membershipsModel.findOneAndUpdate(
-            { shop, customerId: customerId }, // Find by shop and customerId
-            {
-              shop: shop,
-              customerId: customerId,
-              orderId: orderId || "",
-              contractId: contractId || "",
-              membershipLevel: planName?.split("-")[0]?.toLowerCase() || "",
-              sellingPlanName: planName,
-              sellingPlanId: planId,
-            },
-            { upsert: true, new: true }, // Create if not found, return updated doc
-          );
-        }
+        
+     
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
             productId: product?.node?.productId,
@@ -113,15 +99,51 @@ export const action = async ({ request }) => {
           shop: shop,
           "plans.plan_id": planId,
         });
-      
+
+        if (planName?.toLowerCase()?.includes("bronze")|| planName?.toLowerCase()?.includes("silver")|| planName?.toLowerCase()?.includes("gold")||planName?.toLowerCase()?.includes("platinum")) {
+          let membership = await membershipsModel.create({
+            shop: shop,
+            customerId: customerId,
+            orderId: orderId || "",
+            contractId: contractId || "",
+            membershipLevel: planName?.split("-")[0]?.toLowerCase() || "",
+            membershipType: payload?.billing_policy?.interval == "day" ? "ONETIME" : "ACTIVE",
+            sellingPlanName: planName,
+            sellingPlanId: planId,
+          });
+          ticketDetails= {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied:0,
+            appliedTicketsList: [],
+            available: Number(drawIds?.length),
+            availableTicketsList: drawIds,
+            appliedForDetail: [],
+          }
+        }else{
+          ticketDetails= {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied: Number(drawIds?.length),
+            appliedTicketsList: drawIds,
+            available: 0,
+            availableTicketsList: [],
+            appliedForDetail: [
+              {
+                tickets: Number(drawIds?.length),
+                productId: products[0]?.productId,
+                productName: products[0]?.productName,
+                appliedDate: new Date(),
+                appliedList: drawIds,
+              },
+            ],
+          }
+        }
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
           contractId: contractId || "",
-          customerName:
-            cusRes?.data?.customer?.firstName +
-            " " +
-            cusRes?.data?.customer?.lastName,
+          customerName: `${cusRes?.data?.customer?.firstName || ''} ${cusRes?.data?.customer?.lastName || ''}`.trim(),
           customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           sellingPlanName: planName,
@@ -140,15 +162,7 @@ export const action = async ({ request }) => {
             payload?.billing_policy?.interval == "day"
               ? new Date().toISOString()
               : cusRes?.data?.nextBillingDate,
-          ticketDetails: {
-            total: Number(drawIds?.length),
-            totalTicketsList: drawIds,
-            applied: 0,
-            appliedTicketsList: [],
-            available: Number(drawIds?.length),
-            availableTicketsList: drawIds,
-            appliedForDetail: [],
-          },
+          ticketDetails: ticketDetails,
         });
 
         const currentDate = new Date().toISOString();

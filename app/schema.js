@@ -63,6 +63,7 @@ const membershipSchema = new mongoose.Schema({
   contractId: String,
   customerId: String,
   membershipLevel: String,
+  membershipType: String,
   sellingPlanId: String,
   sellingPlanName: String,
 }, {
