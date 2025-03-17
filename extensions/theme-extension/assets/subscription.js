@@ -1,7 +1,7 @@
 console.log("js--__________=");
 
-// let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://warriors-trainers-phoenix-und.trycloudflare.com";
+let serverPath = "https://dynadealersapp.com";
+// let serverPath = "https://warriors-trainers-phoenix-und.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
