@@ -9,7 +9,7 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import {
   checkProductSubscription,
-  createPlan,createPlanAndVariants,
+  createPlan,
   getPlanById,
   updatePlanById,
 } from "../controllers/planController";

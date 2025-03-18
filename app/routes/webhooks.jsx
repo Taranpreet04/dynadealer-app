@@ -251,7 +251,16 @@ export const action = async ({ request }) => {
         console.error("Error processing webhook:", err);
         return new Response("Error processing webhook", { status: 200 });
       }
-
+      case "ORDER_CREATE":
+        try{
+          console.log(
+            "details from ORDER_CREATE",
+            payload,
+          );
+        }catch(err){
+          console.error("Error processing webhook:", err);
+          return new Response("Error processing webhook", { status: 200 });
+        }
     case "CUSTOMERS_DATA_REQUEST":
     case "CUSTOMERS_REDACT":
     case "SHOP_REDACT":

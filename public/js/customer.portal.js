@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for ")
     let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://warriors-trainers-phoenix-und.trycloudflare.com";
+    // let serverPath = "https://theater-covering-collector-burning.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
