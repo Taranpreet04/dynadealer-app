@@ -104,21 +104,19 @@ export default function ContractData() {
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data;
-    
+
       let dataToExport = [];
 
-      detail.map((detail)=>{
-      
-        detail?.appliedForDetail[0]?.appliedList.map((data)=>{
-       
+      detail.map((detail) => {
+        detail?.appliedForDetail[0]?.appliedList.map((data) => {
           dataToExport.push({
             drawId: data,
             customerId: detail?.customerId,
             customerName: detail?.customerName,
             orderId: detail?.orderId,
           });
-        })
-      })
+        });
+      });
       if (dataToExport?.length > 0) {
         let data = [
           {
@@ -157,20 +155,20 @@ export default function ContractData() {
     return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
   }
   const rows = tableData?.map((itm, index) => [
-    <Text>{itm?.contractId}</Text>,
-    <Text> {itm?.customerName}</Text>,
-    <Text> {itm?.ticketDetails?.total}</Text>,
-    <Text> {itm?.ticketDetails?.applied}</Text>,
-    <Text> {itm?.ticketDetails?.available}</Text>,
-    <Text>
+    <Text>{itm?.orderId}</Text>,
+    <Text alignment="center"> {itm?.customerName}</Text>,
+    <Text alignment="center"> {itm?.ticketDetails?.total}</Text>,
+    <Text alignment="center"> {itm?.ticketDetails?.applied}</Text>,
+    <Text alignment="center"> {itm?.ticketDetails?.available}</Text>,
+    <Text alignment="center">
       <Badge tone={itm?.status == "CANCELLED" ? "critical" : "success"}>
         {itm?.status}
       </Badge>
     </Text>,
-    <Text> {formatISOToDate(toIST(itm?.createdAt))}</Text>,
-    <Text as="p">
+    <Text alignment="center"> {formatISOToDate(toIST(itm?.createdAt))}</Text>,
+    <Text as="p" alignment="center">
       <Link
-        url={`/app/contract/${itm?.contractId}`}
+        url={`/app/contract/${itm?.contractId|| itm?._id}`}
         prefetch="viewport"
         onClick={() => {
           shopify.loading(true), setContentSkel(true);
@@ -251,6 +249,7 @@ export default function ContractData() {
         <ContentSkeleton />
       ) : (
         <Page
+          // fullWidth
           title="Subscribers"
           primaryAction={
             <Button
@@ -272,29 +271,29 @@ export default function ContractData() {
                   columnContentTypes={["text", "text", "text", "text"]}
                   headings={[
                     <Text variant="headingSm" as="h6">
-                      Contract Id
+                      Order Id
                     </Text>,
-                    <Text variant="headingSm" as="h6">
+                    <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
                       Customer Name
                     </Text>,
-                    <Text variant="headingSm" as="h6">
+                    <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
                       Total Tickets
                     </Text>,
-                    <Text variant="headingSm" as="h6">
+                    <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
-                     Applied tickets
+                      Applied tickets
                     </Text>,
-                    <Text variant="headingSm" as="h6">
+                    <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
                       Available Tickets
                     </Text>,
-                    <Text variant="headingSm" as="h6">
+                    <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
                       Status
                     </Text>,
-                    <Text variant="headingSm" as="h6">
+                    <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
                       Created At
                     </Text>,

@@ -3,22 +3,23 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://theater-covering-collector-burning.trycloudflare.com"
+application_url = "https://predict-paste-influence-presented.trycloudflare.com"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
 dev_store_url = "virendertesting.myshopify.com"
+include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_customers,read_orders,read_products,write_own_subscription_contracts,write_products,write_purchase_options"
+scopes = "read_customers,read_orders,write_orders,read_products,write_own_subscription_contracts,write_products,write_purchase_options"
 
 [auth]
 redirect_urls = [
-  "https://theater-covering-collector-burning.trycloudflare.com/auth/callback",
-  "https://theater-covering-collector-burning.trycloudflare.com/auth/shopify/callback",
-  "https://theater-covering-collector-burning.trycloudflare.com/api/auth/callback"
+  "https://predict-paste-influence-presented.trycloudflare.com/auth/callback",
+  "https://predict-paste-influence-presented.trycloudflare.com/auth/shopify/callback",
+  "https://predict-paste-influence-presented.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -29,7 +30,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://theater-covering-collector-burning.trycloudflare.com/api/subscription"
+url = "https://predict-paste-influence-presented.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

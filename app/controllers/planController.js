@@ -109,7 +109,7 @@ export const createPlan = async (admin, newPlanDetail) => {
           recurring: {
             interval: item?.purchaseType?.toUpperCase(),
             intervalCount: 1,
-            minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
+            minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
           },
         },
         deliveryPolicy: {
@@ -381,7 +381,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
           recurring: {
             interval: item?.purchaseType?.toUpperCase(),
             intervalCount: 1,
-            minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
+            minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
           },
         },
         deliveryPolicy: {
@@ -428,7 +428,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
           recurring: {
             interval: item?.purchaseType?.toUpperCase(),
             intervalCount: 1,
-            minCycles: item?.mincycle ? parseFloat(item?.mincycle) : 1,
+            minCycles: item?.mincycle ? parseInt(item?.mincycle) : 1,
           },
         },
         deliveryPolicy: {
@@ -692,7 +692,7 @@ export const getSubscriptions = async (admin, page, search) => {
     let details = [];
     if (search == "") {
       details = await subscriptionContractModel
-        .find({ shop })
+        .find({ shop }).sort({ createdAt: -1 }) 
         .skip(skip)
         .limit(10);
       total_data = await subscriptionContractModel
@@ -703,7 +703,7 @@ export const getSubscriptions = async (admin, page, search) => {
         .find({
           shop: shop,
           customerName: { $regex: search, $options: "i" },
-        })
+        }).sort({ createdAt: -1 }) 
         .skip(skip)
         .limit(10);
       total_data = await subscriptionContractModel
@@ -1038,7 +1038,16 @@ export const getAllContracts = async (admin) => {
     return { message: "Error processing request", status: 500 };
   }
 };
-
+export const getSpecificContract=async(admin, id)=>{
+try{
+  const { shop } = admin.rest.session;
+    const details = await subscriptionContractModel.findOne({ shop , _id: id});
+    return { message: "success", data: details, status: 200 };
+}catch(err){
+  console.error("Error processing POST request:", error);
+  return { message: "Error processing request", status: 500 };
+}
+}
 
 export const setDefaultTemplate = async (shop) => {
   try {

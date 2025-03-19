@@ -23,15 +23,20 @@ import { authenticate } from "../shopify.server";
 import { useEffect, useState } from "react";
 import {
   cancelContract,
-  getConstractDetailById,
+  getConstractDetailById,getSpecificContract
 } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 
 export const loader = async ({ params, request }) => {
   const { admin } = await authenticate.admin(request);
-  const res = await getConstractDetailById(admin, params?.id);
+  let res
+  if(params?.id?.length> 15){
+    res= await getSpecificContract(admin, params?.id)
+  }else{
+    res = await getConstractDetailById(admin, params?.id);
+  }
 
-  return json({ data: res?.data });
+  return json({ data: res?.data, id: params?.id });
 };
 
 export default function ContractDetails() {
@@ -41,6 +46,7 @@ export default function ContractDetails() {
   const actionData = useActionData();
   const [tableData, setTableData] = useState([]);
   const [data, setData] = useState();
+  const [dbData, setDbData] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reCheck, setReCheck] = useState(false);
   const [currency, setCurrency] = useState("USD");
@@ -49,14 +55,25 @@ export default function ContractDetails() {
   useEffect(() => {
     shopify.loading(true);
     setLoading(true);
-  
+    console.log("loaderData?.data==", loaderData?.data)
+  if(loaderData?.id?.length>15){
+    
+    setDbData(true)
+    setCurrency('USD')
+    loaderData?.data ? setData(loaderData?.data) : "";
+    setTableData(loaderData?.data?.products)
+  }else{ 
+    setDbData(false)
     loaderData?.data ? setData(loaderData?.data) : "";
     let products = [];
     loaderData?.data?.lines?.edges.map((itm) => {
       products.push(itm?.node);
     });
     setCurrency(products[0]?.currentPrice?.currencyCode);
+    console.log("products--", products)
     setTableData(products);
+  }
+   
     shopify.loading(false);
     setLoading(false);
   }, [loaderData]);
@@ -71,16 +88,16 @@ export default function ContractDetails() {
     }
   }, [actionData]);
   const rows = tableData?.map((itm, index) => [
-    <Text>
-      <img src={itm?.variantImage?.url} height={50} width={50} />
-    </Text>,
-    <Text> {itm?.title} </Text>,
-    <Text> ${itm?.currentPrice.amount} </Text>,
-    <Text>
+    // <Text>
+    //   <img src={itm?.variantImage?.url} height={50} width={50} />
+    // </Text>,
+    <Text> {itm?.title || itm?.productName} </Text>,
+    <Text alignment="center"> ${itm?.currentPrice?.amount || itm?.price} </Text>,
+    <Text alignment="center">
       {" "}
-      {itm?.sellingPlanName?.split("-entries-")?.[1] || 1 * itm?.quantity}{" "}
+      {itm?.sellingPlanName?.split("-entries-")?.[1] || itm?.entries}{" "}
     </Text>,
-    <Text> ${itm?.currentPrice.amount} </Text>,
+    <Text alignment="end"> ${itm?.currentPrice?.amount || itm?.price} </Text>,
   ]);
 
   function capitalizeFirstLetter(str) {
@@ -88,6 +105,9 @@ export default function ContractDetails() {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
+
+  console.log("data==", data)
+  console.log("db--data==", dbData)
   return (
     <>
       {loading ? (
@@ -103,7 +123,7 @@ export default function ContractDetails() {
             },
           }}
           primaryAction={
-            data?.status !== "CANCELLED" ? (
+            !(data?.status == "CANCELLED"|| data?.status == "ONETIME") ? (
               <Button
                 primary
                 loading={btnLoader}
@@ -139,8 +159,12 @@ export default function ContractDetails() {
                   </Text>
                   <Box paddingBlockStart="200">
                     <Text as="p" variant="bodyMd">
-                      {capitalizeFirstLetter(data?.customer?.firstName)}{" "}
-                      {capitalizeFirstLetter(data?.customer?.lastName)}
+                      {dbData ?
+                      <>{capitalizeFirstLetter(data?.customerName)}</> :
+                      <>{capitalizeFirstLetter(data?.customer?.firstName)}{" "}
+                      {capitalizeFirstLetter(data?.customer?.lastName)}</>
+                      }
+                      
                     </Text>
                   </Box>
                 </Card>
@@ -152,7 +176,9 @@ export default function ContractDetails() {
                   </Text>
                   <Box paddingBlockStart="200">
                     <Text as="p" variant="bodyMd">
-                      {data?.billingPolicy?.interval == "DAY"
+                      {dbData ?
+                      data?.billing_policy?.interval
+                       :data?.billingPolicy?.interval == "DAY"
                         ? "ONETIME"
                         : data?.billingPolicy?.interval}
                     </Text>
@@ -166,7 +192,7 @@ export default function ContractDetails() {
                   </Text>
                   <Box paddingBlockStart="200">
                     <Text as="p" variant="bodyMd">
-                      {data?.billingPolicy?.minCycles}
+                      {dbData? data?.billing_policy?.min_cycles :data?.billingPolicy?.minCycles}
                     </Text>
                   </Box>
                 </Card>
@@ -180,21 +206,21 @@ export default function ContractDetails() {
               stickyHeader
               columnContentTypes={["text", "text", "text", "text"]}
               headings={[
-                <Text variant="headingSm" as="h6">
-                  Image
-                </Text>,
+                // <Text variant="headingSm" as="h6">
+                //   Image
+                // </Text>,
                 <Text variant="headingSm" as="h6">
                   Product Name
                 </Text>,
-                <Text variant="headingSm" as="h6">
+                <Text variant="headingSm" as="h6" alignment="center">
                   {" "}
                   Price ({currency})
                 </Text>,
-                <Text variant="headingSm" as="h6">
+                <Text variant="headingSm" as="h6" alignment="center">
                   {" "}
                   Entries
                 </Text>,
-                <Text variant="headingSm" alignment="center" as="h6">
+                <Text variant="headingSm" alignment="end" as="h6">
                   {" "}
                   Total ({currency})
                 </Text>,

@@ -1,7 +1,7 @@
 console.log("js--__________=");
 
-let serverPath = "https://dynadealersapp.com";
-// let serverPath = "https://theater-covering-collector-burning.trycloudflare.com";
+// let serverPath = "https://dynadealersapp.com";
+let serverPath = "https://predict-paste-influence-presented.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -108,6 +108,24 @@ if (subscription_page_type == "product") {
   
     console.log("Custom properties added to the cart form.");
   };
+  const clearOnetimeProperties = () => {
+    const productForms = document.querySelectorAll('form[action="/cart/add"]');
+    
+    productForms.forEach((form) => {
+      // Check if 'entries' input exists and remove it
+      const entriesInput = form.querySelector('input[name="properties[entries]"]');
+      if (entriesInput) {
+        entriesInput.remove();
+      }
+    
+      // Check if 'plan-type' input exists and remove it
+      const typeInput = form.querySelector('input[name="properties[plan-type]"]');
+      if (typeInput) {
+        typeInput.remove();
+      }
+    });
+  };
+  
   
   // const sendDataToCart = (plan) => {
   //   console.log("plan in cart", plan);
@@ -135,8 +153,7 @@ if (subscription_page_type == "product") {
   //   });
   //  }
   // };
-
-
+  
   const sendDataToCart = (plan) => {
     console.log("plan in cart", plan);
     console.log("----------------------------------------------------",document.querySelector('[data-cart-notification]'));
@@ -200,6 +217,7 @@ if (subscription_page_type == "product") {
       }
     });
   };
+
   const toIST = (dateString) => {
     const date = new Date(dateString);
     const offsetInMinutes = 330;
@@ -280,15 +298,16 @@ if (subscription_page_type == "product") {
 
         function handlePurchaseType(event) {
           purchaseOption = event.target.value;
-          cartClear()
+         
           let div = document.getElementsByClassName('additional-detail')[0]
           // console.log("div=====", div, event.target.value)
           if (div) {
             if (event.target.value == "oneTime-purchase") {
-            
+              cartClear()
               div.style.display = 'none';
             } else {
               div.style.display = 'block';
+              clearOnetimeProperties()
             }
           }
           setCartProperties();
@@ -339,9 +358,25 @@ if (subscription_page_type == "product") {
             if (checkedOpn) {
               checkedOpn.checked = true;
             }
-            setCartProperties();
-            // sendDataToCart();
-            // setPriceAndEntries(selectedPlan);
+            
+        const urlParams = new URLSearchParams(window.location.search);
+        const variant = urlParams.get("variant");
+        console.log(variant); 
+        console.log("page location",window.location.href)
+        if(variant){
+          
+          productJson?.variants?.map(item=>{
+            if(item?.id==variant){
+              selectedEntries= item?.option1.split(' ')[0]
+            }
+          })
+              setCartProperties();
+        }else{
+          selectedEntries=  productJson?.variants[0]?.title?.split(' ')[0]
+          console.log("variant not inurl and ebntries are==", selectedEntries)
+          setCartProperties();
+        }
+           
           }
         };
         const updateEntries = () => {

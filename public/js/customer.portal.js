@@ -1,10 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("my js file for ")
-    let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://theater-covering-collector-burning.trycloudflare.com";
+    console.log("my js file for customer porta")
+    // let serverPath = "https://dynadealersapp.com";
+    let serverPath = "https://predict-paste-influence-presented.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
+    let dbData = false
     let subscriptionDetails = []
     let tableData = []
     let contractDetailShopify = ''
@@ -45,8 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
             CAD: "C$", // Canadian Dollar
         };
         return currencySymbols[currencyCode?.toUpperCase() || "USD"] || `Symbol not found for ${currencyCode}`;
-
-
     }
 
     let currencySymbol = getCurrencySymbol(Shopify?.currrency?.active || 'USD')
@@ -56,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>Order Id</td>
                 <td>Customer Name</td>
                 <td>Purchase Type</td>
-                <td>Entries/per cycle</td>
+                <td>Entries</td>
                 <td>Status</td>
                 <td>Created Date</td>
                 <td>View Details</td>
@@ -197,9 +196,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (result.message == "success") {
-                contractDetailShopify = result?.data?.subscriptionContract;
-                currencyCode = contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode
-                currencySymbol = getCurrencySymbol(contractDetailShopify?.lines?.edges[0]?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.currencyCode)
+                if (dbData) {
+                    contractDetailShopify = result?.data
+                    currencyCode= result?.data?.products[0]?.currency
+                    currencySymbol = getCurrencySymbol(currencyCode)
+                } else {
+                    contractDetailShopify = result?.data?.subscriptionContract;
+                    currencyCode = contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode
+                    currencySymbol = getCurrencySymbol(contractDetailShopify?.lines?.edges[0]?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.currencyCode)
+
+                }
+                console.log("contractDetailShopify-----------------------------", contractDetailShopify)
                 loaderStop();
                 showDetailedData()
                 if (show) {
@@ -378,6 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateRows = () => {
         let tbody = document.getElementById("sub-row")
         tbody.innerHTML = ''
+        console.log("tableData======", tableData)
         tableData?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = item?.contractId
@@ -389,7 +397,8 @@ document.addEventListener("DOMContentLoaded", () => {
             let purchaseTypeCell = document.createElement('td');
             purchaseTypeCell.innerText = capitalize(item.billing_policy?.interval)
             let entriesCell = document.createElement('td');
-            entriesCell.innerText = getEntries(item?.sellingPlanName)
+            // entriesCell.innerText = getEntries(item?.sellingPlanName)
+            entriesCell.innerText = item?.ticketDetails?.total
             let statusCell = document.createElement('td');
             statusCell.innerText = capitalize(item.status)
             if (item.status == 'CANCELLED') {
@@ -408,7 +417,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 selectedSubscription = item;
                 cappedraffle = true
                 await checkCancelPossible()
-                await getContractDetails(item?.contractId)
+                item?.contractId === '' ? dbData = true : dbData = false
+                await getContractDetails(item?.contractId === '' ? item?._id : item?.contractId)
             };
             actionCell.appendChild(link);
             tbody.appendChild(tr)
@@ -491,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const generateProductRows = () => {
         let tbody = document.getElementById("product-row")
-        let products = contractDetailShopify?.lines?.edges
+        let products = dbData ? contractDetailShopify?.products : contractDetailShopify?.lines?.edges
         products?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = index
@@ -499,15 +509,15 @@ document.addEventListener("DOMContentLoaded", () => {
             let productCell = document.createElement('td');
             productCell.id = "title-img"
             let priceCell = document.createElement('td');
-            priceCell.innerText = `${currencySymbol}${item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount}`
+            priceCell.innerText = dbData? `${currencySymbol}${item?.price}` : `${currencySymbol}${item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount}`
             let entriesCell = document.createElement('td');
-            entriesCell.innerText = `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            entriesCell.innerText =dbData? contractDetailShopify?.ticketDetails?.applied: `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let availableEntriesCell = document.createElement('td');
-            availableEntriesCell.innerText = `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            availableEntriesCell.innerText = dbData? contractDetailShopify?.ticketDetails?.available: `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let totalEntriesCell = document.createElement('td');
-            totalEntriesCell.innerText = `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            totalEntriesCell.innerText =  dbData? contractDetailShopify?.ticketDetails?.total: `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let totalCell = document.createElement('td');
-            totalCell.innerText = `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`
+            totalCell.innerText = dbData? `${currencySymbol}${item?.price}` : `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`
             tbody.appendChild(tr)
             tr.appendChild(productCell)
             tr.appendChild(priceCell)
@@ -520,8 +530,8 @@ document.addEventListener("DOMContentLoaded", () => {
             imgDiv.height = 50
             imgDiv.width = 50
             let p = document.createElement('p');
-            p.innerText = item?.node?.title
-            productCell.appendChild(imgDiv)
+            p.innerText = dbData ? item?.productName : item?.node?.title
+            // productCell.appendChild(imgDiv)
             productCell.appendChild(p)
         })
 
@@ -746,7 +756,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
     const inputForApply = () => {
-     
+
         let inputDiv = document.getElementById('user-input')
 
         let input = document.createElement('input');
@@ -785,7 +795,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("selectedAppliedFor==", selectedAppliedFor)
                 if (selectedAppliedFor?.applyTicketsCount > 0) {
                     let modal = document.getElementById("myModal")
-                    if(selectedAppliedFor?.raffleType=="membership"){
+                    if (selectedAppliedFor?.raffleType == "membership") {
 
                         if (modal) {
                             modal.innerHTML = modalContentToNotAllow
@@ -834,9 +844,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             modal.style.display = "block";
                             // document.body.classList.add("modal-open");
                         }
-                    }else if (selectedAppliedFor?.spots == selectedAppliedFor?.applyTicketsCount || selectedAppliedFor?.raffleType !== 'capped') {
+                    } else if (selectedAppliedFor?.spots == selectedAppliedFor?.applyTicketsCount || selectedAppliedFor?.raffleType !== 'capped') {
 
-                      
+
                         if (modal) {
                             modal.innerHTML = modalContentToApplyTickets
                             var span = modal.getElementsByClassName("close")[0];
@@ -883,7 +893,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             // document.body.classList.add("modal-open");
                         }
                     } else {
-                       
+
                         if (modal) {
                             modal.innerHTML = modalContentToNotAllow
                             var span = modal.getElementsByClassName("close")[0];
@@ -931,7 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     input.value = 0
                     selectedAppliedFor = {
                         ...selectedAppliedFor,
-                        applyTicketsCount:  0
+                        applyTicketsCount: 0
                     }
                     if (spanh) {
                         spanh.innerText = ""
@@ -1078,7 +1088,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             detailedDiv.innerHTML = `<div id="contract-header" class="contract-header">
   <div id="customer-name">
-    <p>Hi ${capitalize(contractDetailShopify?.customer?.firstName)}</p>
+    <p>Hi ${dbData? capitalize(contractDetailShopify?.customerName) :capitalize(contractDetailShopify?.customer?.firstName)}</p>
   </div>
   <div id="contractId">
     <button class="btn" id="cancelBtn">Cancel</button>
@@ -1089,16 +1099,14 @@ document.addEventListener("DOMContentLoaded", () => {
     <div id="card" class="header-details">
         <p class="left-div">
           Billing Frequency:
-          <b
-            >${contractDetailShopify?.billingPolicy?.interval?.toLowerCase() == 'day'
+          <b>${dbData? capitalize(contractDetailShopify?.billing_policy?.interval) :contractDetailShopify?.billingPolicy?.interval?.toLowerCase() == 'day'
                     ? 'Onetime' :
-                    capitalize(contractDetailShopify?.billingPolicy?.interval)}</b
-          >
+                    capitalize(contractDetailShopify?.billingPolicy?.interval)}</b>
         </p>
       
         <p class="right-div" id="billingCycle">
           Minimum billing cycles:
-          <b>${contractDetailShopify?.billingPolicy?.minCycles}</b>
+          <b>${dbData? contractDetailShopify?.billing_policy?.min_cycles :contractDetailShopify?.billingPolicy?.minCycles}</b>
         </p>
       </div>
       <div id="product-list">
@@ -1108,14 +1116,14 @@ document.addEventListener("DOMContentLoaded", () => {
               <td>Product</td>
               <td>
                 Price
-                (${contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
+                (${dbData? currencyCode :contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
               </td>
               <td>Applied Entries</td>
               <td>Available Entries</td>
               <td>Total Entries</td>
               <td>
                 Total
-                (${contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
+                (${dbData? currencyCode :contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
               </td>
             </tr>
           </thead>

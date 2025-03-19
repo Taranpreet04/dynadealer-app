@@ -311,9 +311,9 @@ export default function CreateUpdatePlan() {
   }, [actionData]);
 
   const options = [
-    { label: "One-time", value: "day" },
-    // { label: "Weekly", value: "week" },
+    // { label: "One-time", value: "day" },
     { label: "Monthly", value: "month" },
+    // { label: "Weekly", value: "week" },
     // { label: "Yearly", value: "year" },
   ];
   const upgradeOptions = [

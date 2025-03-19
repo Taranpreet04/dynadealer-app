@@ -313,7 +313,7 @@ export default function CreateUpdatePlan() {
   }, [actionData]);
 
   const options = [
-    { label: "One-time", value: "day" },
+    // { label: "One-time", value: "day" },
     // { label: "Weekly", value: "week" },
     { label: "Monthly", value: "month" },
     // { label: "Yearly", value: "year" },
