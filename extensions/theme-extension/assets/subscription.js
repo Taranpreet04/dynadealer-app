@@ -218,9 +218,11 @@ if (subscription_page_type == "product") {
     }
   }else if(productJson?.variants?.length===1){
       let variant= productJson?.variants[0]?.title.split(' ')[0]
-      oneTimeMembership= true
-      purchaseOption= "oneTime-purchase"
-      handleOnetimePlan(variant)
+      if(Number(variant)>0){
+        oneTimeMembership= true
+        purchaseOption= "oneTime-purchase"
+        handleOnetimePlan(variant)
+      }
   }else {
       if (allSellingPlans?.length > 1) {
        
