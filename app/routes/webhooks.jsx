@@ -237,136 +237,139 @@ export const action = async ({ request }) => {
               (property) => property?.name == "entries",
             )?.value;
             let drawIds = [];
-            for (let i = 0; i < Number(entries); i++) {
-              let unique = (
-                Date.now().toString(36).substring(0, 4) +
-                Math.random().toString(36).substring(2, 5)
-              )
-                .toUpperCase()
-                .substring(0, 7);
-              drawIds.push(unique);
-            }
-
-            let ticketDetails = {
-              total: Number(drawIds?.length),
-              totalTicketsList: drawIds,
-              applied: Number(drawIds?.length),
-              appliedTicketsList: drawIds,
-              available: 0,
-              availableTicketsList: [],
-              appliedForDetail: [
-                {
-                  tickets: Number(drawIds?.length),
-                  productId: `gid://shopify/Product/${product?.product_id}`,
-                  productName: product.title,
-                  appliedDate: new Date(),
-                  appliedList: drawIds,
-                },
-              ],
-            };
-            let membershiplevel = product?.properties
-              ?.find((property) => property?.name == "membership")
-              ?.value?.toLowerCase();
-
-            if (membershiplevel) {
-              let membership = await membershipsModel.create({
-                shop: shop,
-                customerId: payload?.customer?.id || "",
-                orderId: payload?.id,
-                contractId: "",
-                membershipLevel: membershiplevel?.toLowerCase() || "",
-                membershipType: "ONETIME",
-                // sellingPlanName: planName,
-                // sellingPlanId: planId,
-              });
-
-              ticketDetails = {
+            if(Number(entries)>0){
+              for (let i = 0; i < Number(entries); i++) {
+                let unique = (
+                  Date.now().toString(36).substring(0, 4) +
+                  Math.random().toString(36).substring(2, 5)
+                )
+                  .toUpperCase()
+                  .substring(0, 7);
+                drawIds.push(unique);
+              }
+  
+              let ticketDetails = {
                 total: Number(drawIds?.length),
                 totalTicketsList: drawIds,
-                applied: 0,
-                appliedTicketsList: [],
-                available: Number(drawIds?.length),
-                availableTicketsList: drawIds,
-                appliedForDetail: [],
+                applied: Number(drawIds?.length),
+                appliedTicketsList: drawIds,
+                available: 0,
+                availableTicketsList: [],
+                appliedForDetail: [
+                  {
+                    tickets: Number(drawIds?.length),
+                    productId: `gid://shopify/Product/${product?.product_id}`,
+                    productName: product.title,
+                    appliedDate: new Date(),
+                    appliedList: drawIds,
+                  },
+                ],
               };
+              let membershiplevel = product?.properties
+                ?.find((property) => property?.name == "membership")
+                ?.value?.toLowerCase();
+  
+              if (membershiplevel) {
+                let membership = await membershipsModel.create({
+                  shop: shop,
+                  customerId: payload?.customer?.id || "",
+                  orderId: payload?.id,
+                  contractId: "",
+                  membershipLevel: membershiplevel?.toLowerCase() || "",
+                  membershipType: "ONETIME",
+                  // sellingPlanName: planName,
+                  // sellingPlanId: planId,
+                });
+  
+                ticketDetails = {
+                  total: Number(drawIds?.length),
+                  totalTicketsList: drawIds,
+                  applied: 0,
+                  appliedTicketsList: [],
+                  available: Number(drawIds?.length),
+                  availableTicketsList: drawIds,
+                  appliedForDetail: [],
+                };
+              }
+  
+              let contractDetail = await subscriptionContractModel.create({
+                shop: shop,
+                orderId: payload?.id,
+                contractId: "",
+                customerName: `${payload?.customer?.first_name || ""} ${
+                  payload?.customer?.last_name || ""
+                }`.trim(),
+                customerEmail: payload?.customer?.email,
+                customerId: payload?.customer?.id || "",
+                // sellingPlanName: "",
+                // sellingPlanId: "",
+                planUpdateDetail: {
+                  sellingPlanUpdate: false,
+                  upgradeTo: "",
+                  futureEntries: 0,
+                },
+                billing_policy: {
+                  interval: "onetime",
+                  interval_count: 1,
+                  min_cycles: 1,
+                },
+                products: [
+                  {
+                    productId: `gid://shopify/Product/${product?.product_id}`,
+                    productName: product.title,
+                    price: product?.price,
+                    currency: product?.price_set?.shop_money?.currency_code,
+                    quantity: 1,
+                    entries: entries,
+                  },
+                ],
+                drawIds: drawIds,
+                status: "ONETIME",
+                nextBillingDate: new Date().toISOString(),
+                ticketDetails: ticketDetails,
+              });
+  
+              const currentDate = new Date().toISOString();
+              let billing = await billingModel.create({
+                shop: shop,
+                orderId: payload?.id,
+                contractId: "",
+                customerName: `${payload?.customer?.first_name || ""} ${
+                  payload?.customer?.last_name || ""
+                }`.trim(),
+                customerEmail: payload?.customer?.email,
+                customerId: payload?.customer?.id || "",
+                products: [
+                  {
+                    productId: `gid://shopify/Product/${product?.product_id}`,
+                    productName: product.title,
+                    price: product?.price,
+                    currency: product?.price_set?.shop_money?.currency_code,
+                    quantity: 1,
+                    entries: entries,
+                  },
+                ],
+                billing_policy: {
+                  interval: "onetime",
+                  interval_count: 1,
+                  min_cycles: 1,
+                },
+                entries: entries,
+                planUpdateDetail: {
+                  sellingPlanUpdate: false,
+                  upgradeTo: "",
+                  futureEntries: 0,
+                },
+                drawIds: drawIds,
+                status: "done",
+                billing_attempt_date: currentDate,
+                renewal_date: currentDate,
+                applied: false,
+              });
+  
+              sendOrderEmail(contractDetail);
             }
-
-            let contractDetail = await subscriptionContractModel.create({
-              shop: shop,
-              orderId: payload?.id,
-              contractId: "",
-              customerName: `${payload?.customer?.first_name || ""} ${
-                payload?.customer?.last_name || ""
-              }`.trim(),
-              customerEmail: payload?.customer?.email,
-              customerId: payload?.customer?.id || "",
-              // sellingPlanName: "",
-              // sellingPlanId: "",
-              planUpdateDetail: {
-                sellingPlanUpdate: false,
-                upgradeTo: "",
-                futureEntries: 0,
-              },
-              billing_policy: {
-                interval: "onetime",
-                interval_count: 1,
-                min_cycles: 1,
-              },
-              products: [
-                {
-                  productId: `gid://shopify/Product/${product?.product_id}`,
-                  productName: product.title,
-                  price: product?.price,
-                  currency: product?.price_set?.shop_money?.currency_code,
-                  quantity: 1,
-                  entries: entries,
-                },
-              ],
-              drawIds: drawIds,
-              status: "ONETIME",
-              nextBillingDate: new Date().toISOString(),
-              ticketDetails: ticketDetails,
-            });
-
-            const currentDate = new Date().toISOString();
-            let billing = await billingModel.create({
-              shop: shop,
-              orderId: payload?.id,
-              contractId: "",
-              customerName: `${payload?.customer?.first_name || ""} ${
-                payload?.customer?.last_name || ""
-              }`.trim(),
-              customerEmail: payload?.customer?.email,
-              customerId: payload?.customer?.id || "",
-              products: [
-                {
-                  productId: `gid://shopify/Product/${product?.product_id}`,
-                  productName: product.title,
-                  price: product?.price,
-                  currency: product?.price_set?.shop_money?.currency_code,
-                  quantity: 1,
-                  entries: entries,
-                },
-              ],
-              billing_policy: {
-                interval: "onetime",
-                interval_count: 1,
-                min_cycles: 1,
-              },
-              entries: entries,
-              planUpdateDetail: {
-                sellingPlanUpdate: false,
-                upgradeTo: "",
-                futureEntries: 0,
-              },
-              drawIds: drawIds,
-              status: "done",
-              billing_attempt_date: currentDate,
-              renewal_date: currentDate,
-              applied: false,
-            });
-
-            sendOrderEmail(contractDetail);
+           
           }
         }
 
