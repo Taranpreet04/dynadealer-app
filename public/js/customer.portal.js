@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for customer porta")
     let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://predict-paste-influence-presented.trycloudflare.com";
+    // let serverPath = "https://emission-villa-sperm-declaration.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -206,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     currencySymbol = getCurrencySymbol(contractDetailShopify?.lines?.edges[0]?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.currencyCode)
 
                 }
-                console.log("contractDetailShopify-----------------------------", contractDetailShopify)
                 loaderStop();
                 showDetailedData()
                 if (show) {
@@ -292,7 +291,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const applyTickets = async () => {
         try {
-            console.log("selectedAppliedFor==", selectedAppliedFor,)
             data = {
                 ...selectedSubscription,
                 ticketDetails: {
@@ -318,7 +316,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     ]
                 }
             }
-            console.log(data)
             const response = await fetch(
                 `${serverPath}/api/appliedTickets`,
                 {
@@ -385,7 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateRows = () => {
         let tbody = document.getElementById("sub-row")
         tbody.innerHTML = ''
-        console.log("tableData======", tableData)
         tableData?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = item?.contractId
@@ -792,7 +788,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (applyBtn) {
             applyBtn.onclick = function () {
                 let spanh = document.getElementById('err-msg')
-                console.log("selectedAppliedFor==", selectedAppliedFor)
                 if (selectedAppliedFor?.applyTicketsCount > 0) {
                     let modal = document.getElementById("myModal")
                     if (selectedAppliedFor?.raffleType == "membership") {
@@ -827,10 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                             let body = document.getElementById('cancelModalBody')
-                            console.log(selectedSubscription?.ticketDetails, "selectedAppliedFor==", selectedAppliedFor)
                             if (body) {
-                                console.log("selectedSubscription?.ticketDetails?.available==", selectedSubscription?.ticketDetails?.available)
-                                console.log("selectedAppliedFor?.applyTicketsCount==", selectedAppliedFor?.applyTicketsCount)
                                 if (Number(selectedSubscription?.ticketDetails?.available) > Number(selectedAppliedFor?.applyTicketsCount)) {
 
                                     body.innerHTML = `<p>

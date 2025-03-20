@@ -9,7 +9,7 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-import fs from 'fs'
+
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
     await authenticate.webhook(request);
@@ -37,40 +37,13 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
-        console.log(
-          "details from webhook_____SUBSCRIPTION_CONTRACTS_CREATE",
-          payload,
-        );
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-        // if (payload?.billing_policy?.interval === "day") {
-        //   billing_policy = { ...billing_policy, interval: "oneTime" };
 
-        //   const mutationQuery = `#graphql
-        //     mutation subscriptionContractCancel($subscriptionContractId: ID!) {
-        //         subscriptionContractCancel(subscriptionContractId: $subscriptionContractId) {
-        //             contract {
-        //                     id
-        //                     status
-        //                 }
-        //                 userErrors {
-        //                     field
-        //                     message
-        //                 }
-        //             }
-        //         }`;
-        //   const variables = {
-        //     subscriptionContractId: payload?.admin_graphql_api_id,
-        //   };
-
-        //   const response = await admin.graphql(mutationQuery, { variables });
-
-        //   const result = await response.json();
-        // }
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
@@ -85,7 +58,6 @@ export const action = async ({ request }) => {
           };
           products.push(detail);
         });
-        console.log("products===============", products);
         let drawIds = [];
         for (let i = 0; i < Number(planName.split("-entries-")[1]); i++) {
           // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -147,7 +119,6 @@ export const action = async ({ request }) => {
             ],
           };
         }
-        // console.log("ticketDetails==", ticketDetails);
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
@@ -209,10 +180,6 @@ export const action = async ({ request }) => {
       }
     case "SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS":
       try {
-        console.log(
-          "subscription_billing_attempts/success webhook works= payload",
-          payload,
-        );
         let data = await billingModel.findOneAndUpdate(
           {
             contractId: payload?.subscription_contract_id,
@@ -237,10 +204,6 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_BILLING_ATTEMPTS_FAILURE":
       try {
-        console.log(
-          "subscription_billing_attempts/failure webhook works= payload",
-          payload,
-        );
         let data = await billingModel.findOneAndUpdate(
           {
             contractId: payload?.subscription_contract_id,
@@ -261,24 +224,6 @@ export const action = async ({ request }) => {
       }
     case "ORDERS_CREATE":
       try {
-        console.log(
-          "details from ORDERS_CREATE",
-          payload?.line_items[0]?.properties,
-        );
-        console.log(
-          // payload?.line_items,
-          "payload?.line_items===",
-          payload?.line_items?.length,
-        );
-        const dataString = typeof payload?.line_items === "string" ? payload?.line_items : JSON.stringify(payload?.line_items);
-         fs.writeFile("checkkkk.txt", dataString, (err) => {
-      if (err) {
-        console.error("Error writing to file:", err);
-      } else {
-        console.log("Data written to file successfully!");
-      }
-    });
-
         let entries;
 
         for (const product of payload?.line_items || []) {
@@ -287,13 +232,10 @@ export const action = async ({ request }) => {
               property?.name == "plan-type" && property?.value == "onetime",
           );
 
-          console.log("oneTimeProductExist", oneTimeProductExist);
-
           if (oneTimeProductExist) {
             entries = product?.properties?.find(
               (property) => property?.name == "entries",
             )?.value;
-            console.log("entries==", entries);
             let drawIds = [];
             for (let i = 0; i < Number(entries); i++) {
               let unique = (
@@ -304,6 +246,7 @@ export const action = async ({ request }) => {
                 .substring(0, 7);
               drawIds.push(unique);
             }
+
             let ticketDetails = {
               total: Number(drawIds?.length),
               totalTicketsList: drawIds,
@@ -321,6 +264,32 @@ export const action = async ({ request }) => {
                 },
               ],
             };
+            let membershiplevel = product?.properties
+              ?.find((property) => property?.name == "membership")
+              ?.value?.toLowerCase();
+
+            if (membershiplevel) {
+              let membership = await membershipsModel.create({
+                shop: shop,
+                customerId: payload?.customer?.id || "",
+                orderId: payload?.id,
+                contractId: "",
+                membershipLevel: membershiplevel?.toLowerCase() || "",
+                membershipType: "ONETIME",
+                // sellingPlanName: planName,
+                // sellingPlanId: planId,
+              });
+
+              ticketDetails = {
+                total: Number(drawIds?.length),
+                totalTicketsList: drawIds,
+                applied: 0,
+                appliedTicketsList: [],
+                available: Number(drawIds?.length),
+                availableTicketsList: drawIds,
+                appliedForDetail: [],
+              };
+            }
 
             let contractDetail = await subscriptionContractModel.create({
               shop: shop,
@@ -350,7 +319,7 @@ export const action = async ({ request }) => {
                   price: product?.price,
                   currency: product?.price_set?.shop_money?.currency_code,
                   quantity: 1,
-                  entries: entries
+                  entries: entries,
                 },
               ],
               drawIds: drawIds,
@@ -376,7 +345,7 @@ export const action = async ({ request }) => {
                   price: product?.price,
                   currency: product?.price_set?.shop_money?.currency_code,
                   quantity: 1,
-                  entries: entries
+                  entries: entries,
                 },
               ],
               billing_policy: {

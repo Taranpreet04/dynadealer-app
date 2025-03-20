@@ -1062,16 +1062,10 @@ export const setDefaultTemplate = async (shop) => {
             <p>Your have {{drawIdsLength}} chances for winning.</p>
             <p>Your Entry Numbers are:</p>
                     {{drawIdsList}}
-            <p>Note: You must apply for tickets through the customer portal; otherwise, they will not be included in the lucky draw listing.</p>
-               <p>Steps to apply for tickets-</p>
-
-               <li>First Login to your customer portal.</li>
-               <li>Then click on Mange Memberships box.</li>
-               <li>Now you will able to see your orders list.</li>
-               <li>Each order has a view icon that you need to click on it and apply your tickets to getting chances for lucky draws</li>
-                <pre>
-                {{footer}}
-                </pre>`,
+           
+            <pre>
+            {{footer}}
+          </pre>`,
 
       orderMailParameters: [
         {
