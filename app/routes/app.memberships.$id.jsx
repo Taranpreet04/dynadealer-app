@@ -135,7 +135,7 @@ export default function CreateUpdatePlan() {
   const [newPlan, setNewPlan] = useState({
     name: "bronze",
     entries: 1,
-    purchaseType: "day",
+    purchaseType: "month",
     mincycle: 1,
     price: "",
     exclusiveDraw: false,
@@ -419,7 +419,7 @@ export default function CreateUpdatePlan() {
         setNewPlan({
           name: "bronze",
           entries: 1,
-          purchaseType: "day",
+          purchaseType: "month",
           mincycle: 1,
           price: "",
           exclusiveDraw: false,
@@ -483,7 +483,7 @@ export default function CreateUpdatePlan() {
         setNewPlan({
           name: "bronze",
           entries: 1,
-          purchaseType: "day",
+          purchaseType: "month",
           mincycle: 1,
           price: "",
           exclusiveDraw: false,
