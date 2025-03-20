@@ -1,4 +1,4 @@
-console.log("js--__________new=");
+console.log("js--__________new=iiiiiiiii");
 
 let serverPath = "https://dynadealersapp.com";
 // let serverPath = "https://predict-paste-influence-presented.trycloudflare.com";
@@ -74,40 +74,38 @@ if (subscription_page_type == "product") {
     return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   }
   const sendOnetimeDataToCart = (entry) => {
-    let formInput = document.createElement("input");
-    formInput.type = "hidden";
-    formInput.name = "properties[entries]"; // Shopify format
-    formInput.value = entry;
-  
-    let formInput2 = document.createElement("input");
-    formInput2.type = "hidden";
-    formInput2.name = "properties[plan-type]"; // Shopify format
-    formInput2.value = "onetime";
-  
     let productForms = document.querySelectorAll('form[action="/cart/add"]');
+    console.log("productForms--", productForms);
   
     productForms.forEach((form) => {
       if (!form) return;
   
-      // Check if the 'entries' input already exists
+      // Check if the 'entries' input already exists, else create and append it
       let entriesInput = form.querySelector('input[name="properties[entries]"]');
-      if (entriesInput) {
-        entriesInput.value = entry;
-      } else {
-        form.appendChild(formInput);
+      if (!entriesInput) {
+        entriesInput = document.createElement("input");
+        entriesInput.type = "hidden";
+        entriesInput.name = "properties[entries]";
+        form.appendChild(entriesInput);
       }
+      entriesInput.value = entry; // Always update value
+      console.log("entriesInput==", entriesInput);
   
-      // Check if the 'plan-type' input already exists
+      // Check if the 'plan-type' input already exists, else create and append it
       let typeInput = form.querySelector('input[name="properties[plan-type]"]');
-      if (typeInput) {
-        typeInput.value = "onetime";
-      } else {
-        form.appendChild(formInput2);
+      if (!typeInput) {
+        typeInput = document.createElement("input");
+        typeInput.type = "hidden";
+        typeInput.name = "properties[plan-type]";
+        form.appendChild(typeInput);
       }
+      typeInput.value = "onetime"; // Always update value
+      console.log("typeInput==", typeInput);
     });
   
     console.log("Custom properties added to the cart form.");
   };
+  
   const clearOnetimeProperties = () => {
     const productForms = document.querySelectorAll('form[action="/cart/add"]');
     
@@ -364,19 +362,18 @@ if (subscription_page_type == "product") {
         console.log(variant); 
         console.log("page location",window.location.href)
         if(variant){
-          
           productJson?.variants?.map(item=>{
             if(item?.id==variant){
               selectedEntries= item?.option1.split(' ')[0]
             }
           })
-              setCartProperties();
+
+        setCartProperties();
         }else{
           selectedEntries=  productJson?.variants[0]?.title?.split(' ')[0]
           console.log("variant not inurl and ebntries are==", selectedEntries)
           setCartProperties();
         }
-           
           }
         };
         const updateEntries = () => {
@@ -387,15 +384,6 @@ if (subscription_page_type == "product") {
         }
         const handlePlanChange = (newPlan) => {
           if (newPlan) {
-            // let hasActive = document.getElementsByClassName("active");
-            // Array.from(hasActive).forEach((itm) => {
-            //   itm.classList.remove("active");
-            // });
-
-            // let nowActive = document.getElementById(`${newPlan?.id}`);
-            // if (nowActive) {
-            //   nowActive.classList.add("active");
-            // }
             selectedPlan = newPlan;
             selectedEntries = getEntries(selectedPlan?.description);
             // setTimeout(() => sendDataToCart(selectedPlan), 1000);
