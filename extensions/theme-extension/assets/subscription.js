@@ -1,7 +1,7 @@
 console.log("js--________");
 
-// let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://gsm-floating-fear-activated.trycloudflare.com";
+let serverPath = "https://dynadealersapp.com";
+// let serverPath = "https://gsm-floating-fear-activated.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
