@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for customer porta")
-    let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://emission-villa-sperm-declaration.trycloudflare.com";
+    // let serverPath = "https://dynadealersapp.com";
+    let serverPath = "https://gsm-floating-fear-activated.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (result.message == "success") {
                 if (dbData) {
                     contractDetailShopify = result?.data
-                    currencyCode= result?.data?.products[0]?.currency
+                    currencyCode = result?.data?.products[0]?.currency
                     currencySymbol = getCurrencySymbol(currencyCode)
                 } else {
                     contractDetailShopify = result?.data?.subscriptionContract;
@@ -316,6 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ]
                 }
             }
+
             const response = await fetch(
                 `${serverPath}/api/appliedTickets`,
                 {
@@ -368,9 +369,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     tr1.appendChild(totalCell)
 
                     let totalListCell = document.createElement('td');
-                    totalListCell.innerText = selectedSubscription?.ticketDetails?.availableTicketsList.slice(0, Number(selectedAppliedFor?.applyTicketsCount)).join(', ')
+                    totalListCell.innerText = result?.details?.ticketDetails?.appliedTicketsList?.slice(-Number(selectedAppliedFor?.applyTicketsCount)).join(', ') || 'jj'
                     tr1.appendChild(totalListCell)
                 }
+                selectedAppliedFor = {
+                    ...selectedAppliedFor,
+                    applyTicketsCount: 0
+                }
+
+                let entriesCell= document.getElementById('product-entriesCell')
+                entriesCell?  entriesCell.innerText= result?.details?.ticketDetails?.applied: ''
+                let availableEntriesCell= document.getElementById('product-availableEntriesCell');
+                availableEntriesCell? availableEntriesCell.innerText= result?.details?.ticketDetails?.available: ''
+                let totalEntriesCell= document.getElementById('product-totalEntriesCell')
+                totalEntriesCell?  totalEntriesCell.innerText= result?.details?.ticketDetails?.total: ''
+                selectedSubscription = result?.details
                 showToast(`Successfully applied for the ${selectedAppliedFor?.productName} giveaway.`)
             }
         } catch (error) {
@@ -411,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </svg>`;
             link.onclick = async () => {
                 selectedSubscription = item;
-                cappedraffle = true
+                // cappedraffle = true
                 await checkCancelPossible()
                 item?.contractId === '' ? dbData = true : dbData = false
                 await getContractDetails(item?.contractId === '' ? item?._id : item?.contractId)
@@ -505,15 +518,19 @@ document.addEventListener("DOMContentLoaded", () => {
             let productCell = document.createElement('td');
             productCell.id = "title-img"
             let priceCell = document.createElement('td');
-            priceCell.innerText = dbData? `${currencySymbol}${item?.price}` : `${currencySymbol}${item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount}`
+            priceCell.innerText = dbData ? `${currencySymbol}${item?.price}` : `${currencySymbol}${item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount}`
             let entriesCell = document.createElement('td');
-            entriesCell.innerText =dbData? contractDetailShopify?.ticketDetails?.applied: `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            entriesCell.id= 'product-entriesCell'
+            entriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.applied : `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let availableEntriesCell = document.createElement('td');
-            availableEntriesCell.innerText = dbData? contractDetailShopify?.ticketDetails?.available: `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            availableEntriesCell.id= 'product-availableEntriesCell'
+            availableEntriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.available : `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let totalEntriesCell = document.createElement('td');
-            totalEntriesCell.innerText =  dbData? contractDetailShopify?.ticketDetails?.total: `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            totalEntriesCell.id= 'product-totalEntriesCell'
+            totalEntriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.total : `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
             let totalCell = document.createElement('td');
-            totalCell.innerText = dbData? `${currencySymbol}${item?.price}` : `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`
+            // totalCell.id= 'product-totalCell'
+            totalCell.innerText = dbData ? `${currencySymbol}${item?.price}` : `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`
             tbody.appendChild(tr)
             tr.appendChild(productCell)
             tr.appendChild(priceCell)
@@ -740,7 +757,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 spots: data[0].spots,
                 productImg: data[0].image,
             }
-            if (selectedAppliedFor?.spots <= selectedSubscription?.ticketDetails?.available) {
+            if (Number(selectedSubscription?.ticketDetails?.available) >= 1) {
                 document.getElementById('applied-tickets-div').style.display = 'flex';
                 let content = document.getElementsByClassName('red-bold')[0]
                 if (content) {
@@ -790,10 +807,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 let spanh = document.getElementById('err-msg')
                 if (selectedAppliedFor?.applyTicketsCount > 0) {
                     let modal = document.getElementById("myModal")
-                    if (selectedAppliedFor?.raffleType == "membership") {
+                    if (selectedAppliedFor?.raffleType === 'time-limit') {
 
                         if (modal) {
-                            modal.innerHTML = modalContentToNotAllow
+                            modal.innerHTML = modalContentToApplyTickets
                             var span = modal.getElementsByClassName("close")[0];
                             if (span) {
                                 span.onclick = function () {
@@ -806,7 +823,17 @@ document.addEventListener("DOMContentLoaded", () => {
                             // let yesBtn = document.getElementById("yesBtn")
                             let closeBtn = document.getElementById("closeBtn")
                             let okBtn = document.getElementById("okBtn")
-
+                            let yesBtn = document.getElementById("yesBtn")
+                            if (yesBtn) {
+                                yesBtn.onclick = function () {
+                                    modal.style.display = "none";
+                                    document.body.classList.remove("modal-open");
+                                    applyTickets()
+                                    resetModalContent()
+                                    input.value = 0
+                                   
+                                }
+                            }
                             if (okBtn) {
                                 okBtn.onclick = function () {
                                     modal.style.display = "none";
@@ -823,12 +850,15 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                             let body = document.getElementById('cancelModalBody')
                             if (body) {
-                                if (Number(selectedSubscription?.ticketDetails?.available) > Number(selectedAppliedFor?.applyTicketsCount)) {
-
+                                if (Number(selectedSubscription?.ticketDetails?.available) >= Number(selectedAppliedFor?.applyTicketsCount)) {
+                                    yesBtn ? yesBtn.style.display = 'inline-block' : ''
+                                    // okBtn ?  okBtn.innerText= 'Ok': ''
                                     body.innerHTML = `<p>
                   Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets for <span class="red-bold">${selectedAppliedFor?.productName}</span> draw?
                 Once you apply, you won’t be able to change it.</p>`
                                 } else {
+                                    yesBtn ? yesBtn.style.display = 'none' : ''
+                                    //    okBtn?  okBtn.innerText= 'Cancel': ''
                                     body.innerHTML = `<p>
                     You are not able to apply tickets as you apply greater than ${selectedSubscription?.ticketDetails?.available} tickets.</p>`
                                 }
@@ -873,6 +903,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     modal.style.display = "none";
                                     document.body.classList.remove("modal-open");
                                     applyTickets()
+                                    input.value = 0
+                                    selectedAppliedFor = {
+                                        ...selectedAppliedFor,
+                                        applyTicketsCount: 0
+                                    }
                                     resetModalContent()
                                 }
                             }
@@ -930,11 +965,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             // document.body.classList.add("modal-open");
                         }
                     }
-                    input.value = 0
-                    selectedAppliedFor = {
-                        ...selectedAppliedFor,
-                        applyTicketsCount: 0
-                    }
+
                     if (spanh) {
                         spanh.innerText = ""
                     }
@@ -945,7 +976,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
-        if (selectedAppliedFor?.spots <= selectedSubscription?.ticketDetails?.available) {
+        if (Number(selectedSubscription?.ticketDetails?.available) >= 1) {
             inputDiv.style.display = 'flex'
         } else {
             inputDiv.style.display = 'none'
@@ -1080,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             detailedDiv.innerHTML = `<div id="contract-header" class="contract-header">
   <div id="customer-name">
-    <p>Hi ${dbData? capitalize(contractDetailShopify?.customerName) :capitalize(contractDetailShopify?.customer?.firstName)}</p>
+    <p>Hi ${dbData ? capitalize(contractDetailShopify?.customerName) : capitalize(contractDetailShopify?.customer?.firstName)}</p>
   </div>
   <div id="contractId">
     <button class="btn" id="cancelBtn">Cancel</button>
@@ -1091,14 +1122,14 @@ document.addEventListener("DOMContentLoaded", () => {
     <div id="card" class="header-details">
         <p class="left-div">
           Billing Frequency:
-          <b>${dbData? capitalize(contractDetailShopify?.billing_policy?.interval) :contractDetailShopify?.billingPolicy?.interval?.toLowerCase() == 'day'
+          <b>${dbData ? capitalize(contractDetailShopify?.billing_policy?.interval) : contractDetailShopify?.billingPolicy?.interval?.toLowerCase() == 'day'
                     ? 'Onetime' :
                     capitalize(contractDetailShopify?.billingPolicy?.interval)}</b>
         </p>
       
         <p class="right-div" id="billingCycle">
           Minimum billing cycles:
-          <b>${dbData? contractDetailShopify?.billing_policy?.min_cycles :contractDetailShopify?.billingPolicy?.minCycles}</b>
+          <b>${dbData ? contractDetailShopify?.billing_policy?.min_cycles : contractDetailShopify?.billingPolicy?.minCycles}</b>
         </p>
       </div>
       <div id="product-list">
@@ -1108,14 +1139,14 @@ document.addEventListener("DOMContentLoaded", () => {
               <td>Product</td>
               <td>
                 Price
-                (${dbData? currencyCode :contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
+                (${dbData ? currencyCode : contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
               </td>
               <td>Applied Entries</td>
               <td>Available Entries</td>
               <td>Total Entries</td>
               <td>
                 Total
-                (${dbData? currencyCode :contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
+                (${dbData ? currencyCode : contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
               </td>
             </tr>
           </thead>

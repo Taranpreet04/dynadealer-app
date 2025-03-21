@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { subscriptionContractModel, templateModel } from './schema';
+import {  templateModel } from './schema';
 export async function sendOrderEmail(data) {
     try {
         let template = await templateModel.findOne({shop: data?.shop}, {orderTemplate:1, shop: 1})
@@ -156,7 +156,7 @@ export async function sendWinnerEmail(data) {
             };
     
             await transporter.sendMail(mailOptions);
-            console.log("Email sent successfully!")
+            console.log("Email sent ti winner successfully!")
             return {
                 success: true,
                 result: "Email sent successfully!",
@@ -175,75 +175,3 @@ export async function sendWinnerEmail(data) {
         };
     }
 }
-// export async function raffleAnnouncementMail(data) {
- 
-//     try {
-//         let template = await templateModel.findOne({shop:"virendertesting.myshopify.com"}, {announcementTemplate:1, shop: 1})
-       
-    
-//             let transporter = nodemailer.createTransport({
-//                 host: "smtp.gmail.com",
-//                 port: 465,
-//                 secure: true,
-//                 auth: {
-//                     user: "tpreet504@gmail.com",
-//                     pass: "ftbx lpyi ygts otpg"
-//                 },
-//             });
-    
-//             let html= template?.announcementTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
-//                 html= template?.announcementTemplate?.html?.replace('{{productName}}', `${data?.title}`);
-//             // html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
-//             // html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
-//             html= html?.replace('{{footer}}', `${template?.announcementTemplate?.footer}`);
-//             let mailOptions = {
-//                 from: "Membership App",
-//                 to: data?.mailTo,
-//                 subject: template?.announcementTemplate?.subject,
-//                 html: html || `<h1>hello</h1>`,
-//             };
-                                                                                                                                                                      
-//             await transporter.sendMail(mailOptions);
-//             console.log("Email sent successfully!")
-//             return {
-//                 success: true,
-//                 result: "Email sent successfully!",
-//             };                      
-//         // }else{
-//         //     return {
-//         //         success: false,
-//         //         result: "no template found",
-//         //     };
-//         // }
-//     } catch (error) {  
-//         console.error("Error sending email:", error);
-//         return {
-//             success: false,
-//             result: error,
-//         }; 
-//     }
-// }
-
-// export const sendMailToAll=async (admin, data)=>{
-//     try{
-//       const { shop } = admin.rest.session;
-//       console.log("shop==", shop, data)
-//       const contractData = await subscriptionContractModel.find(
-//           { shop },{contractId: 1, orderId: 1, customerId: 1, customerEmail: 1}
-//       );
-//         const uniqueEmails = [
-//           ...new Set(contractData.map(order => order.customerEmail))
-//         ];
-                                                                                                                                                                                                                                      
-       
-//         const mailTo = uniqueEmails.join(", ");                 
-        
-//           let detail= {...data, mailTo}
-        
-//           await raffleAnnouncementMail(detail)
-//       return { message: "success" }
-//     }catch(error){
-//       console.error("Error processing POST request:", error);
-//           return { message: "Error processing request", status: 500 };
-//     }
-//   }

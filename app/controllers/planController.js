@@ -1078,7 +1078,7 @@ export const setDefaultTemplate = async (shop) => {
             "This specifies the name of the product for which the order is placed.",
         },
         {
-          term: "{{billingInterval}}",
+          term: "{{interval}}",
           description: "It Shows the billing interval of subscription.",
         },
         {
@@ -1105,7 +1105,6 @@ export const setDefaultTemplate = async (shop) => {
             <p>Hi {{customerName}},</p>
 
             <p>Your orderId is: {{orderId}}</p>
-            <p>Your contractId is: {{contractId}}</p>
             <p>Your have {{drawIdsLength}} chances for winning.</p>
             <p>Here, the list of your ticket Entries which are applied for {{productName}} giveaway</p>
            
@@ -1158,7 +1157,7 @@ export const setDefaultTemplate = async (shop) => {
             timeless piece that adds charm and elegance to any space.</p> 
             <p>Thank you for being a valued part of our community. We appreciate your participation and look forward to more exciting moments with you!
 
-                    If you have any questions, feel free to reach out.
+            If you have any questions, feel free to reach out.
             </p>
           <pre>
                 {{footer}}
@@ -1288,264 +1287,243 @@ export const updateTemplate = async (admin, data) => {
 
 
 
-const checkOptions = async (admin, productId) => {
-  try {
-    console.log("productId==", productId)
-    const query = `query {
-    product(id: "${productId}") {
-      options {
-        id
-        name
-        values
-      }
-    }
-  }`;
-    const response = await admin.graphql(query);
-    const productOptions = await response.json();
-    // const dataString = typeof productOptions === "string" ? productOptions : JSON.stringify(productOptions);
-    // fs.writeFile("checkkkk.txt", dataString, (err) => {
-    //   if (err) {
-    //     console.error("Error writing to file:", err);
-    //   } else {
-    //     console.log("Data written to file successfully!");
-    //   }
-    // });
-    let totalOptions = productOptions?.data?.product?.options.length
-    if (totalOptions > 0) {
-      const ticketOption = productOptions?.data?.product?.options?.find(
-        option => option?.name === "Tickets"
-      );
+// const checkOptions = async (admin, productId) => {
+//   try {
+//     console.log("productId==", productId)
+//     const query = `query {
+//     product(id: "${productId}") {
+//       options {
+//         id
+//         name
+//         values
+//       }
+//     }
+//   }`;
+//     const response = await admin.graphql(query);
+//     const productOptions = await response.json();
+//     // const dataString = typeof productOptions === "string" ? productOptions : JSON.stringify(productOptions);
+//     // fs.writeFile("checkkkk.txt", dataString, (err) => {
+//     //   if (err) {
+//     //     console.error("Error writing to file:", err);
+//     //   } else {
+//     //     console.log("Data written to file successfully!");
+//     //   }
+//     // });
+//     let totalOptions = productOptions?.data?.product?.options.length
+//     if (totalOptions > 0) {
+//       const ticketOption = productOptions?.data?.product?.options?.find(
+//         option => option?.name === "Tickets"
+//       );
 
-      console.log("Ticket Option ID:", ticketOption?.id);
-      return ticketOption?.id;
-    }
+//       console.log("Ticket Option ID:", ticketOption?.id);
+//       return ticketOption?.id;
+//     }
 
-    return null;
-  } catch (err) {
+//     return null;
+//   } catch (err) {
 
-  }
-}
-export const createOption = async (admin, productId) => {
-  try {
-    const mutation = `#graphql
-  mutation createOptions($productId: ID!, $options: [OptionCreateInput!]!) {
-    productOptionsCreate(productId: $productId, options: $options) {
-      userErrors {
-        field
-        message
-        code
-      }
-      product {
-        id
-        title
-        options {
-          name
-          values
-        }
-      }
-    }
-  }`;
+//   }
+// }
+// export const createOption = async (admin, productId) => {
+//   try {
+//     const mutation = `#graphql
+//   mutation createOptions($productId: ID!, $options: [OptionCreateInput!]!) {
+//     productOptionsCreate(productId: $productId, options: $options) {
+//       userErrors {
+//         field
+//         message
+//         code
+//       }
+//       product {
+//         id
+//         title
+//         options {
+//           name
+//           values
+//         }
+//       }
+//     }
+//   }`;
 
-    const variables = {
-      productId: productId,
-      options: [
-        {
-          name: "Tickets",
-          values: [
-            {
-              name: "1 Entry",
-            },
-          ],
-        },
-      ],
-    };
+//     const variables = {
+//       productId: productId,
+//       options: [
+//         {
+//           name: "Tickets",
+//           values: [
+//             {
+//               name: "1 Entry",
+//             },
+//           ],
+//         },
+//       ],
+//     };
 
-    const response = await admin.graphql(mutation, { variables });
+//     const response = await admin.graphql(mutation, { variables });
 
-    const data = await response.json();
-    const dataString = typeof data === "string" ? data : JSON.stringify(data);
-    // fs.writeFile("checkkkk.txt", dataString, (err) => {
-    //   if (err) {
-    //     console.error("Error writing to file:", err);
-    //   } else {
-    //     console.log("Data written to file successfully!");
-    //   }
-    // });
-    // console.log(data);
-    if (data?.data?.productOptionsCreate?.userErrors?.length <= 0) {
-      console.log("no reeor")
-      // "product": {
-      //   "id": "gid://shopify/Product/7837187014846",
-      //   "title": "Antique Drawers",
-      //   "options": [
-      //     {
-      //       "name": "Tickets",
-      //       "values": [
-      //         "1 Entry"
-      //       ],
-      //       "id": "gid://shopify/ProductOption/10707166691518"
-      //     }
-      //   ]
-      // }
-      return data?.data?.productOptionsCreate?.product?.options[0]?.id
-    }
-    console.log("err", data?.data?.productOptionsCreate?.userErrors)
-    return null
-  } catch (err) {
-    console.log(err)
-    return null
-  }
+//     const data = await response.json();
+   
+//     if (data?.data?.productOptionsCreate?.userErrors?.length <= 0) {
+//       console.log("no reeor")
+//       return data?.data?.productOptionsCreate?.product?.options[0]?.id
+//     }
+//     console.log("err", data?.data?.productOptionsCreate?.userErrors)
+//     return null
+//   } catch (err) {
+//     console.log(err)
+//     return null
+//   }
 
 
-}
-export const createPlanAndVariants = async (admin, newPlanDetail) => {
-  let onetimePlans=[]
-  let otherPlans=[]
-  // newPlanDetail?.plans?.map((plan)=>{
-  //   plan?.purchaseType=='day'? onetimePlans.push(newPlanDetail)
-  // })
-  let optionExist = await checkOptions(admin, newPlanDetail?.products[0]?.product_id)
-  console.log("result----checkOptions-exist", optionExist)
-  if (optionExist) {
-    console.log("time to create variants")
-    // updateVariants()
-  } else {
-    let optionId = await createOption(admin, newPlanDetail?.products[0]?.product_id)
-    console.log("option==", optionId)
-    if(optionId){
-        createVariants()
-    }
-  }
-}
-export const createVariants=async(admin, productId, optionId)=>{
-  try{
-    const response = await admin.graphql(
-      `#graphql
-      mutation ProductVariantsCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-        productVariantsBulkCreate(productId: $productId, variants: $variants) {
-          productVariants {
-            id
-            title
-            selectedOptions {
-              name
-              value
-            }
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`,
-      {
-        variables: {
-          "productId": productId,
-          "variants": [
-            {
-              "price": 15.99,
-              "compareAtPrice": 19.99,
-              "optionValues": [
-                {
-                  "name": "Entry 2",
-                  "optionId": optionId
-                }
-              ]
-            },
-            {
-              "price": 15.99,
-              "compareAtPrice": 19.99,
-              "optionValues": [
-                {
-                  "name": "Entry 3",
-                  "optionId": optionId
-                }
-              ]
-            },
-            {
-              "price": 15.99,
-              "compareAtPrice": 19.99,
-              "optionValues": [
-                {
-                  "name": "Entry 4",
-                  "optionId": optionId
-                }
-              ]
-            }
-          ]
-        },
-      },
-    );
+// }
+// export const createPlanAndVariants = async (admin, newPlanDetail) => {
+//   let onetimePlans=[]
+//   let otherPlans=[]
+//   // newPlanDetail?.plans?.map((plan)=>{
+//   //   plan?.purchaseType=='day'? onetimePlans.push(newPlanDetail)
+//   // })
+//   let optionExist = await checkOptions(admin, newPlanDetail?.products[0]?.product_id)
+//   console.log("result----checkOptions-exist", optionExist)
+//   if (optionExist) {
+//     console.log("time to create variants")
+//     // updateVariants()
+//   } else {
+//     let optionId = await createOption(admin, newPlanDetail?.products[0]?.product_id)
+//     console.log("option==", optionId)
+//     if(optionId){
+//         createVariants()
+//     }
+//   }
+// }
+// export const createVariants=async(admin, productId, optionId)=>{
+//   try{
+//     const response = await admin.graphql(
+//       `#graphql
+//       mutation ProductVariantsCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+//         productVariantsBulkCreate(productId: $productId, variants: $variants) {
+//           productVariants {
+//             id
+//             title
+//             selectedOptions {
+//               name
+//               value
+//             }
+//           }
+//           userErrors {
+//             field
+//             message
+//           }
+//         }
+//       }`,
+//       {
+//         variables: {
+//           "productId": productId,
+//           "variants": [
+//             {
+//               "price": 15.99,
+//               "compareAtPrice": 19.99,
+//               "optionValues": [
+//                 {
+//                   "name": "Entry 2",
+//                   "optionId": optionId
+//                 }
+//               ]
+//             },
+//             {
+//               "price": 15.99,
+//               "compareAtPrice": 19.99,
+//               "optionValues": [
+//                 {
+//                   "name": "Entry 3",
+//                   "optionId": optionId
+//                 }
+//               ]
+//             },
+//             {
+//               "price": 15.99,
+//               "compareAtPrice": 19.99,
+//               "optionValues": [
+//                 {
+//                   "name": "Entry 4",
+//                   "optionId": optionId
+//                 }
+//               ]
+//             }
+//           ]
+//         },
+//       },
+//     );
     
-    const data = await response.json();
+//     const data = await response.json();
     
-  }catch(err){
+//   }catch(err){
 
-  }
-}
-export const updateVariants=async(admin, productId, optionId)=>{
-  try{
-    const response = await admin.graphql(
-      `#graphql
-      mutation ProductVariantsCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-        productVariantsBulkCreate(productId: $productId, variants: $variants) {
-          productVariants {
-            id
-            title
-            selectedOptions {
-              name
-              value
-            }
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`,
-      {
-        variables: {
-          "productId": productId,
-          "variants": [
-            {
-              "price": 15.99,
-              "compareAtPrice": 19.99,
-              "optionValues": [
-                {
-                  "name": "Golden",
-                  "optionId": optionId
-                }
-              ]
-            },
-            {
-              "price": 15.99,
-              "compareAtPrice": 19.99,
-              "optionValues": [
-                {
-                  "name": "Golden",
-                  "optionId": optionId
-                }
-              ]
-            },
-            {
-              "price": 15.99,
-              "compareAtPrice": 19.99,
-              "optionValues": [
-                {
-                  "name": "Golden",
-                  "optionId": optionId
-                }
-              ]
-            }
-          ]
-        },
-      },
-    );
+//   }
+// }
+// export const updateVariants=async(admin, productId, optionId)=>{
+//   try{
+//     const response = await admin.graphql(
+//       `#graphql
+//       mutation ProductVariantsCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+//         productVariantsBulkCreate(productId: $productId, variants: $variants) {
+//           productVariants {
+//             id
+//             title
+//             selectedOptions {
+//               name
+//               value
+//             }
+//           }
+//           userErrors {
+//             field
+//             message
+//           }
+//         }
+//       }`,
+//       {
+//         variables: {
+//           "productId": productId,
+//           "variants": [
+//             {
+//               "price": 15.99,
+//               "compareAtPrice": 19.99,
+//               "optionValues": [
+//                 {
+//                   "name": "Golden",
+//                   "optionId": optionId
+//                 }
+//               ]
+//             },
+//             {
+//               "price": 15.99,
+//               "compareAtPrice": 19.99,
+//               "optionValues": [
+//                 {
+//                   "name": "Golden",
+//                   "optionId": optionId
+//                 }
+//               ]
+//             },
+//             {
+//               "price": 15.99,
+//               "compareAtPrice": 19.99,
+//               "optionValues": [
+//                 {
+//                   "name": "Golden",
+//                   "optionId": optionId
+//                 }
+//               ]
+//             }
+//           ]
+//         },
+//       },
+//     );
     
-    const data = await response.json();
+//     const data = await response.json();
     
-  }catch(err){
+//   }catch(err){
 
-  }
-}
+//   }
+// }
 
 

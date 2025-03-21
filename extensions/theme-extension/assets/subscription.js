@@ -1,7 +1,7 @@
 console.log("js--________");
 
-let serverPath = "https://dynadealersapp.com";
-// let serverPath = "https://emission-villa-sperm-declaration.trycloudflare.com";
+// let serverPath = "https://dynadealersapp.com";
+let serverPath = "https://gsm-floating-fear-activated.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -24,7 +24,7 @@ let showMemebershipLevels = false;
 let goldMembershipOffer = false;
 let offerDuration = {};
 let commanData;
-let oneTimeMembership= false
+let oneTimeMembership = false
 let options = [
   { name: "Weekly", value: "week", class: "timePeriodList" },
   { name: "Monthly", value: "month", class: "timePeriodList" },
@@ -76,10 +76,10 @@ if (subscription_page_type == "product") {
   }
   const sendOnetimeDataToCart = (entry) => {
     let productForms = document.querySelectorAll('form[action="/cart/add"]');
-  
+
     productForms.forEach((form) => {
       if (!form) return;
-  
+
       // Check if the 'entries' input already exists, else create and append it
       let entriesInput = form.querySelector('input[name="properties[entries]"]');
       if (!entriesInput) {
@@ -88,8 +88,8 @@ if (subscription_page_type == "product") {
         entriesInput.name = "properties[entries]";
         form.appendChild(entriesInput);
       }
-      entriesInput.value = entry; 
-  
+      entriesInput.value = entry;
+
       // Check if the 'plan-type' input already exists, else create and append it
       let typeInput = form.querySelector('input[name="properties[plan-type]"]');
       if (!typeInput) {
@@ -98,31 +98,31 @@ if (subscription_page_type == "product") {
         typeInput.name = "properties[plan-type]";
         form.appendChild(typeInput);
       }
-      typeInput.value = "onetime"; 
+      typeInput.value = "onetime";
 
-      if(oneTimeMembership){
+      if (oneTimeMembership) {
         let memInput = form.querySelector('input[name="properties[membership]"]');
-      if (!memInput) {
-        memInput = document.createElement("input");
-        memInput.type = "hidden";
-        memInput.name = "properties[membership]";
-        form.appendChild(memInput);
-      }
-      memInput.value = productJson?.type; 
+        if (!memInput) {
+          memInput = document.createElement("input");
+          memInput.type = "hidden";
+          memInput.name = "properties[membership]";
+          form.appendChild(memInput);
+        }
+        memInput.value = productJson?.type;
       }
     });
   };
-  
+
   const clearOnetimeProperties = () => {
     const productForms = document.querySelectorAll('form[action="/cart/add"]');
-    
+
     productForms.forEach((form) => {
       // Check if 'entries' input exists and remove it
       const entriesInput = form.querySelector('input[name="properties[entries]"]');
       if (entriesInput) {
         entriesInput.remove();
       }
-    
+
       // Check if 'plan-type' input exists and remove it
       const typeInput = form.querySelector('input[name="properties[plan-type]"]');
       if (typeInput) {
@@ -130,37 +130,37 @@ if (subscription_page_type == "product") {
       }
     });
   };
-  
-  
+
+
   const sendPlanDataToCart = (plan) => {
     if (!plan || !plan.id) {
       console.warn("Invalid plan data provided");
       return;
     }
-  
+
     // Select all forms with /cart/add action
     var forms = document.querySelectorAll('form[action*="/cart/add"]');
-  
+
     if (forms.length === 0) {
       console.warn("No cart/add forms found on the page.");
       return;
     }
-  
+
     forms.forEach((form) => {
       if (!form) return;
-  
+
       // Select existing selling plan inputs
       var sellingPlanInputs = form.querySelectorAll('input[name="selling_plan"]');
-  
+
       if (sellingPlanInputs.length === 0) {
-  
+
         var newHiddenInput = document.createElement("input");
         newHiddenInput.type = "hidden";
         newHiddenInput.name = "selling_plan";
         newHiddenInput.value = plan.id;
         form.appendChild(newHiddenInput);
       } else {
-        
+
         sellingPlanInputs.forEach((input) => {
           if (input) {
             input.value = plan.id;
@@ -169,7 +169,7 @@ if (subscription_page_type == "product") {
       }
     });
   };
-  
+
 
 
   const cartClear = () => {
@@ -208,94 +208,94 @@ if (subscription_page_type == "product") {
   const handleOnetimePlan = (variant) => {
     selectedPlan = ''
     cartClear();
-    selectedEntries= variant
+    selectedEntries = variant
     sendOnetimeDataToCart(variant)
   };
   if (allSellingPlans?.length == 1) {
     if (allSellingPlans) {
-      purchaseOption= "subscription-purchase"
+      purchaseOption = "subscription-purchase"
       sendPlanDataToCart(allSellingPlans[0]);
     }
-  }else if(productJson?.variants?.length===1){
-      let variant= productJson?.variants[0]?.title.split(' ')[0]
-      if(Number(variant)>0){
-        oneTimeMembership= true
-        purchaseOption= "oneTime-purchase"
-        handleOnetimePlan(variant)
-      }
-  }else {
-      if (allSellingPlans?.length > 1) {
-       
-        commanData = JSON.parse(allSellingPlans[0]?.description);
+  } else if (productJson?.variants?.length === 1) {
+    let variant = productJson?.variants[0]?.title.split(' ')[0]
+    if (Number(variant) > 0) {
+      oneTimeMembership = true
+      purchaseOption = "oneTime-purchase"
+      handleOnetimePlan(variant)
+    }
+  } else {
+    if (allSellingPlans?.length > 1) {
 
-        const setPriceAndEntries = (plan) => {
-          let entries = getEntries(plan?.description);
-          selectedEntries = entries;
-          if (purchaseOption == "oneTime-purchase") {
-            oneTimeSelectedPlan = plan;
-            subscriptionSelectedPlan = otherPlans?.filter((itm) =>
-              itm?.name?.includes(`-entries-${entries}`),
-            )[0];
-          } else {
-            subscriptionSelectedPlan = plan;
-            oneTimeSelectedPlan = oneTimePlans?.filter((itm) =>
-              itm?.name?.includes(`-entries-${entries}`),
-            )[0];
-          }
-          oneTimePrice = oneTimeSelectedPlan?.price_adjustments[0]?.value / 100;
-          subscriptionPrice =
-            subscriptionSelectedPlan?.price_adjustments[0]?.value / 100;
-          let oneTimePriceDiv =
-            document.getElementsByClassName("oneTimePrice")[0];
-          let subscriptionPriceDiv =
-            document.getElementsByClassName("subscriptionPrice")[0];
-          oneTimePriceDiv.innerText = oneTimePrice
-            ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}`
-            : "";
-          subscriptionPriceDiv.innerText = subscriptionPrice
-            ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
-            : "";
+      commanData = JSON.parse(allSellingPlans[0]?.description);
 
-        };
-        const setCartProperties = () => {
-            subscriptionSelectedPlan = otherPlans?.filter((itm) =>
-              itm?.name?.includes(`-entries-${selectedEntries}`),
-            )[0];
-            console.log("In Cart properties change")
-            console.log("subscriptionSelectedPlan==", subscriptionSelectedPlan)
-            console.log("purchaseOption==", purchaseOption)
-            console.log("selectedEntries==", selectedEntries)
-            if (purchaseOption == "oneTime-purchase") {
-              handleOnetimePlan(selectedEntries)
-            } else {
-              if(subscriptionSelectedPlan){
-                handlePlanChange(subscriptionSelectedPlan);
-              }
-            }
-        };
-
-        function handlePurchaseType(event) {
-          purchaseOption = event.target.value;
-         
-          let div = document.getElementsByClassName('additional-detail')[0]
-          if (div) {
-            if (event.target.value == "oneTime-purchase") {
-              cartClear()
-              div.style.display = 'none';
-            } else {
-              div.style.display = 'block';
-              clearOnetimeProperties()
-            }
-          }
-          setCartProperties();
+      const setPriceAndEntries = (plan) => {
+        let entries = getEntries(plan?.description);
+        selectedEntries = entries;
+        if (purchaseOption == "oneTime-purchase") {
+          oneTimeSelectedPlan = plan;
+          subscriptionSelectedPlan = otherPlans?.filter((itm) =>
+            itm?.name?.includes(`-entries-${entries}`),
+          )[0];
+        } else {
+          subscriptionSelectedPlan = plan;
+          oneTimeSelectedPlan = oneTimePlans?.filter((itm) =>
+            itm?.name?.includes(`-entries-${entries}`),
+          )[0];
         }
+        oneTimePrice = oneTimeSelectedPlan?.price_adjustments[0]?.value / 100;
+        subscriptionPrice =
+          subscriptionSelectedPlan?.price_adjustments[0]?.value / 100;
+        let oneTimePriceDiv =
+          document.getElementsByClassName("oneTimePrice")[0];
+        let subscriptionPriceDiv =
+          document.getElementsByClassName("subscriptionPrice")[0];
+        oneTimePriceDiv.innerText = oneTimePrice
+          ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}`
+          : "";
+        subscriptionPriceDiv.innerText = subscriptionPrice
+          ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
+          : "";
 
-        const showVariantPlans = () => {
-          if (
-            subscription_page_type == "product" &&
-            (otherPlans?.length > 0 || oneTimePlans?.length > 0)
-          ) {
-            let mainWidget = `
+      };
+      const setCartProperties = () => {
+        subscriptionSelectedPlan = otherPlans?.filter((itm) =>
+          itm?.name?.includes(`-entries-${selectedEntries}`),
+        )[0];
+        console.log("In Cart properties change")
+        console.log("subscriptionSelectedPlan==", subscriptionSelectedPlan)
+        console.log("purchaseOption==", purchaseOption)
+        console.log("selectedEntries==", selectedEntries)
+        if (purchaseOption == "oneTime-purchase") {
+          handleOnetimePlan(selectedEntries)
+        } else {
+          if (subscriptionSelectedPlan) {
+            handlePlanChange(subscriptionSelectedPlan);
+          }
+        }
+      };
+
+      function handlePurchaseType(event) {
+        purchaseOption = event.target.value;
+
+        let div = document.getElementsByClassName('additional-detail')[0]
+        if (div) {
+          if (event.target.value == "oneTime-purchase") {
+            cartClear()
+            div.style.display = 'none';
+          } else {
+            div.style.display = 'block';
+            clearOnetimeProperties()
+          }
+        }
+        setCartProperties();
+      }
+
+      const showVariantPlans = () => {
+        if (
+          subscription_page_type == "product" &&
+          (otherPlans?.length > 0 || oneTimePlans?.length > 0)
+        ) {
+          let mainWidget = `
                     <div id="oneTime" class="oneTime purchase-optn-main">
                 <div class='other-options'>
                 <h5>Purchase options</h5>
@@ -327,111 +327,111 @@ if (subscription_page_type == "product") {
             </div>
             `;
 
-            let subscriptionBlock = document.getElementById(
-              "subscription-app-block",
-            );
-            subscriptionBlock.innerHTML = mainWidget;
-            let checkedOpn = document.getElementById("onetime-purchase");
-            if (checkedOpn) {
-              checkedOpn.checked = true;
-            }
-            
-        const urlParams = new URLSearchParams(window.location.search);
-        const variant = urlParams.get("variant");
-        if(variant){
-          productJson?.variants?.map(item=>{
-            if(item?.id==variant){
-              selectedEntries= item?.option1.split(' ')[0]
-            }
-          })
-
-        setCartProperties();
-        }else{
-          selectedEntries=  productJson?.variants[0]?.title?.split(' ')[0]
-          setCartProperties();
-        }
+          let subscriptionBlock = document.getElementById(
+            "subscription-app-block",
+          );
+          subscriptionBlock.innerHTML = mainWidget;
+          let checkedOpn = document.getElementById("onetime-purchase");
+          if (checkedOpn) {
+            checkedOpn.checked = true;
           }
-        };
-        const updateEntries = () => {
-          let span = document.getElementById('entry')
-          if (span) {
-            span.innerText = selectedEntries
-          }
-        }
-        const handlePlanChange = (newPlan) => {
-          if (newPlan) {
-            selectedPlan = newPlan;
-            selectedEntries = getEntries(selectedPlan?.description);
-            // setTimeout(() => sendPlanDataToCart(selectedPlan), 1000);
 
-            sendPlanDataToCart(selectedPlan);
-            setPriceAndEntries(selectedPlan);
-            updateEntries()
+          const urlParams = new URLSearchParams(window.location.search);
+          const variant = urlParams.get("variant");
+          if (variant) {
+            productJson?.variants?.map(item => {
+              if (item?.id == variant) {
+                selectedEntries = item?.option1.split(' ')[0]
+              }
+            })
+
+            setCartProperties();
           } else {
-            let hasActive = document.getElementsByClassName("active");
-            Array.from(hasActive).forEach((itm) => {
-              itm.classList.remove("active");
-            });
-            cartClear();
+            selectedEntries = productJson?.variants[0]?.title?.split(' ')[0]
+            setCartProperties();
           }
-        };
-      
-        const showWidget = () => {
-          allSellingPlans?.map((item) => {
-            let interval = item?.options[0]?.value?.split(" ")?.[0];
-            if (interval == "day") {
-              oneTimePlans?.push(item);
-            } else {
-              otherPlans?.push(item);
-            }
+        }
+      };
+      const updateEntries = () => {
+        let span = document.getElementById('entry')
+        if (span) {
+          span.innerText = selectedEntries
+        }
+      }
+      const handlePlanChange = (newPlan) => {
+        if (newPlan) {
+          selectedPlan = newPlan;
+          selectedEntries = getEntries(selectedPlan?.description);
+          // setTimeout(() => sendPlanDataToCart(selectedPlan), 1000);
+
+          sendPlanDataToCart(selectedPlan);
+          setPriceAndEntries(selectedPlan);
+          updateEntries()
+        } else {
+          let hasActive = document.getElementsByClassName("active");
+          Array.from(hasActive).forEach((itm) => {
+            itm.classList.remove("active");
           });
-          oneTimePlans?.length > 0
-            ? (selectedPlan = oneTimePlans[0])
-            : (selectedPlan = otherPlans[0]);
-          if (otherPlans?.length > 0 || oneTimePlans?.length > 0) {
-            showVariantPlans();
+          cartClear();
+        }
+      };
+
+      const showWidget = () => {
+        allSellingPlans?.map((item) => {
+          let interval = item?.options[0]?.value?.split(" ")?.[0];
+          if (interval == "day") {
+            oneTimePlans?.push(item);
           } else {
-            let subscriptionBlock = dselectedPlanocument.getElementById(
-              "subscription-app-block",
-            );
-            subscriptionBlock.innerHTML = "";
+            otherPlans?.push(item);
           }
+        });
+        oneTimePlans?.length > 0
+          ? (selectedPlan = oneTimePlans[0])
+          : (selectedPlan = otherPlans[0]);
+        if (otherPlans?.length > 0 || oneTimePlans?.length > 0) {
+          showVariantPlans();
+        } else {
+          let subscriptionBlock = dselectedPlanocument.getElementById(
+            "subscription-app-block",
+          );
+          subscriptionBlock.innerHTML = "";
+        }
 
-          let quantityDiv = document.querySelectorAll(
-            ".product-form__input.product-form__quantity",
-          )[0];
-          if (quantityDiv) {
-            quantityDiv.style.display = "none";
-          }
-        };
-        // showWidget()
+        let quantityDiv = document.querySelectorAll(
+          ".product-form__input.product-form__quantity",
+        )[0];
+        if (quantityDiv) {
+          quantityDiv.style.display = "none";
+        }
+      };
+      // showWidget()
 
-        /***code for product page timer */
-        const showCountDown = () => {
-          // const productImage = document.querySelectorAll('.product__media-wrapper')[0];
-          const mediaGallery = document.querySelector("media-gallery");
-          // productImage.style.position = 'relative';
+      /***code for product page timer */
+      const showCountDown = () => {
+        // const productImage = document.querySelectorAll('.product__media-wrapper')[0];
+        const mediaGallery = document.querySelector("media-gallery");
+        // productImage.style.position = 'relative';
 
-          const today = new Date(new Date().setHours(0, 0, 0, 0));
-          const todayDate = today.getDate();
-          const offerValidity = new Date(offerDuration?.end);
-          const offerValidityDate = offerValidity.getDate();
+        const today = new Date(new Date().setHours(0, 0, 0, 0));
+        const todayDate = today.getDate();
+        const offerValidity = new Date(offerDuration?.end);
+        const offerValidityDate = offerValidity.getDate();
 
-          const main = document.createElement("div");
-          main.className = "countdown-main-div";
-          mediaGallery.appendChild(main);
-          showWidget();
-          function updateCountdown() {
-            const now = new Date();
-            const timeDifference = offerValidity - now;
-            if (timeDifference > 0 || todayDate === offerValidityDate) {
-              const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-              const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
-              const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
-              const seconds = Math.floor((timeDifference / 1000) % 60);
+        const main = document.createElement("div");
+        main.className = "countdown-main-div";
+        mediaGallery.appendChild(main);
+        showWidget();
+        function updateCountdown() {
+          const now = new Date();
+          const timeDifference = offerValidity - now;
+          if (timeDifference > 0 || todayDate === offerValidityDate) {
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+            const seconds = Math.floor((timeDifference / 1000) % 60);
 
 
-              content = `<div class="countdown">
+            content = `<div class="countdown">
                         <div class='show-timer-div'>
                             <div class='time'>
                                 <span>Days</span>
@@ -454,56 +454,56 @@ if (subscription_page_type == "product") {
                             </div>
                        </div>
                     </div>`;
-            } else if (todayDate > offerValidityDate || timeDifference <= 0) {
-              let subscriptionBlock = document.getElementById(
-                "subscription-app-block",
-              );
-              subscriptionBlock.innerHTML = "";
-              content = `<div class="countdown">
+          } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+            let subscriptionBlock = document.getElementById(
+              "subscription-app-block",
+            );
+            subscriptionBlock.innerHTML = "";
+            content = `<div class="countdown">
                                         <p>OFFER EXPIRED</p>
                                     </div>`;
-              clearInterval(timer);
-            }
-            main.innerHTML = content;
-            // clearInterval(timer);
+            clearInterval(timer);
           }
-          const timer = setInterval(updateCountdown, 1000);
-          updateCountdown();
-        };
+          main.innerHTML = content;
+          // clearInterval(timer);
+        }
+        const timer = setInterval(updateCountdown, 1000);
+        updateCountdown();
+      };
 
-        document.addEventListener("DOMContentLoaded", () => {
-          const ticketRadios = document.querySelectorAll('input[type="radio"][name="Entries"]');
-          ticketRadios.forEach(radio => {
-            radio.addEventListener("click", () => {
-              selectedEntries= radio?.value?.split(' ')[0]
-              setCartProperties()
-            });
+      document.addEventListener("DOMContentLoaded", () => {
+        const ticketRadios = document.querySelectorAll('input[type="radio"][name="Entries"]');
+        ticketRadios.forEach(radio => {
+          radio.addEventListener("click", () => {
+            selectedEntries = radio?.value?.split(' ')[0]
+            setCartProperties()
           });
         });
+      });
 
-        if (commanData?.raffleType == "time-limit") {
-          // getOfferValidity();
-          const date = commanData?.dateRange;
-          const startIST = toIST(date.start);
-          let endIST = toIST(date.end);
-          endIST.setHours(23, 59, 59, 999);
+      if (commanData?.raffleType == "time-limit") {
+        // getOfferValidity();
+        const date = commanData?.dateRange;
+        const startIST = toIST(date.start);
+        let endIST = toIST(date.end);
+        endIST.setHours(23, 59, 59, 999);
 
-          let dateRange = {
-            start: startIST,
-            end: endIST,
-          };
+        let dateRange = {
+          start: startIST,
+          end: endIST,
+        };
 
-          offerDuration = dateRange;
-          const now = new Date();
-          const timeDifferenceToStart = new Date(startIST) - now;
-        
-          if (timeDifferenceToStart < 0) {
-            showCountDown();
-          }
-        } else {
-          console.log("no counter" )
+        offerDuration = dateRange;
+        const now = new Date();
+        const timeDifferenceToStart = new Date(startIST) - now;
+
+        if (timeDifferenceToStart < 0) {
+          showCountDown();
         }
+      } else {
+        console.log("no counter")
       }
     }
+  }
 
 }
