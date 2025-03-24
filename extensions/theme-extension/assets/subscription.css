@@ -1,121 +1,123 @@
 .subscription-widget-box {
-    border: 1px solid black;
-    border-radius: 20px;
+  border: 1px solid black;
+  border-radius: 20px;
 }
 
 .main-widget {
-    display: none;
-    background-color: #f2f2f299;
-    margin-top: 1.5rem;
-    border-radius: 20px;
+  display: none;
+  background-color: #f2f2f299;
+  margin-top: 1.5rem;
+  border-radius: 20px;
 }
 
 #left-side-widget,
 #right-side-widget {
-    padding: 3rem;
+  padding: 3rem;
 }
 
 #left-side-widget h2 {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 #right-side-widget li::marker {
-    font-size: 1.8em;
-    color: #2d862d;
+  font-size: 1.8em;
+  color: #2d862d;
 }
 
 .subscription-body {
-    border: 0px solid #3970FF;
-    padding: 40px 25px 35px;
-    border-radius: 20px;
-    position: relative;
-    margin-top: 40px;
+  border: 0px solid #3970ff;
+  padding: 40px 25px 35px;
+  border-radius: 20px;
+  position: relative;
+  margin-top: 40px;
 }
 
 .subscription-body .subscription-widget-box h3 {
-    text-transform: capitalize;
+  text-transform: capitalize;
 }
 
 .subscription-body:before {
-    content: "";
-    border-radius: 20px;
-    border: 2px solid transparent;
-    background: linear-gradient(45deg, #3970ff, #e56ac8) border-box;
-    mask: linear-gradient(#ffffff 0 0) padding-box, linear-gradient(#ffffff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    position: absolute;
-    width: 100%;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    z-index: -1;
+  content: "";
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background: linear-gradient(45deg, #3970ff, #e56ac8) border-box;
+  mask:
+    linear-gradient(#ffffff 0 0) padding-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: -1;
 }
 
 .best-deal-label {
-    position: absolute;
-    top: -12px;
-    left: 0;
-    right: 50px;
-    text-align: center;
-    background: linear-gradient(87.8deg, #3970ff 62.02%, #eb6ac6 95.92%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 123.84px;
-    height: 35.08px;
-    margin: auto;
-    margin-right: 0;
-    border-radius: 0px 0px 10px 10px;
-    gap: 6px;
-    color: #fff;
-    font-size: 14px;
-    box-shadow: #64646f33 0 7px 29px;
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 50px;
+  text-align: center;
+  background: linear-gradient(87.8deg, #3970ff 62.02%, #eb6ac6 95.92%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 123.84px;
+  height: 35.08px;
+  margin: auto;
+  margin-right: 0;
+  border-radius: 0px 0px 10px 10px;
+  gap: 6px;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: #64646f33 0 7px 29px;
 }
 
 .subscription-body .subscription-widget-box {
-    border: none;
+  border: none;
 }
 
 .subscription-body div#left-side-widget {
-    padding: 0;
+  padding: 0;
 }
 
 .subscription-body div#right-side-widget {
-    padding: 0;
+  padding: 0;
 }
 
 .subscription-body .main-widget {
-    padding: 28px 18px;
+  padding: 28px 18px;
 }
 
 .subscription-body ul#widget-list {
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    row-gap: 15px;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: 15px;
 }
 
 .subscription-body ul#widget-list li {
-    display: block;
-    position: relative;
-    font-family: Inter;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: normal;
-    letter-spacing: 0;
-    text-align: left;
-    padding-left: 24px;
-    color: rgba(var(--color-foreground), 0.75);
-    color: rgb(37 39 42 / 70%);
-    font-weight: 500;
-    font-size: 14px;
-    letter-spacing: normal;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e7edff;
-    text-transform: lowercase;
+  display: block;
+  position: relative;
+  font-family: Inter;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0;
+  text-align: left;
+  padding-left: 24px;
+  color: rgba(var(--color-foreground), 0.75);
+  color: rgb(37 39 42 / 70%);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: normal;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e7edff;
+  text-transform: lowercase;
 }
 
 /* .subscription-body .selected-widget-Plan {
@@ -124,257 +126,258 @@
     grid-template-columns: 1fr 2fr;
 } */
 .subscription-body ul#widget-list li:last-child {
-    border-bottom: 0;
-    padding-bottom: 0;
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 
 .subscription-body ul#widget-list li:before {
-    content: "";
-    background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Vector_2.svg?v=1734697545);
-    width: 18px;
-    height: 18px;
-    background-size: contain;
-    position: absolute;
-    left: 0;
-    top: 3px;
-    background-repeat: no-repeat;
+  content: "";
+  background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Vector_2.svg?v=1734697545);
+  width: 18px;
+  height: 18px;
+  background-size: contain;
+  position: absolute;
+  left: 0;
+  top: 3px;
+  background-repeat: no-repeat;
 }
 
 .subscription-body ul#widget-list li#description:before {
-    background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/1f381_1_3.svg?v=1734696825);
+  background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/1f381_1_3.svg?v=1734696825);
 }
 
 .subscription-body h2#product-price {
-    margin: 0;
-    font-family: Inter;
-    font-size: 33px;
-    font-weight: 700;
-    line-height: 25px;
-    letter-spacing: -0.04em;
+  margin: 0;
+  font-family: Inter;
+  font-size: 33px;
+  font-weight: 700;
+  line-height: 25px;
+  letter-spacing: -0.04em;
 }
 
 h2#product-price {
-    font-family: Inter;
-    font-size: 35px;
-    font-weight: 700;
-    line-height: 35px;
-    letter-spacing: 0;
-    text-align: left;
-    text-underline-position: from-font;
-    text-decoration-skip-ink: none;
+  font-family: Inter;
+  font-size: 35px;
+  font-weight: 700;
+  line-height: 35px;
+  letter-spacing: 0;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
 }
 
 .subscription-body sub#purchase-type {
-    color: #828282;
-    font-weight: 600;
-    align-self: end;
-    font-size: 15px;
-    line-height: 25px;
+  color: #828282;
+  font-weight: 600;
+  align-self: end;
+  font-size: 15px;
+  line-height: 25px;
 }
 
 .subscription-body div#subscription-dropdown .sub-title {
-    font-family: Inter;
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 26px;
-    letter-spacing: 0;
-    text-align: left;
-    color: #000;
-    margin: 14px 0;
+  font-family: Inter;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: 0;
+  text-align: left;
+  color: #000;
+  margin: 14px 0;
 }
 
 .subscription-body .sub-label {
-    color: #25272A;
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 30px;
+  color: #25272a;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
 }
 
-.subscription-widget-box .active+.checkmark {
-    width: 23px;
-    height: 23px;
-    background: #ffac21;
-    border-radius: 100px;
-    border: 5px solid #fdebcf;
+.subscription-widget-box .active + .checkmark {
+  width: 23px;
+  height: 23px;
+  background: #ffac21;
+  border-radius: 100px;
+  border: 5px solid #fdebcf;
 }
 
 .selectedPlan-price svg path {
-    fill: #25272abf;
+  fill: #25272abf;
 }
 
 .subscription-widget-box .checkmark {
-    position: absolute;
-    left: 0;
-    z-index: -1;
-    top: 4px;
+  position: absolute;
+  left: 0;
+  z-index: -1;
+  top: 4px;
 }
 
 .subscription-selling-plan {
-    border: 2px solid #E6EDFF;
-    padding: 0px;
-    border-radius: 18px;
-    position: relative;
+  border: 2px solid #e6edff;
+  padding: 0px;
+  border-radius: 18px;
+  position: relative;
 }
 
 #entries-plans {
-    display: flex;
-    gap: 15px;
-    justify-content: normal;
+  display: flex;
+  gap: 15px;
+  justify-content: normal;
 }
 
 #entries-plans input[type="radio"],
-.plan-levels input[type="radio"]
- {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+.plan-levels input[type="radio"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
-.onetime-selling-plan, .level-plan {
-    border: 2px solid #E6EDFF;
-    border-radius: 18px;
-    position: relative;
+.onetime-selling-plan,
+.level-plan {
+  border: 2px solid #e6edff;
+  border-radius: 18px;
+  position: relative;
 }
 
 .subscription-body .var-entries {
-    position: relative;
-    line-height: normal;
+  position: relative;
+  line-height: normal;
 }
 
 .subscription-body .var-entries:before {
-    content: "";
-    background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/1f381.svg?v=1734340474);
-    width: 15px;
-    height: 15px;
-    background-size: contain;
-    position: absolute;
-    left: 0px;
-    top: 0;
-    background-repeat: no-repeat;
+  content: "";
+  background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/1f381.svg?v=1734340474);
+  width: 15px;
+  height: 15px;
+  background-size: contain;
+  position: absolute;
+  left: 0px;
+  top: 0;
+  background-repeat: no-repeat;
 }
 
-.onetime-selling-plan label, .level-plan label {
-    display: flex;
-    align-items: center;
-    /* gap: 5px; */
-    flex-direction: column;
-    cursor: pointer;
-    padding: 10px 15px;
+.onetime-selling-plan label,
+.level-plan label {
+  display: flex;
+  align-items: center;
+  /* gap: 5px; */
+  flex-direction: column;
+  cursor: pointer;
+  padding: 10px 15px;
 }
 
 .onetime-selling-plan span,
 .level-plan span,
 .subscription-selling-plan span {
-    margin: 0;
+  margin: 0;
 }
 
 .var-price {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 div#subscription-plans {
-    display: grid;
-    gap: 20px;
-    margin-top: 40px;
-    grid-template-columns: 1fr 1fr;
+  display: grid;
+  gap: 20px;
+  margin-top: 40px;
+  grid-template-columns: 1fr 1fr;
 }
 
 .onetime-selling-plan label input,
 .level-plan label input {
-    position: relative !important;
-    top: 4px !important;
+  position: relative !important;
+  top: 4px !important;
 }
 
 .onetime-selling-plan.active,
 .level-plan.active,
 .subscription-selling-plan.active {
-    border-color: transparent;
+  border-color: transparent;
 }
 
 #subscription-app-block h3 {
-    font-weight: 600;
-    margin: 0 0 4px;
+  font-weight: 600;
+  margin: 0 0 4px;
 }
 
 .subscription-widget-box p {
-    line-height: 22px;
+  line-height: 22px;
 }
 
 .subscription-selling-plan label {
-    gap: 15px;
-    padding: 25px 20px;
-    cursor: pointer;
-    align-items: flex-start;
-    justify-content: space-between;
-    display: grid;
-    grid-template-columns: 1fr;
+  gap: 15px;
+  padding: 25px 20px;
+  cursor: pointer;
+  align-items: flex-start;
+  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 body .ticket-details .var-entries {
-    padding-left: 24px;
-    text-align: left;
-    align-self: center;
-    color: rgb(37 39 42 / 70%);
-    font-weight: 500;
-    font-size: 14px;
-    letter-spacing: normal;
-    border-bottom: 1px solid #e7edff;
-    padding-bottom: 10px;
+  padding-left: 24px;
+  text-align: left;
+  align-self: center;
+  color: rgb(37 39 42 / 70%);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: normal;
+  border-bottom: 1px solid #e7edff;
+  padding-bottom: 10px;
 }
 
 .ticket-details {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
 }
 
 .plan-radio div {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding-bottom: 3px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 3px;
 }
 
 .subscription-selling-plan .var-price,
 .onetime-selling-plan .var-price {
-    font-size: 25px;
-    color: #000;
-    text-align: end;
-    line-height: 30px;
+  font-size: 25px;
+  color: #000;
+  text-align: end;
+  line-height: 30px;
 }
 
 .onetime-selling-plan .var-entries {
-    text-align: center;
-    font-weight: 700;
-    color: #3970ff;
-    font-size: 15px;
+  text-align: center;
+  font-weight: 700;
+  color: #3970ff;
+  font-size: 15px;
 }
 
 .subscription-selling-plan .var-entries {
-    text-align: center;
-    font-weight: 700;
-    font-size: 13px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
 }
 
-.onetime-selling-plan label>div {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    row-gap: 10px;
+.onetime-selling-plan label > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  row-gap: 10px;
 }
 
-.onetime-selling-plan label>div .var-price {
-    font-size: 40px;
-    color: #000;
-    text-align: center;
-    line-height: normal;
+.onetime-selling-plan label > div .var-price {
+  font-size: 40px;
+  color: #000;
+  text-align: center;
+  line-height: normal;
 }
 
-.onetime-selling-plan label>div .var-entries {
-    text-align: center;
-    font-weight: 700;
-    font-size: 16px;
+.onetime-selling-plan label > div .var-entries {
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
 }
 
 /* .oneTime-body .radio-wrapper-27 input[type=radio] {
@@ -397,117 +400,114 @@ body .ticket-details .var-entries {
 } */
 
 .oneTime-body .oneTime-widget-box {
-    margin-top: 26px;
-    display: block;
+  margin-top: 26px;
+  display: block;
 }
 
 .oneTime-body .oneTime-widget-box h3,
 .subscription-body .subscription-widget-box h3 {
-    font-size: 22px;
+  font-size: 22px;
 }
 
 /****************************/
 .subscription-manage {
-    width: 170px;
-    height: 150px;
-    border: 1px solid black;
-    display: block !important;
-    padding: .8rem .8rem;
-    background-color: red;
-    /* background: linear-gradient(157.12deg, rgba(102, 255, 231, 1) 5.19%, rgba(67, 241, 227, 1) 17.72%, rgba(168, 255, 230, 1) 26.59%, rgba(203, 255, 171, 1) 43.71%, rgba(245, 245, 245, 1) 66.32%, rgba(255, 255, 255, 0) 95.61%); */
-    color: white !important;
-    cursor: pointer;
+  width: 170px;
+  height: 150px;
+  border: 1px solid black;
+  display: block !important;
+  padding: 0.8rem 0.8rem;
+  background-color: red;
+  /* background: linear-gradient(157.12deg, rgba(102, 255, 231, 1) 5.19%, rgba(67, 241, 227, 1) 17.72%, rgba(168, 255, 230, 1) 26.59%, rgba(203, 255, 171, 1) 43.71%, rgba(245, 245, 245, 1) 66.32%, rgba(255, 255, 255, 0) 95.61%); */
+  color: white !important;
+  cursor: pointer;
 }
 
 .subscription-manage svg {
-    display: block;
-    color: white;
-    /* width: 100%; */
+  display: block;
+  color: white;
+  /* width: 100%; */
 }
 
-
-
 thead.sub-table-head tr:hover {
-    color: white;
+  color: white;
 }
 
 .gradiant-text-value {
-    background: linear-gradient(87.8deg, #3970ff 62.02%, #eb6ac6 95.92%);
-    color: #fff;
-    /* background-clip: text; */
-    font-size: 11px;
-    line-height: normal;
-    font-weight: 700;
-    padding-left: 0;
-    line-height: normal !important;
-    position: absolute;
-    top: -16px;
-    right: 0;
-    left: 0;
-    margin: 0 auto;
-    width: max-content;
-    border-radius: 8px;
-    padding: 6px 12px;
-    z-index: 1;
+  background: linear-gradient(87.8deg, #3970ff 62.02%, #eb6ac6 95.92%);
+  color: #fff;
+  /* background-clip: text; */
+  font-size: 11px;
+  line-height: normal;
+  font-weight: 700;
+  padding-left: 0;
+  line-height: normal !important;
+  position: absolute;
+  top: -16px;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  width: max-content;
+  border-radius: 8px;
+  padding: 6px 12px;
+  z-index: 1;
 }
 
 span.var-entries {
-    display: block;
-    min-width: 70px;
+  display: block;
+  min-width: 70px;
 }
 
 .subscription-body ul#widget-list li .gradiant-text-value {
-    font-size: 11px;
+  font-size: 11px;
 }
 
 .ticket_conatiner span svg,
 .date_conatiner span svg {
-    width: 25px;
-    height: 25px;
-    margin-right: 10px;
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
 }
 
 .ticket_conatiner span,
 .date_conatiner span {
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    gap: 5px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 5px;
 }
 
 .ticket_conatiner strong,
 .date_conatiner strong {
-    color: #000;
-    font-size: 16px;
+  color: #000;
+  font-size: 16px;
 }
 
 .ticket_conatiner {
-    border-left: 1px solid rgb(143 143 143);
+  border-left: 1px solid rgb(143 143 143);
 }
 
 .date_conatiner .date,
 .ticket_conatiner .ticket {
-    font-size: 14px;
-    color: #4f4f4f;
+  font-size: 14px;
+  color: #4f4f4f;
 }
 
 /******* radio styling start here ****/
 
 .radio-wrapper-27 {
-    display: flex;
-    align-items: center;
-    --bc: 27.8078% .029596 256.847952;
+  display: flex;
+  align-items: center;
+  --bc: 27.8078% 0.029596 256.847952;
 }
 
 .radio-wrapper-27 label {
-    padding-left: .6em;
-    font-size: .875rem;
-    line-height: 1.25rem;
-    --tw-text-opacity: 1;
-    color: red;
+  padding-left: 0.6em;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: red;
 }
-
 
 /* .radio-wrapper-27 input[type=radio] {
     margin: 0;
@@ -545,9 +545,9 @@ span.var-entries {
 } */
 
 .plan-radio {
-    display: block;
-    flex-direction: column;
-    row-gap: 5px;
+  display: block;
+  flex-direction: column;
+  row-gap: 5px;
 }
 
 /* .radio-wrapper-27 input[type=radio]:checked, .radio-wrapper-27 input[type=radio][aria-checked=true] {
@@ -560,185 +560,208 @@ span.var-entries {
 } */
 
 @keyframes radiomark-27 {
-    0% {
-        box-shadow: 0 0 0 12px oklch(var(--b1) /1) inset, 0 0 0 12px oklch(var(--b1) /1) inset;
-    }
+  0% {
+    box-shadow:
+      0 0 0 12px oklch(var(--b1) / 1) inset,
+      0 0 0 12px oklch(var(--b1) / 1) inset;
+  }
 
-    50% {
-        box-shadow: 0 0 0 3px oklch(var(--b1) /1) inset, 0 0 0 3px oklch(var(--b1) /1) inset;
-    }
+  50% {
+    box-shadow:
+      0 0 0 3px oklch(var(--b1) / 1) inset,
+      0 0 0 3px oklch(var(--b1) / 1) inset;
+  }
 
-    100% {
-        box-shadow: 0 0 0 4px oklch(var(--b1) /1) inset, 0 0 0 4px oklch(var(--b1) /1) inset;
-    }
+  100% {
+    box-shadow:
+      0 0 0 4px oklch(var(--b1) / 1) inset,
+      0 0 0 4px oklch(var(--b1) / 1) inset;
+  }
 }
-
 
 .subscription-selling-plan.active:after,
 .onetime-selling-plan.active:after,
-.level-plan.active:after{
-    content: "";
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background: linear-gradient(45deg, #FFBE53, #FF9F00) border-box;
-    mask: linear-gradient(#ffffff 0 0) padding-box, linear-gradient(#ffffff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    position: absolute;
-    width: 100%;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
+.level-plan.active:after {
+  content: "";
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: linear-gradient(45deg, #ffbe53, #ff9f00) border-box;
+  mask:
+    linear-gradient(#ffffff 0 0) padding-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
 }
 
 .currancy-symbol {
-    font-size: 25px;
-    align-self: end;
+  font-size: 25px;
+  align-self: end;
 }
 
 .var-price {
-    display: flex;
+  display: flex;
 }
 
 .dollar-rate {
-    font-size: 40px;
-    line-height: 40px;
+  font-size: 40px;
+  line-height: 40px;
 }
 
 #btn-best-deal:after {
-    content: "";
-    position: absolute;
-    right: -13px;
-    top: -13px;
-    border-right: 13px solid #ff000000;
-    border-bottom: 13px solid #CA329E;
-    border-top: 13px solid #00000000;
-    height: auto;
-    z-index: 0;
+  content: "";
+  position: absolute;
+  right: -13px;
+  top: -13px;
+  border-right: 13px solid #ff000000;
+  border-bottom: 13px solid #ca329e;
+  border-top: 13px solid #00000000;
+  height: auto;
+  z-index: 0;
 }
 
 #btn-best-deal:before {
-    content: "";
-    position: absolute;
-    left: -10px;
-    top: 4px;
-    border-right: 10px solid #1a55f000;
-    border-bottom: 10px solid #b488a800;
-    border-top: 10px solid #cc5d5d00;
-    border-left: 10px solid #1A55F0;
-    z-index: 0;
-    transform: rotate(45deg);
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 4px;
+  border-right: 10px solid #1a55f000;
+  border-bottom: 10px solid #b488a800;
+  border-top: 10px solid #cc5d5d00;
+  border-left: 10px solid #1a55f0;
+  z-index: 0;
+  transform: rotate(45deg);
 }
 
 .subscription-body ul#widget-list li#description {
-    padding-left: 24px;
+  padding-left: 24px;
 }
 
 .subscription-body .subscription-selling-plan ul#widget-list li:before {
-    background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Frame_525.png?v=1735898030);
+  background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Frame_525.png?v=1735898030);
 }
 
-.subscription-body .subscription-selling-plan ul#widget-list li#description:before {
-    background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Frame_523.png?v=1735898031);
+.subscription-body
+  .subscription-selling-plan
+  ul#widget-list
+  li#description:before {
+  background-image: url(https://cdn.shopify.com/s/files/1/0905/4086/7922/files/Frame_523.png?v=1735898031);
 }
 
 .selectTime {
-    width: 100%;
-    border-radius: 10px;
-    padding: 5px;
+  width: 100%;
+  border-radius: 10px;
+  padding: 5px;
 }
-
 
 /***count down style*****/
 .countdown-main-div {
-    position: absolute;
-    /* border: 1px solid black; */
-    border-radius: 5px;
-    /* background-color: #fff; */
-    color: black;
-    width: 40%;
-    z-index: 999;
-    top: -30px;
-    left: 30%;
+  position: absolute;
+  /* border: 1px solid black; */
+  border-radius: 5px;
+  /* background-color: #fff; */
+  color: black;
+  width: 40%;
+  z-index: 999;
+  top: -30px;
+  left: 30%;
 }
 
 .countdown,
 .show-timer-div {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    column-gap: 10px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  column-gap: 10px;
 }
 
 .countdown p {
-    font-size: medium;
+  font-size: medium;
 }
 
 .time {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    /* border: 2px solid white; */
-    border-radius: 5px;
-    padding: 5px;
-    margin: 5px 0;
-    color: white;
-    background-color: #f22600;
-    width: 55px;
-    font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  /* border: 2px solid white; */
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px 0;
+  color: white;
+  background-color: #f22600;
+  width: 55px;
+  font-weight: bold;
 }
 
-
 .list-countdown-main-div {
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: #fff;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #fff;
 }
 
 .onetime-purchase,
 .subscription-purchase {
-    border: 2px solid white;
-    width: 70%;
-    padding: .8rem;
-    margin: 10px;
-    display: flex;
-    border-radius: 20px;
+  border: 2px solid white;
+  width: 70%;
+  padding: 0.8rem;
+  margin: 10px;
+  display: flex;
+  border-radius: 20px;
 }
 
 .oneTime-widget-box h5,
 #show-inventory,
-.other-options h5, 
-#entries-plans{
-    margin: 15px;
+.other-options h5,
+#entries-plans {
+  margin: 15px;
 }
 
 .onetime-purchase label,
 .subscription-purchase label {
-    width: 100%
+  width: 100%;
 }
 
 .label {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 #product-inventory {
-    padding: 5px 15px;
-    background-color: red;
-    border-radius: 15px;
+  padding: 5px 15px;
+  background-color: red;
+  border-radius: 15px;
 }
-.var-pill-wrapper{
-    display: flex;
-    gap: 10px;
+.var-pill-wrapper {
+  display: flex;
+  gap: 10px;
 }
-.additional-detail{
-        border: 1px solid white;
-        width: 70%;
-        margin: 1rem;
-        border-radius: 10px;
-        line-height: 1.5;
-        display: none;
-    }
+.additional-detail {
+  border: 1px solid white;
+  width: 70%;
+  margin: 1rem;
+  border-radius: 10px;
+  line-height: 1.5;
+  display: none;
+  background: white;
+  color: #000;
+}
+.additional-detail h5 {
+  color: #000;
+  margin :0rem 2.5rem;
+}
+.delivery-freq-inner {
+  display: flex;
+  justify-content: space-between;
+  border: 2px solid black;
+  border-radius: 5px;
+  align-items: center;
+  padding: 0 1rem;
+  margin: 0.5rem 2.5rem;
+}

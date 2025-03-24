@@ -57,7 +57,7 @@ export const createPlan = async (admin, newPlanDetail) => {
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
-    endIST = toIST(endIST);
+    // endIST = toIST(endIST);
 
     let dateRange = {
       start: startIST,
@@ -301,20 +301,24 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
 
   try {
     const { shop } = admin.rest.session;
-    console.log("data--", data)
+    // console.log("data--", data)
     let dbproductlist = data?.dbProducts;
-    console.log("dbproductlist==", dbproductlist)
+    // console.log("dbproductlist==", dbproductlist)
     const date = newPlanDetails?.offerValidity;
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
+    console.log("after add 5:30hrs start date=", startIST)
+    console.log("after add 5:30hrs end date=", endIST)
     endIST.setHours(23, 59, 59, 999);
-    endIST = toIST(endIST);
+    // endIST = toIST(endIST);
 
     let dateRange = {
       start: startIST,
       end: endIST,
     };
 
+    console.log("dateRange==", dateRange?.start)
+    console.log("dateRange==", dateRange?.end)
     let storefrontDescription = {
       dateRange: dateRange,
       raffleType: newPlanDetails?.raffleType,
@@ -940,7 +944,7 @@ export const getExportData = async (admin, data, date) => {
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
-    endIST = toIST(endIST);
+    // endIST = toIST(endIST);
 
     let dateRange = {
       $gte: startIST,
@@ -1215,10 +1219,6 @@ export const setDefaultTemplate = async (shop) => {
           term: "{{productName}}",
           description:
             "This specifies the name of the product for which the order is placed.",
-        },
-        {
-          term: "{{date}}",
-          description: "date start or end date",
         },
         {
           term: "{{footer}}",
