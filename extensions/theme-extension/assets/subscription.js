@@ -62,7 +62,7 @@ if (subscription_page_type == "product") {
     filtered_selling_plan_groups?.forEach((item) => {
       allSellingPlans?.push(...item?.selling_plans);
     });
-    console.log("allSellingPlans==", allSellingPlans);
+    // console.log("allSellingPlans==", allSellingPlans);
   }
   productJson?.selling_plan_groups?.map((itm) => {
     let name = itm?.name?.toLowerCase();
@@ -204,13 +204,46 @@ if (subscription_page_type == "product") {
       .find((x) => x.type === "currency");
     return symbol && symbol.value;
   };
+  const setPriceAndEntries = (plan) => {
+    // let entries = getEntries(plan?.description);
+    // selectedEntries = entries;
+    // if (purchaseOption == "oneTime-purchase") {
+    //   oneTimeSelectedPlan = plan;
+    //   subscriptionSelectedPlan = otherPlans?.filter((itm) =>
+    //     itm?.name?.includes(`-entries-${entries}`),
+    //   )[0];
+    // } else {
+    //   subscriptionSelectedPlan = plan;
+    //   oneTimeSelectedPlan = oneTimePlans?.filter((itm) =>
+    //     itm?.name?.includes(`-entries-${entries}`),
+    //   )[0];
+    // }
+    // oneTimePrice = oneTimeSelectedPlan?.price_adjustments[0]?.value / 100;
+    subscriptionPrice =
+      plan?.price_adjustments[0]?.value / 100;
+    // let oneTimePriceDiv =
+    //   document.getElementsByClassName("oneTimePrice")[0];
+    let subscriptionPriceDiv =
+      document.getElementsByClassName("subscriptionPrice")[0];
+    // oneTimePriceDiv.innerText = oneTimePrice
+    //   ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}`
+    //   : "";
+    subscriptionPriceDiv.innerText = subscriptionPrice
+      ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
+      : "";
 
+  };
   const handleOnetimePlan = (variant) => {
     selectedPlan = ''
     cartClear();
     selectedEntries = variant
     sendOnetimeDataToCart(variant)
+      let plan = otherPlans?.filter((itm) =>
+        itm?.name?.includes(`-entries-${selectedEntries}`),
+      )[0];
+    setPriceAndEntries(plan)
   };
+  
   if (allSellingPlans?.length == 1) {
     if (allSellingPlans) {
       purchaseOption = "subscription-purchase"
@@ -228,43 +261,15 @@ if (subscription_page_type == "product") {
 
       commanData = JSON.parse(allSellingPlans[0]?.description);
 
-      const setPriceAndEntries = (plan) => {
-        let entries = getEntries(plan?.description);
-        selectedEntries = entries;
-        if (purchaseOption == "oneTime-purchase") {
-          oneTimeSelectedPlan = plan;
-          subscriptionSelectedPlan = otherPlans?.filter((itm) =>
-            itm?.name?.includes(`-entries-${entries}`),
-          )[0];
-        } else {
-          subscriptionSelectedPlan = plan;
-          oneTimeSelectedPlan = oneTimePlans?.filter((itm) =>
-            itm?.name?.includes(`-entries-${entries}`),
-          )[0];
-        }
-        oneTimePrice = oneTimeSelectedPlan?.price_adjustments[0]?.value / 100;
-        subscriptionPrice =
-          subscriptionSelectedPlan?.price_adjustments[0]?.value / 100;
-        let oneTimePriceDiv =
-          document.getElementsByClassName("oneTimePrice")[0];
-        let subscriptionPriceDiv =
-          document.getElementsByClassName("subscriptionPrice")[0];
-        oneTimePriceDiv.innerText = oneTimePrice
-          ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}`
-          : "";
-        subscriptionPriceDiv.innerText = subscriptionPrice
-          ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
-          : "";
-
-      };
+    
       const setCartProperties = () => {
         subscriptionSelectedPlan = otherPlans?.filter((itm) =>
           itm?.name?.includes(`-entries-${selectedEntries}`),
         )[0];
-        console.log("In Cart properties change")
-        console.log("subscriptionSelectedPlan==", subscriptionSelectedPlan)
-        console.log("purchaseOption==", purchaseOption)
-        console.log("selectedEntries==", selectedEntries)
+        // console.log("In Cart properties change")
+        // console.log("subscriptionSelectedPlan==", subscriptionSelectedPlan)
+        // console.log("purchaseOption==", purchaseOption)
+        // console.log("selectedEntries==", selectedEntries)
         if (purchaseOption == "oneTime-purchase") {
           handleOnetimePlan(selectedEntries)
         } else {
@@ -421,6 +426,7 @@ if (subscription_page_type == "product") {
         main.className = "countdown-main-div";
         mediaGallery.appendChild(main);
         showWidget();
+        
         function updateCountdown() {
           const now = new Date();
           const timeDifference = offerValidity - now;

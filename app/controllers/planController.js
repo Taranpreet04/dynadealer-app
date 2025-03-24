@@ -1221,10 +1221,6 @@ export const setDefaultTemplate = async (shop) => {
             "This specifies the name of the product for which the order is placed.",
         },
         {
-          term: "{{date}}",
-          description: "date start or end date",
-        },
-        {
           term: "{{footer}}",
           description: "Email footer like contact or address.",
         },
