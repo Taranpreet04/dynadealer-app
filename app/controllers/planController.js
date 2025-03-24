@@ -310,7 +310,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     console.log("after add 5:30hrs start date=", startIST)
     console.log("after add 5:30hrs end date=", endIST)
     endIST.setHours(23, 59, 59, 999);
-    endIST = toIST(endIST);
+    // endIST = toIST(endIST);
 
     let dateRange = {
       start: startIST,
