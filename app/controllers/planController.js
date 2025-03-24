@@ -57,7 +57,7 @@ export const createPlan = async (admin, newPlanDetail) => {
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
-    endIST = toIST(endIST);
+    // endIST = toIST(endIST);
 
     let dateRange = {
       start: startIST,
@@ -944,7 +944,7 @@ export const getExportData = async (admin, data, date) => {
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
-    endIST = toIST(endIST);
+    // endIST = toIST(endIST);
 
     let dateRange = {
       $gte: startIST,
