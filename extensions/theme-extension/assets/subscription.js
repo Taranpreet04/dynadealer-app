@@ -223,14 +223,16 @@ if (subscription_page_type == "product") {
       plan?.price_adjustments[0]?.value / 100;
     // let oneTimePriceDiv =
     //   document.getElementsByClassName("oneTimePrice")[0];
-    let subscriptionPriceDiv =
-      document.getElementsByClassName("subscriptionPrice")[0];
-    // oneTimePriceDiv.innerText = oneTimePrice
-    //   ? `${getCurrencySymbol(activeCurrency)}${oneTimePrice}`
-    //   : "";
-    subscriptionPriceDiv.innerText = subscriptionPrice
-      ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
-      : "";
+    let subscriptionPriceDiv = document.getElementsByClassName("subscriptionPrice");
+    console.log("subscriptionPriceDiv==", subscriptionPriceDiv);
+
+    // Convert HTMLCollection to an array and loop over it
+    Array.from(subscriptionPriceDiv).forEach((div) => {
+      div.innerText = subscriptionPrice
+        ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
+        : "";
+    });
+
 
   };
   const handleOnetimePlan = (variant) => {
@@ -238,12 +240,12 @@ if (subscription_page_type == "product") {
     cartClear();
     selectedEntries = variant
     sendOnetimeDataToCart(variant)
-      let plan = otherPlans?.filter((itm) =>
-        itm?.name?.includes(`-entries-${selectedEntries}`),
-      )[0];
+    let plan = otherPlans?.filter((itm) =>
+      itm?.name?.includes(`-entries-${selectedEntries}`),
+    )[0];
     setPriceAndEntries(plan)
   };
-  
+
   if (allSellingPlans?.length == 1) {
     if (allSellingPlans) {
       purchaseOption = "subscription-purchase"
@@ -261,7 +263,7 @@ if (subscription_page_type == "product") {
 
       commanData = JSON.parse(allSellingPlans[0]?.description);
 
-    
+
       const setCartProperties = () => {
         subscriptionSelectedPlan = otherPlans?.filter((itm) =>
           itm?.name?.includes(`-entries-${selectedEntries}`),
@@ -326,6 +328,13 @@ if (subscription_page_type == "product") {
                                 <li>Cheapest and most affective way to win.</li>
                                 <li>Change pause and cancel any time.</li>
                               </ul>
+                              <div class="delivery-freq">
+                              <h5>Dilevery Frequency</h5>
+                              <div class="delivery-freq-inner">
+                              <p>Every 1 month</p>
+                              <span class='subscriptionPrice'></span></div>
+                              </div>
+                              </div>
                             </div>
                     </div>
                 </div>
