@@ -424,9 +424,9 @@ if (subscription_page_type == "product") {
 
         const main = document.createElement("div");
         main.className = "countdown-main-div";
-        mediaGallery.appendChild(main);
+        // mediaGallery.appendChild(main); //hide counter
         showWidget();
-        
+
         function updateCountdown() {
           const now = new Date();
           const timeDifference = offerValidity - now;
