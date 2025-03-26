@@ -318,14 +318,14 @@ if (subscription_page_type == "product") {
                             <input type="radio" id="subscription-purchase"  value='subscription-purchase' name="purchase-option"
               onchange='handlePurchaseType(event)' />
                             <label for="subscription-purchase">
-                            <div  class='label'>Subscription and Save Purchase <span class='subscriptionPrice'></span></div></label>
+                            <div  class='label'>Subscribe and Save Purchase <span class='subscriptionPrice'></span></div></label>
                             </div>
                             <div class='additional-detail'>
                               <ul class='inner-detail'>
-                                <li><span id='entry'></span> entry into every giveaway.</li>
+                                <li><span id='entry'></span> into every giveaway.</li>
                                 <li>Secure your name into every giveaway.</li>
                                 <li>Never miss your opportunity.</li>
-                                <li>Cheapest and most affective way to win.</li>
+                                <li>Cheapest and most effective way to win.</li>
                                 <li>Change pause and cancel any time.</li>
                               </ul>
                               <div class="delivery-freq">
@@ -369,7 +369,7 @@ if (subscription_page_type == "product") {
       const updateEntries = () => {
         let span = document.getElementById('entry')
         if (span) {
-          span.innerText = selectedEntries
+          span.innerText = `${selectedEntries} ${Number(selectedEntries) > 1 ? "entries" : "entry"}`
         }
       }
       const handlePlanChange = (newPlan) => {
