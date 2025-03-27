@@ -2,6 +2,8 @@ import nodemailer from 'nodemailer'
 import {  templateModel } from './schema';
 export async function sendOrderEmail(data) {
     try {
+        console.log("data==", data)
+        console.log("data?.products[0]?.productName==", data?.products[0]?.productName)
         let template = await templateModel.findOne({shop: data?.shop}, {orderTemplate:1, shop: 1})
        
         let interval=data?.billing_policy?.interval.toUpperCase()
@@ -34,13 +36,25 @@ export async function sendOrderEmail(data) {
             {{rows}}
         </tbody>
     </table>`
-                let html= template?.orderTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
-                html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
-                html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
-                html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
-                html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
-                html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
-                html= html?.replace('{{rows}}', `${rows}`);
+    let html
+    if(interval=="ONETIME"){
+        html= template?.orderTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
+        html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
+        html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
+        html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
+        html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
+        html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+        html= html?.replace('{{rows}}', `${rows}`);
+    }else{
+        html= template?.orderTemplate?.monthlyHtml?.replace('{{customerName}}', `${data?.customerName}`);
+        html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
+        html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
+        html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
+        html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
+        html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
+        html= html?.replace('{{rows}}', `${rows}`);
+    }
+           
         let mailOptions = {
             from: "Membership App",
             to: data?.customerEmail,

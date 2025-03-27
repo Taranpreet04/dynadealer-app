@@ -135,7 +135,7 @@ export const action = async ({ request }) => {
             futureEntries: planDetails?.futureEntries,
           },
           billing_policy: billing_policy,
-          products: products[0],
+          products: products,
           drawIds: drawIds,
           status:
             payload?.billing_policy?.interval == "day" ? "ONETIME" : "ACTIVE",
@@ -157,7 +157,7 @@ export const action = async ({ request }) => {
             cusRes?.data?.customer?.lastName,
           customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
-          products: products[0],
+          products: products,
           billing_policy: billing_policy,
           entries: planName.split("-entries-")[1],
           planUpdateDetail: {

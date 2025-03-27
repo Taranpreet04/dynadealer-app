@@ -59,7 +59,7 @@ export default function EmailCustomizer() {
     const [mailBtnLoader, setMailBtnLoader] = useState(false);
     const [contracts, setContracts] = useState([]);
     const [winnerAccount, setWinnerAccount] = useState([]);
-    const [winnerTicket, setWinnerTicket] = useState('');
+    const [orderTemplateFor, setOrderTemplateFor] = useState('onetime');
     const [reCheckWinner, setReCheckWinner] = useState(false);
     const submit = useSubmit()
     useEffect(() => {
@@ -69,8 +69,8 @@ export default function EmailCustomizer() {
             let details = []
             loaderData?.contractDetails?.map((itm) => {
                 details?.push({
-                    label: `${itm?.customerName} (${itm?.contractId})`,
-                    value: `${itm?.customerName} (${itm?.contractId})`
+                    label: `${itm?.customerName} (${itm?.orderId})`,
+                    value: `${itm?.customerName} (${itm?.orderId})`
                 })
             })
             setWinnerAccount(details[0]?.value)
@@ -78,16 +78,22 @@ export default function EmailCustomizer() {
         }
     }, [loaderData])
     useEffect(() => {
+        console.log("actionData==", actionData)
         if (actionData) {
             setBtnLoader(false)
             setMailBtnLoader(false)
+            if(actionData?.success && actionData?.result){
+                shopify.toast.show(actionData?.result)
+            }
         }
     }, [actionData])
     const handleEditorChange = (e) => {
      
         let data = templates
-        tabSelected == 0 ?
+        tabSelected == 0 && orderTemplateFor=='onetime'?
             (data.orderTemplate.html = e.target.value)
+            :tabSelected == 0 && orderTemplateFor=='month'?
+            (data.orderTemplate.monthlyHtml = e.target.value)
             : tabSelected == 1 ? (data.appliedTemplate.html = e.target.value)
                 : tabSelected == 2 ? (data.winningTemplate.html = e.target.value)
                     : tabSelected == 3 ? (data.announcementTemplate.html = e.target.value) : ''
@@ -145,7 +151,8 @@ export default function EmailCustomizer() {
 
     const sendWinnerMail = () => {
         setReCheckWinner(false)
-        let winnerDetail = loaderData?.contractDetails?.find(itm => winnerAccount == `${itm?.customerName} (${itm?.contractId})`)
+        let winnerDetail = loaderData?.contractDetails?.find(itm => winnerAccount == `${itm?.customerName} (${itm?.orderId})`)
+        console.log("winnerDetail==", winnerDetail)
         let formData = {
             ...winnerDetail,
             winner: true,
@@ -208,6 +215,17 @@ export default function EmailCustomizer() {
                             <Text as="h2" variant="headingSm">
                                 Settings
                             </Text>
+                           { tabSelected == 0 &&
+                            <Select
+                                        label="Choose body for"
+                                        options={[
+                                            {label:'Onetime', value: 'onetime'},
+                                            {label:'Monthly', value: 'month'}
+                                        ]}
+                                        value={orderTemplateFor}
+                                        onChange={(value) => setOrderTemplateFor(value)}
+                                    />
+                           }
                             <TextField
                                 label="Email Subject"
                                 value={tabSelected == 0 ? templates?.orderTemplate?.subject
@@ -250,7 +268,8 @@ export default function EmailCustomizer() {
                         </Text>
                         <EditorProvider>
                             <Editor
-                                value={tabSelected == 0 ? templates?.orderTemplate?.html
+                                value={tabSelected == 0 && orderTemplateFor=='onetime' ? templates?.orderTemplate?.html
+                                    :tabSelected == 0 && orderTemplateFor=='month' ? templates?.orderTemplate?.monthlyHtml
                                     : tabSelected == 1 ? templates?.appliedTemplate?.html
                                         : tabSelected == 2 ? templates?.winningTemplate?.html 
                                         : tabSelected == 3 ? templates?.announcementTemplate?.html : ''}

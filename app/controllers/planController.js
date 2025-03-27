@@ -1069,8 +1069,37 @@ export const setDefaultTemplate = async (shop) => {
            
             <pre>
             {{footer}}
-          </pre>`,
+          </pre>
+          
+          `,
+          monthlyHtml:`p>Hi {{customerName}},</p>
+            <p>Thank you for joining the DynaDealer community and becoming a member!</p>
+            <p>Members get automatic monthly entries to win our bikes. Your entries NEVER EXPIRE.</p>
+            <p>Don't like the current giveaway bike? You can pool your entries in your dashboard and assign them to new giveaway bikes as we launch them.</p>
+            <p>Members also get 10% off ALL Hard Parts and Apparel listed for sale on <a href="https://dynadealer.com/" style="color: blue; text-decoration: underline;">http://DynaDealer.com</a>.</p>
+            <p>To access your member dashboard and manage your monthly entries, you'll need to create an account.</p>
+            <p>Click <a href='https://dynadealer.com/account'  style="color: blue; text-decoration: underline;">HERE</a> to create your account now.</p>
+            <p>From the dashboard, you will be able to do things like:</p>
+          
+            <ul>
+              <li>Manage your monthly entries</li>
+              <li>Apply entries to current, or new giveaways</li>
+              <li>Change, pause, or cancel your subscription anytime</li>
+            </ul>
+            <p>And don't forget....</p>
+            <ul>
+              <li>Your monthly entries NEVER expire</li>
+              <li>You get FREE Shipping & Delivery</li>
+              <li>You get 10% OFF site-wide on apparel and parts</li>
+            </ul>
 
+            <p>Your have {{drawIdsLength}} chances for winning.</p>
+            <p>Your Entry Numbers are:</p>
+                    {{drawIdsList}}
+         
+            <pre>
+            {{footer}}
+          </pre>`,
       orderMailParameters: [
         {
           term: "{{customerName}}",

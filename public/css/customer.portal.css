@@ -131,9 +131,9 @@ button:disabled{
   padding: 10px;
   margin: 10px;
 }
-.main-active-draws h3{
+/* .main-active-draws h3{
   margin-bottom: .7rem;
-}
+} */
 .active-draw-card p{
   line-height: 1.5;
 }

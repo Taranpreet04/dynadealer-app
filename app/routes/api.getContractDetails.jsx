@@ -24,7 +24,7 @@ export const action = async ({ request }) => {
     console.log("id==", id)
     if (id?.length > 15) {
       const details = await subscriptionContractModel.findOne({ shop , _id: id});
-      console.log("details==", details)
+   
       return new Response(
         JSON.stringify({ message: "success", data: details }),
         {

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for customer porta")
     let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://gsm-floating-fear-activated.trycloudflare.com";
+    // let serverPath = "https://lucky-hawaii-eco-worn.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         Once you apply, you won’t be able to change it.</p>
                     </div>
                    <div id='cancelModalfooter'>
-                        <button class="yesBtn btn" id="yesBtn">Apply</button>
+                        <button class="yesBtn btn" id="yesBtn">Enter</button>
                         <button class="closeBtn btn" id="closeBtn">Cancel</button>
                     </div>
                 </div>`
@@ -511,6 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateProductRows = () => {
         let tbody = document.getElementById("product-row")
         let products = dbData ? contractDetailShopify?.products : contractDetailShopify?.lines?.edges
+        console.log("selectedSubscription==prod", selectedSubscription)
         products?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = index
@@ -521,13 +522,13 @@ document.addEventListener("DOMContentLoaded", () => {
             priceCell.innerText = dbData ? `${currencySymbol}${item?.price}` : `${currencySymbol}${item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount}`
             let entriesCell = document.createElement('td');
             entriesCell.id= 'product-entriesCell'
-            entriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.applied : `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            entriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.applied : `${selectedSubscription?.ticketDetails?.applied}`
             let availableEntriesCell = document.createElement('td');
             availableEntriesCell.id= 'product-availableEntriesCell'
-            availableEntriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.available : `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            availableEntriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.available : `${selectedSubscription?.ticketDetails?.available}`
             let totalEntriesCell = document.createElement('td');
             totalEntriesCell.id= 'product-totalEntriesCell'
-            totalEntriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.total : `${(item?.node?.sellingPlanName?.split('-entries-')[1]) * (item?.node?.quantity)}`
+            totalEntriesCell.innerText = dbData ? contractDetailShopify?.ticketDetails?.total : `${selectedSubscription?.ticketDetails?.total}`
             let totalCell = document.createElement('td');
             // totalCell.id= 'product-totalCell'
             totalCell.innerText = dbData ? `${currencySymbol}${item?.price}` : `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`
@@ -678,26 +679,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateActiveDrawCards = () => {
         let mainDiv = document.getElementById('main-active-draws')
         let h3 = document.createElement('h3')
-        h3.innerText = `We have ${activeDraws?.length} active draws. You can apply now.`
+        h3.innerText = `We have ${activeDraws?.length} active giveaway. You can apply your tickets and enter now!`
         mainDiv.appendChild(h3)
-        let parentCard = document.createElement('div')
-        mainDiv.appendChild(parentCard)
-        parentCard.className = 'draw-cards'
-        activeDraws?.map((product) => {
-            let card = document.createElement('div')
-            parentCard.appendChild(card)
-            card.className = 'active-draw-card'
-            card.id = 'active-draw-card'
-            let p = document.createElement('p')
-            p.innerText = `Active ${product?.title} draw.`
-            let p2 = document.createElement('p')
-            p2.innerText = `Apply your ${product?.raffleType == 'capped' ? product?.spots : ''} entry`
-            let p3 = document.createElement('p')
-            p3.innerText = `Don't miss your chance.`
-            card.appendChild(p)
-            card.appendChild(p2)
-            card.appendChild(p3)
-        })
+        // let parentCard = document.createElement('div')
+        // mainDiv.appendChild(parentCard)
+        // parentCard.className = 'draw-cards'
+        // activeDraws?.map((product) => {
+        //     let card = document.createElement('div')
+        //     parentCard.appendChild(card)
+        //     card.className = 'active-draw-card'
+        //     card.id = 'active-draw-card'
+        //     let p = document.createElement('p')
+        //     p.innerText = `Active ${product?.title} draw.`
+        //     let p2 = document.createElement('p')
+        //     p2.innerText = `Apply your ${product?.raffleType == 'capped' ? product?.spots : ''} entry`
+        //     let p3 = document.createElement('p')
+        //     p3.innerText = `Don't miss your chance.`
+        //     card.appendChild(p)
+        //     card.appendChild(p2)
+        //     card.appendChild(p3)
+        // })
     }
     const selectDraw = () => {
         let mainDiv = document.getElementById('main-active-draws')
@@ -854,8 +855,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     yesBtn ? yesBtn.style.display = 'inline-block' : ''
                                     // okBtn ?  okBtn.innerText= 'Ok': ''
                                     body.innerHTML = `<p>
-                  Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets for <span class="red-bold">${selectedAppliedFor?.productName}</span> draw?
-                Once you apply, you won’t be able to change it.</p>`
+                  Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets to enter <span class="red-bold">${selectedAppliedFor?.productName}</span> raffle?
+                Once you enter, you won’t be able to change it.</p>`
                                 } else {
                                     yesBtn ? yesBtn.style.display = 'none' : ''
                                     //    okBtn?  okBtn.innerText= 'Cancel': ''
@@ -913,8 +914,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                             let body = document.getElementById('cancelModalBody')
                             if (body) {
-                                body.innerHTML = `<p>Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets for <span class="red-bold">${selectedAppliedFor?.productName}</span> draw?
-                Once you apply, you won’t be able to change it.</p>`
+                                body.innerHTML = `<p>Are you sure you want to apply ${selectedAppliedFor?.applyTicketsCount} tickets to enter <span class="red-bold">${selectedAppliedFor?.productName}</span> raffle?
+                Once you enter, you won’t be able to change it.</p>`
                             }
                             modal.style.display = "block";
                             // document.body.classList.add("modal-open");

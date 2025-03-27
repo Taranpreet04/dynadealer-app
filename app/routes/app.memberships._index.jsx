@@ -41,7 +41,7 @@ export default function PlanData() {
   useEffect(() => {
     shopify.loading(true)
     setTableSkel(true)
-    console.log("loaderData?.planDetails==", loaderData?.planDetails)
+  
     loaderData?.planDetails ? setData(loaderData?.planDetails) : ''
     let table = loaderData?.planDetails?.slice(skip, limit)
     if (loaderData?.planDetails?.length > 0 && table?.length <= 0) {
