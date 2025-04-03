@@ -307,8 +307,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     const date = newPlanDetails?.offerValidity;
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
-    console.log("after add 5:30hrs start date=", startIST)
-    console.log("after add 5:30hrs end date=", endIST)
+    // console.log("after add 5:30hrs start date=", startIST)
+    // console.log("after add 5:30hrs end date=", endIST)
     endIST.setHours(23, 59, 59, 999);
     // endIST = toIST(endIST);
 
@@ -317,8 +317,6 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
       end: endIST,
     };
 
-    console.log("dateRange==", dateRange?.start)
-    console.log("dateRange==", dateRange?.end)
     let storefrontDescription = {
       dateRange: dateRange,
       raffleType: newPlanDetails?.raffleType,
@@ -940,16 +938,21 @@ export const getCustomerDataByContractId = async (admin, id) => {
 
 export const getExportData = async (admin, data, date) => {
   try {
-
+    console.log("firstly date", date.start)
+    console.log("firstly date", date.end)
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
-    // endIST = toIST(endIST);
-
+    endIST = toIST(endIST);
+    console.log("after add 5:30hrs start date=", startIST)
+    console.log("after add 5:30hrs end date=", endIST)
+   
     let dateRange = {
       $gte: startIST,
       $lte: endIST,
     };
+    console.log("dateRange==", dateRange?.start)
+    console.log("dateRange==", endIST)
     const matchingDocuments = await subscriptionContractModel.aggregate([
       {
         $match: {
