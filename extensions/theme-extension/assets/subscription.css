@@ -411,23 +411,25 @@ body .ticket-details .var-entries {
 
 /****************************/
 .subscription-manage {
-  width: 170px;
-  height: 150px;
+  width: 100%;
   border: 1px solid black;
-  display: block !important;
-  padding: 0.8rem 0.8rem;
+  display: flex;
+  padding: 10px 10px;
   background-color: red;
   /* background: linear-gradient(157.12deg, rgba(102, 255, 231, 1) 5.19%, rgba(67, 241, 227, 1) 17.72%, rgba(168, 255, 230, 1) 26.59%, rgba(203, 255, 171, 1) 43.71%, rgba(245, 245, 245, 1) 66.32%, rgba(255, 255, 255, 0) 95.61%); */
   color: white !important;
   cursor: pointer;
+  gap: 8px;
+  border-radius: 6px;
 }
 
 .subscription-manage svg {
-  display: block;
-  color: white;
-  /* width: 100%; */
+  width: 26px;
+  height: auto;
 }
-
+.customer.account h1.customer__title {
+  margin: 0;
+}
 thead.sub-table-head tr:hover {
   color: white;
 }
@@ -768,10 +770,47 @@ span.var-entries {
   margin: 0.5rem 2.5rem;
 }
 
-
-/* @media screen and (max-width: 767px){
-  .onetime-purchase,
-.subscription-purchase {
-  width: 100%;
+.subscription-manage:hover{
+  background-color: #fff;
+  }
+  .subscription-manage:hover svg path{
+    stroke: #000;
+  }
+  .subscription-manage:hover h3 {
+    color: #000;
+  }
+  .subscription-manage h3 {
+    margin: 0;
+    font-size: 20px;
 }
-} */
+.customer.account > div {
+  display: flex;
+  border-bottom: 1px solid;
+  padding-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px; 
+}
+.mange-sub-container {
+  order: 2;
+  margin-left: auto;
+}
+@media screen and (max-width: 767px){
+  .subscription-manage svg {
+    width: 24px;
+    height: auto;
+}
+.subscription-manage h3 {
+  font-size: 16px;
+}
+.subscription-manage {
+  width: 100%;
+  padding: 10px 10px;
+}
+.mange-sub-container {
+  justify-content: flex-start;
+}
+.customer.account h1.customer__title {
+  flex: 0 0 100%;
+}
+}

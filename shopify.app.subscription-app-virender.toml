@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://chamber-knock-naked-pork.trycloudflare.com"
+application_url = "https://allow-projector-chip-environments.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_orders,write_orders,read_products,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://chamber-knock-naked-pork.trycloudflare.com/auth/callback",
-  "https://chamber-knock-naked-pork.trycloudflare.com/auth/shopify/callback",
-  "https://chamber-knock-naked-pork.trycloudflare.com/api/auth/callback"
+  "https://allow-projector-chip-environments.trycloudflare.com/auth/callback",
+  "https://allow-projector-chip-environments.trycloudflare.com/auth/shopify/callback",
+  "https://allow-projector-chip-environments.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -30,7 +30,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://chamber-knock-naked-pork.trycloudflare.com/api/subscription"
+url = "https://allow-projector-chip-environments.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
