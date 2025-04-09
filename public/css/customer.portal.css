@@ -411,7 +411,7 @@ body.modal-open {
 
 /*********modal css end*********/
 
-.ticket-details{
+.ticket-details,.already-applied-details{
   margin-top: 3rem;
 }
 #applied-tickets-input{

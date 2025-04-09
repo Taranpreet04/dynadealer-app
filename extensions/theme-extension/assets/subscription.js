@@ -1,7 +1,7 @@
 console.log("js--________");
 
 let serverPath = "https://dynadealersapp.com";
-// let serverPath = "https://allow-projector-chip-environments.trycloudflare.com";
+// let serverPath = "https://mess-belief-eagle-junior.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -62,13 +62,13 @@ if (subscription_page_type == "product") {
     });
     // console.log("allSellingPlans==", allSellingPlans);
   }
-  productJson?.selling_plan_groups?.map((itm) => {
-    let name = itm?.name?.toLowerCase();
-    name?.includes("level") ? (showMemebershipLevels = true) : "";
-    name?.includes("offer for gold membership")
-      ? (goldMembershipOffer = true)
-      : "";
-  });
+  // productJson?.selling_plan_groups?.map((itm) => {
+  //   let name = itm?.name?.toLowerCase();
+  //   name?.includes("level") ? (showMemebershipLevels = true) : "";
+  //   name?.includes("offer for gold membership")
+  //     ? (goldMembershipOffer = true)
+  //     : "";
+  // });
   function capitalize(str) {
     return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   }
@@ -241,7 +241,9 @@ if (subscription_page_type == "product") {
     let plan = otherPlans?.filter((itm) =>
       itm?.name?.includes(`-entries-${selectedEntries}`),
     )[0];
-    setPriceAndEntries(plan)
+    if (plan) {
+      setPriceAndEntries(plan)
+    }
   };
 
   if (allSellingPlans?.length == 1) {
@@ -249,13 +251,38 @@ if (subscription_page_type == "product") {
       purchaseOption = "subscription-purchase"
       sendPlanDataToCart(allSellingPlans[0]);
     }
-  } else if (productJson?.variants?.length === 1) {
-    let variant = productJson?.variants[0]?.title.split(' ')[0]
+  } 
+  // else if (productJson?.variants?.length === 1) {
+  //   let variant = productJson?.variants[0]?.title.split(' ')[0]
+  //   if (Number(variant) > 0) {
+  //     oneTimeMembership = true
+  //     purchaseOption = "oneTime-purchase"
+  //     handleOnetimePlan(variant)
+  //   }
+  // } 
+  else if (productJson?.options?.includes('Entries') && allSellingPlans?.length==0) {
+    // productJson?.variants?.map(vairant=>{
+      if(productJson?.type.toLowerCase()== "bronze"||productJson?.type.toLowerCase()== "silver"||productJson?.type.toLowerCase()== "gold"||productJson?.type.toLowerCase()== "platinum"){
+        oneTimeMembership = true
+      }
+    let data = productJson?.variants[0]
+    let variant
+    if (data?.option1?.toLowerCase()?.includes('entry') || data?.option1?.toLowerCase()?.includes('entries')) {
+      console.log("option1")
+      variant = data?.option1?.split(' ')[0]
+    } else if (data?.option2?.toLowerCase()?.includes('entry') || data?.option2?.toLowerCase()?.includes('entries')) {
+      console.log("option2")
+      variant = data?.option2?.split(' ')[0]
+    } else if (data?.option3?.toLowerCase()?.includes('entry') || data?.option3?.toLowerCase()?.includes('entries')) {
+      console.log("option3")
+      variant = data?.option3?.split(' ')[0]
+    }
+    console.log("entries==", variant)
     if (Number(variant) > 0) {
-      oneTimeMembership = true
       purchaseOption = "oneTime-purchase"
       handleOnetimePlan(variant)
     }
+    // })
   } else {
     if (allSellingPlans?.length > 1) {
 
@@ -266,10 +293,6 @@ if (subscription_page_type == "product") {
         subscriptionSelectedPlan = otherPlans?.filter((itm) =>
           itm?.name?.includes(`-entries-${selectedEntries}`),
         )[0];
-        // console.log("In Cart properties change")
-        // console.log("subscriptionSelectedPlan==", subscriptionSelectedPlan)
-        // console.log("purchaseOption==", purchaseOption)
-        // console.log("selectedEntries==", selectedEntries)
         if (purchaseOption == "oneTime-purchase") {
           handleOnetimePlan(selectedEntries)
         } else {

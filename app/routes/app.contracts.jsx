@@ -75,6 +75,7 @@ export default function ContractData() {
     setDate({ month, year });
   };
   useEffect(() => {
+    let limit=50
     shopify.loading(true);
     setTableSkel(true);
     loaderData?.planDetails
@@ -82,8 +83,8 @@ export default function ContractData() {
       : "";
     let total = loaderData?.planDetails.total;
     setTotalRows(loaderData?.planDetails.total);
-    let docs = parseInt(total / 10);
-    if (total % 10 > 0) {
+    let docs = parseInt(total / limit);
+    if (total % limit > 0) {
       docs = docs + 1;
     }
     setTotaldocs(docs);
@@ -154,6 +155,7 @@ export default function ContractData() {
     const date = new Date(isoDate);
     return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
   }
+  console.log("tableData==", tableData)
   const rows = tableData?.map((itm, index) => [
     <Text>{itm?.orderId}</Text>,
     <Text alignment="center"> {itm?.customerName}</Text>,
@@ -168,7 +170,7 @@ export default function ContractData() {
     <Text alignment="center"> {formatISOToDate(toIST(itm?.createdAt))}</Text>,
     <Text as="p" alignment="center">
       <Link
-        url={`/app/contract/${itm?.contractId|| itm?._id}`}
+        url={`/app/contract/${itm?._id}`}
         prefetch="viewport"
         onClick={() => {
           shopify.loading(true), setContentSkel(true);

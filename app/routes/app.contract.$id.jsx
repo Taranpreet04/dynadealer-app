@@ -23,20 +23,21 @@ import { authenticate } from "../shopify.server";
 import { useEffect, useState } from "react";
 import {
   cancelContract,
-  getConstractDetailById,getSpecificContract
+  getConstractDetailById,
+  getSpecificContract,
 } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 
 export const loader = async ({ params, request }) => {
   const { admin } = await authenticate.admin(request);
-  let res
-  if(params?.id?.length> 15){
-    res= await getSpecificContract(admin, params?.id)
-  }else{
-    res = await getConstractDetailById(admin, params?.id);
-  }
+  let res;
+  // if (params?.id?.length > 15) {
+  //   res = await getSpecificContract(admin, params?.id);
+  // } else {
+  res = await getConstractDetailById(admin, params?.id);
+  // }
 
-  return json({ data: res?.data, id: params?.id });
+  return json({ ...res, id: params?.id });
 };
 
 export default function ContractDetails() {
@@ -45,8 +46,9 @@ export default function ContractDetails() {
   const params = useParams();
   const actionData = useActionData();
   const [tableData, setTableData] = useState([]);
-  const [data, setData] = useState();
-  const [dbData, setDbData] = useState(false);
+  const [shopifyData, setShopifyData] = useState();
+  const [dbDetails, setDbDetails] = useState();
+  const [oneTimeContract, setOneTimeContract] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reCheck, setReCheck] = useState(false);
   const [currency, setCurrency] = useState("USD");
@@ -55,25 +57,22 @@ export default function ContractDetails() {
   useEffect(() => {
     shopify.loading(true);
     setLoading(true);
-    console.log("loaderData?.data==", loaderData?.data)
-  if(loaderData?.id?.length>15){
-    
-    setDbData(true)
-    setCurrency('USD')
-    loaderData?.data ? setData(loaderData?.data) : "";
-    setTableData(loaderData?.data?.products)
-  }else{ 
-    setDbData(false)
-    loaderData?.data ? setData(loaderData?.data) : "";
     let products = [];
-    loaderData?.data?.lines?.edges.map((itm) => {
-      products.push(itm?.node);
-    });
-    setCurrency(products[0]?.currentPrice?.currencyCode);
-    console.log("products--", products)
-    setTableData(products);
-  }
-   
+    if (loaderData?.shopifyData) {
+      setOneTimeContract(false);
+      loaderData?.shopifyData ? setShopifyData(loaderData?.shopifyData) : "";
+      loaderData?.dbDetails ? setDbDetails(loaderData?.dbDetails) : "";
+      loaderData?.shopifyData?.lines?.edges.map((itm) => {
+        products.push(itm?.node);
+      });
+      setCurrency(products[0]?.currentPrice?.currencyCode);
+      setTableData(products);
+    } else {
+      setOneTimeContract(true);
+      setCurrency("USD");
+      loaderData?.dbDetails ? setDbDetails(loaderData?.dbDetails) : "";
+      setTableData(loaderData?.dbDetails?.products);
+    }
     shopify.loading(false);
     setLoading(false);
   }, [loaderData]);
@@ -87,27 +86,49 @@ export default function ContractDetails() {
       shopify.toast.show("Fail to cancel contract.", { duration: 5000 });
     }
   }, [actionData]);
-  const rows = tableData?.map((itm, index) => [
-    // <Text>
-    //   <img src={itm?.variantImage?.url} height={50} width={50} />
-    // </Text>,
+  const rows = tableData?.map((itm) => [
     <Text> {itm?.title || itm?.productName} </Text>,
-    <Text alignment="center"> ${itm?.currentPrice?.amount || itm?.price} </Text>,
+    <Text alignment="center">
+      {" "}
+      {oneTimeContract
+        ? itm?.currentPrice?.amount || itm?.price
+        : itm?.currentPrice?.amount || itm?.price}
+    </Text>,
     <Text alignment="center">
       {" "}
       {itm?.sellingPlanName?.split("-entries-")?.[1] || itm?.entries}{" "}
     </Text>,
     <Text alignment="end"> ${itm?.currentPrice?.amount || itm?.price} </Text>,
   ]);
+  const rowsTicket = [
+    [
+      <Text>Applied </Text>,
+      <Text alignment="center"> {dbDetails?.ticketDetails?.applied} </Text>,
+      <Text alignment="end">
+        {dbDetails?.ticketDetails?.appliedTicketsList?.join(", ")}
+      </Text>,
+    ],
+    [
+      <Text>Available </Text>,
+      <Text alignment="center"> {dbDetails?.ticketDetails?.available} </Text>,
+      <Text alignment="end">
+        {dbDetails?.ticketDetails?.availableTicketsList?.join(",")}
+      </Text>,
+    ],
+    [
+      <Text>Total </Text>,
+      <Text alignment="center">{dbDetails?.ticketDetails?.total} </Text>,
+      <Text alignment="end">
+        {dbDetails?.ticketDetails?.totalTicketsList?.join(",")}
+      </Text>,
+    ],
+  ];
 
   function capitalizeFirstLetter(str) {
     if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
-
-  console.log("data==", data)
-  console.log("db--data==", dbData)
   return (
     <>
       {loading ? (
@@ -123,7 +144,9 @@ export default function ContractDetails() {
             },
           }}
           primaryAction={
-            !(data?.status == "CANCELLED"|| data?.status == "ONETIME") ? (
+            !(
+              dbDetails?.status == "CANCELLED" || dbDetails?.status == "ONETIME"
+            ) ? (
               <Button
                 primary
                 loading={btnLoader}
@@ -140,15 +163,15 @@ export default function ContractDetails() {
             <div className="contract-header">
               <Badge
                 tone={
-                  data?.status == "ACTIVE" ||
-                  data?.billingPolicy?.interval == "DAY"
+                  dbDetails?.status == "ACTIVE" ||
+                  dbDetails?.billingPolicy?.interval == "DAY"
                     ? "success"
                     : "critical"
                 }
               >
-                {data?.billingPolicy?.interval == "DAY"
+                {dbDetails?.billingPolicy?.interval == "DAY"
                   ? "ONETIME"
-                  : data?.status}
+                  : dbDetails?.status}
               </Badge>
             </div>
             <Grid>
@@ -159,12 +182,18 @@ export default function ContractDetails() {
                   </Text>
                   <Box paddingBlockStart="200">
                     <Text as="p" variant="bodyMd">
-                      {dbData ?
-                      <>{capitalizeFirstLetter(data?.customerName)}</> :
-                      <>{capitalizeFirstLetter(data?.customer?.firstName)}{" "}
-                      {capitalizeFirstLetter(data?.customer?.lastName)}</>
-                      }
-                      
+                      {oneTimeContract ? (
+                        <>{capitalizeFirstLetter(dbDetails?.customerName)}</>
+                      ) : (
+                        <>
+                          {capitalizeFirstLetter(
+                            shopifyData?.customer?.firstName,
+                          )}{" "}
+                          {capitalizeFirstLetter(
+                            shopifyData?.customer?.lastName,
+                          )}
+                        </>
+                      )}
                     </Text>
                   </Box>
                 </Card>
@@ -176,11 +205,11 @@ export default function ContractDetails() {
                   </Text>
                   <Box paddingBlockStart="200">
                     <Text as="p" variant="bodyMd">
-                      {dbData ?
-                      data?.billing_policy?.interval
-                       :data?.billingPolicy?.interval == "DAY"
-                        ? "ONETIME"
-                        : data?.billingPolicy?.interval}
+                      {oneTimeContract
+                        ? dbDetails?.billing_policy?.interval
+                        : shopifyData?.billingPolicy?.interval == "DAY"
+                          ? "ONETIME"
+                          : shopifyData?.billingPolicy?.interval}
                     </Text>
                   </Box>
                 </Card>
@@ -192,7 +221,9 @@ export default function ContractDetails() {
                   </Text>
                   <Box paddingBlockStart="200">
                     <Text as="p" variant="bodyMd">
-                      {dbData? data?.billing_policy?.min_cycles :data?.billingPolicy?.minCycles}
+                      {oneTimeContract
+                        ? dbDetails?.billing_policy?.min_cycles
+                        : shopifyData?.billingPolicy?.minCycles}
                     </Text>
                   </Box>
                 </Card>
@@ -229,6 +260,29 @@ export default function ContractDetails() {
               verticalAlign="middle"
             />
           </Box>
+          <Box paddingBlockStart={300}>
+            {/* {oneTimeContract ? ( */}
+            <DataTable
+              hasZebraStripingOnData
+              hoverable
+              stickyHeader
+              columnContentTypes={["text", "text", "text"]}
+              headings={[
+                <Text variant="headingSm" as="h6"></Text>,
+                <Text variant="headingSm" as="h6" alignment="center">
+                  Tickets
+                </Text>,
+                <Text variant="headingSm" as="h6" alignment="center">
+                  Details
+                </Text>,
+              ]}
+              rows={rowsTicket}
+              verticalAlign="middle"
+            />
+            {/* ) : (
+              ""
+            )} */}
+          </Box>
           <div className="sd-ultimate-option-AlertModal">
             <Modal
               open={reCheck}
@@ -240,7 +294,7 @@ export default function ContractDetails() {
                   setReCheck(false);
                   setBtnLoader(true);
                   let formData = {
-                    ...data,
+                    ...shopifyData,
                     status: "CANCELLED",
                     contractDbID: params?.id,
                   };

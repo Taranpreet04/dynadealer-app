@@ -689,14 +689,15 @@ export const getSubscriptions = async (admin, page, search) => {
   try {
     const { shop } = admin.rest.session;
     let skip = 0;
-    page > 1 ? (skip = (page - 1) * 10) : (skip = 0);
+    let limitN= 50
+    page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
     let total_data = 0;
     let details = [];
     if (search == "") {
       details = await subscriptionContractModel
         .find({ shop }).sort({ createdAt: -1 }) 
         .skip(skip)
-        .limit(10);
+        .limit(limitN);
       total_data = await subscriptionContractModel
         .find({ shop })
         .countDocuments();
@@ -707,7 +708,7 @@ export const getSubscriptions = async (admin, page, search) => {
           customerName: { $regex: search, $options: "i" },
         }).sort({ createdAt: -1 }) 
         .skip(skip)
-        .limit(10);
+        .limit(limitN);
       total_data = await subscriptionContractModel
         .find({
           shop: shop,
@@ -728,109 +729,118 @@ export const getSubscriptions = async (admin, page, search) => {
 };
 
 export const getConstractDetailById = async (admin, id) => {
-  const query = `
-            query {
-              subscriptionContract(id: "gid://shopify/SubscriptionContract/${id}") {
-                id
-                status
-                originOrder {
+  const { shop } = admin.rest.session;
+  const details = await subscriptionContractModel.findOne({ shop , _id: id});
+  // return { message: "success", data: details, status: 200 };
+  if(details?.contractId){
+
+    const query = `
+              query {
+                subscriptionContract(id: "gid://shopify/SubscriptionContract/${details?.contractId}") {
                   id
-                  name
-                  totalPriceSet {
-                    presentmentMoney {
-                      amount
-                      currencyCode
-                    }
-                  }
-                  customerLocale
-                }
-                customer {
-                  firstName
-                  lastName
-                  id
-                  email
-                }
-                nextBillingDate
-                billingPolicy {
-                  intervalCount
-                  interval
-                  maxCycles
-                  minCycles
-                }
-                deliveryPolicy {
-                  intervalCount
-                }
-                lines(first: 50) {
-                  edges {
-                    node {
-                      id
-                      quantity
-                      sellingPlanId
-                      sellingPlanName
-                      productId
-                      requiresShipping
-                      variantId
-                      variantTitle
-                      title
-                      quantity
-                      variantImage {
-                        url
-                      }
-                      discountAllocations {
-                        amount {
-                          amount
-                        }
-                        discount {
-                          __typename
-                          ... on SubscriptionManualDiscount {
-                            title
-                          }
-                        }
-                      }
-                      pricingPolicy {
-                        basePrice {
-                          amount
-                        }
-                        cycleDiscounts {
-                          adjustmentType
-                          afterCycle
-                          computedPrice {
-                            amount
-                          }
-                          adjustmentValue {
-                            ... on MoneyV2 {
-                              amount
-                            }
-                            ... on SellingPlanPricingPolicyPercentageValue {
-                              percentage
-                            }
-                          }
-                        }
-                      }
-                      currentPrice {
+                  status
+                  originOrder {
+                    id
+                    name
+                    totalPriceSet {
+                      presentmentMoney {
                         amount
                         currencyCode
+                      }
+                    }
+                    customerLocale
+                  }
+                  customer {
+                    firstName
+                    lastName
+                    id
+                    email
+                  }
+                  nextBillingDate
+                  billingPolicy {
+                    intervalCount
+                    interval
+                    maxCycles
+                    minCycles
+                  }
+                  deliveryPolicy {
+                    intervalCount
+                  }
+                  lines(first: 50) {
+                    edges {
+                      node {
+                        id
+                        quantity
+                        sellingPlanId
+                        sellingPlanName
+                        productId
+                        requiresShipping
+                        variantId
+                        variantTitle
+                        title
+                        quantity
+                        variantImage {
+                          url
+                        }
+                        discountAllocations {
+                          amount {
+                            amount
+                          }
+                          discount {
+                            __typename
+                            ... on SubscriptionManualDiscount {
+                              title
+                            }
+                          }
+                        }
+                        pricingPolicy {
+                          basePrice {
+                            amount
+                          }
+                          cycleDiscounts {
+                            adjustmentType
+                            afterCycle
+                            computedPrice {
+                              amount
+                            }
+                            adjustmentValue {
+                              ... on MoneyV2 {
+                                amount
+                              }
+                              ... on SellingPlanPricingPolicyPercentageValue {
+                                percentage
+                              }
+                            }
+                          }
+                        }
+                        currentPrice {
+                          amount
+                          currencyCode
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-          `;
-  const contractResponse = await admin.graphql(query);
-  const contractResult = await contractResponse.json();
-  if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
+            `;
+    const contractResponse = await admin.graphql(query);
+    const contractResult = await contractResponse.json();
+    if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
+      return {
+        message: "error",
+        data: contractResult.data.subscriptionContract.userErrors[0].message,
+        status: 400,
+      };
+    }
     return {
-      message: "error",
-      data: contractResult.data.subscriptionContract.userErrors[0].message,
-      status: 400,
+      message: "success",
+      shopifyData: contractResult.data.subscriptionContract,
+      dbDetails: details,
+      status: 200,
     };
+  }else{
+    return { message: "success", dbDetails: details, status: 200 }; 
   }
-  return {
-    message: "success",
-    data: contractResult.data.subscriptionContract,
-    status: 200,
-  };
 };
 export const getCustomerDataByContractId = async (admin, id) => {
   const query = `{
@@ -938,21 +948,15 @@ export const getCustomerDataByContractId = async (admin, id) => {
 
 export const getExportData = async (admin, data, date) => {
   try {
-    console.log("firstly date", date.start)
-    console.log("firstly date", date.end)
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
     endIST = toIST(endIST);
-    console.log("after add 5:30hrs start date=", startIST)
-    console.log("after add 5:30hrs end date=", endIST)
    
     let dateRange = {
       $gte: startIST,
       $lte: endIST,
     };
-    console.log("dateRange==", dateRange?.start)
-    console.log("dateRange==", endIST)
     const matchingDocuments = await subscriptionContractModel.aggregate([
       {
         $match: {
@@ -1035,6 +1039,29 @@ export const checkMincycleComplete = async (detail) => {
     return { message: "Error processing request", status: 500 };
   }
 };
+
+export const getLiveRaffle=async (shop)=>{
+  // const { shop } = admin.rest.session;
+try{
+  let productAr = []
+  let activeDraws = await planDetailsModel.find({ shop: shop, showOnPortal: true })
+  activeDraws.map((item) => {
+    item?.products.map((product) => {
+      productAr.push({
+        id: product.product_id,
+        title: product.product_name,
+        image: product.product_image,
+        raffleType: item?.raffleType,
+        spots: item?.spots,
+      })
+    })
+  })
+  return { message: "success", activeDraws: productAr };
+}catch(error){
+  console.error("Error processing POST request:", error);
+  return { message: "Error processing request", status: 500 };
+}
+}
 export const getAllContracts = async (admin) => {
   try {
     const { shop } = admin.rest.session;

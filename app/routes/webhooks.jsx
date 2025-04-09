@@ -1,5 +1,8 @@
 import { sendOrderEmail } from "../db.mailcontroller";
-import { getCustomerDataByContractId } from "../controllers/planController";
+import {
+  getCustomerDataByContractId,
+  getLiveRaffle,
+} from "../controllers/planController";
 import {
   credentialModel,
   subscriptionContractModel,
@@ -9,6 +12,7 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
+import fs from "fs";
 
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
@@ -91,34 +95,41 @@ export const action = async ({ request }) => {
             sellingPlanName: planName,
             sellingPlanId: planId,
           });
-          ticketDetails = {
-            total: Number(drawIds?.length),
-            totalTicketsList: drawIds,
-            applied: 0,
-            appliedTicketsList: [],
-            available: Number(drawIds?.length),
-            availableTicketsList: drawIds,
-            appliedForDetail: [],
-          };
-        } else {
-          ticketDetails = {
-            total: Number(drawIds?.length),
-            totalTicketsList: drawIds,
-            applied: Number(drawIds?.length),
-            appliedTicketsList: drawIds,
-            available: 0,
-            availableTicketsList: [],
-            appliedForDetail: [
-              {
-                tickets: Number(drawIds?.length),
-                productId: products[0]?.productId,
-                productName: products[0]?.productName,
-                appliedDate: new Date(),
-                appliedList: drawIds,
-              },
-            ],
-          };
         }
+
+
+          let liveRaffle = await getLiveRaffle(shop);
+              console.log("liveRaffle=", liveRaffle);
+              if (liveRaffle?.activeDraws?.length > 0) {
+                ticketDetails = {
+                  total: Number(drawIds?.length),
+                  totalTicketsList: drawIds,
+                  applied: Number(drawIds?.length),
+                  appliedTicketsList: drawIds,
+                  available: 0,
+                  availableTicketsList: [],
+                  appliedForDetail: [
+                    {
+                      tickets: Number(drawIds?.length),
+                      productId: liveRaffle?.activeDraws[0]?.id,
+                      productName: liveRaffle?.activeDraws[0].title,
+                      appliedDate: new Date(),
+                      appliedList: drawIds,
+                    },
+                  ],
+                };
+              } else {
+                ticketDetails = {
+                  total: Number(drawIds?.length),
+                  totalTicketsList: drawIds,
+                  applied: 0,
+                  appliedTicketsList: [],
+                  available: Number(drawIds?.length),
+                  availableTicketsList: drawIds,
+                  appliedForDetail: [],
+                };
+              }
+       
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
@@ -137,12 +148,8 @@ export const action = async ({ request }) => {
           billing_policy: billing_policy,
           products: products,
           drawIds: drawIds,
-          status:
-            payload?.billing_policy?.interval == "day" ? "ONETIME" : "ACTIVE",
-          nextBillingDate:
-            payload?.billing_policy?.interval == "day"
-              ? new Date().toISOString()
-              : cusRes?.data?.nextBillingDate,
+          status:"ACTIVE",
+          nextBillingDate: cusRes?.data?.nextBillingDate,
           ticketDetails: ticketDetails,
         });
 
@@ -226,6 +233,17 @@ export const action = async ({ request }) => {
       try {
         let entries;
 
+        // const dataString =
+        //   typeof liveRaffle === "string"
+        //     ? liveRaffle
+        //     : JSON.stringify(liveRaffle);
+        // fs.writeFile("checkkkk.txt", dataString, (err) => {
+        //   if (err) {
+        //     console.error("Error writing to file:", err);
+        //   } else {
+        //     console.log("Data written to file successfully!");
+        //   }
+        // });
         for (const product of payload?.line_items || []) {
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
@@ -237,7 +255,8 @@ export const action = async ({ request }) => {
               (property) => property?.name == "entries",
             )?.value;
             let drawIds = [];
-            if(Number(entries)>0){
+            if (Number(entries) > 0) {
+             
               for (let i = 0; i < Number(entries); i++) {
                 let unique = (
                   Date.now().toString(36).substring(0, 4) +
@@ -247,40 +266,29 @@ export const action = async ({ request }) => {
                   .substring(0, 7);
                 drawIds.push(unique);
               }
-  
-              let ticketDetails = {
-                total: Number(drawIds?.length),
-                totalTicketsList: drawIds,
-                applied: Number(drawIds?.length),
-                appliedTicketsList: drawIds,
-                available: 0,
-                availableTicketsList: [],
-                appliedForDetail: [
-                  {
-                    tickets: Number(drawIds?.length),
-                    productId: `gid://shopify/Product/${product?.product_id}`,
-                    productName: product.title,
-                    appliedDate: new Date(),
-                    appliedList: drawIds,
-                  },
-                ],
-              };
-              let membershiplevel = product?.properties
-                ?.find((property) => property?.name == "membership")
-                ?.value?.toLowerCase();
-  
-              if (membershiplevel) {
-                let membership = await membershipsModel.create({
-                  shop: shop,
-                  customerId: payload?.customer?.id || "",
-                  orderId: payload?.id,
-                  contractId: "",
-                  membershipLevel: membershiplevel?.toLowerCase() || "",
-                  membershipType: "ONETIME",
-                  // sellingPlanName: planName,
-                  // sellingPlanId: planId,
-                });
-  
+
+              let liveRaffle = await getLiveRaffle(shop);
+              console.log("liveRaffle=", liveRaffle);
+              let ticketDetails;
+              if (liveRaffle?.activeDraws?.length > 0) {
+                ticketDetails = {
+                  total: Number(drawIds?.length),
+                  totalTicketsList: drawIds,
+                  applied: Number(drawIds?.length),
+                  appliedTicketsList: drawIds,
+                  available: 0,
+                  availableTicketsList: [],
+                  appliedForDetail: [
+                    {
+                      tickets: Number(drawIds?.length),
+                      productId: liveRaffle?.activeDraws[0]?.id,
+                      productName: liveRaffle?.activeDraws[0].title,
+                      appliedDate: new Date(),
+                      appliedList: drawIds,
+                    },
+                  ],
+                };
+              } else {
                 ticketDetails = {
                   total: Number(drawIds?.length),
                   totalTicketsList: drawIds,
@@ -291,7 +299,7 @@ export const action = async ({ request }) => {
                   appliedForDetail: [],
                 };
               }
-  
+
               let contractDetail = await subscriptionContractModel.create({
                 shop: shop,
                 orderId: payload?.id,
@@ -328,7 +336,7 @@ export const action = async ({ request }) => {
                 nextBillingDate: new Date().toISOString(),
                 ticketDetails: ticketDetails,
               });
-  
+
               const currentDate = new Date().toISOString();
               let billing = await billingModel.create({
                 shop: shop,
@@ -366,10 +374,26 @@ export const action = async ({ request }) => {
                 renewal_date: currentDate,
                 applied: false,
               });
-  
+
+
+              let membershiplevel = product?.properties
+                ?.find((property) => property?.name == "membership")
+                ?.value?.toLowerCase();
+
+              if (membershiplevel) {
+                let membership = await membershipsModel.create({
+                  shop: shop,
+                  customerId: payload?.customer?.id || "",
+                  orderId: payload?.id,
+                  contractId: "",
+                  membershipLevel: membershiplevel?.toLowerCase() || "",
+                  membershipType: "ONETIME",
+                  // sellingPlanName: planName,
+                  // sellingPlanId: planId,
+                });
+              }
               sendOrderEmail(contractDetail);
             }
-           
           }
         }
 

@@ -42,6 +42,7 @@ export async function sendOrderEmail(data) {
         html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
         html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
         html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
+        html= html?.replace('{{appliedForProduct}}', `${data?.ticketDetails?.appliedForDetail[0]?.productName}`);
         html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
         html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
         html= html?.replace('{{rows}}', `${rows}`);
@@ -49,6 +50,7 @@ export async function sendOrderEmail(data) {
         html= template?.orderTemplate?.monthlyHtml?.replace('{{customerName}}', `${data?.customerName}`);
         html= html?.replace('{{productName}}', `${data?.products[0]?.productName}`);
         html= html?.replace('{{interval}}', `${interval=="ONETIME"? interval: interval+'LY'}`);
+        html= html?.replace('{{appliedForProduct}}', `${data?.ticketDetails?.appliedForDetail[0]?.productName}`);
         html= html?.replace('{{drawIdsLength}}', `${data?.drawIds?.length}`);
         html= html?.replace('{{footer}}', `${template?.orderTemplate?.footer}`);
         html= html?.replace('{{drawIdsList}}', `${drawIdsList}`);
