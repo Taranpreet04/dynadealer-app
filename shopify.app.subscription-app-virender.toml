@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://mess-belief-eagle-junior.trycloudflare.com"
+application_url = "https://beverage-news-alternative-silk.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_orders,write_orders,read_products,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://mess-belief-eagle-junior.trycloudflare.com/auth/callback",
-  "https://mess-belief-eagle-junior.trycloudflare.com/auth/shopify/callback",
-  "https://mess-belief-eagle-junior.trycloudflare.com/api/auth/callback"
+  "https://beverage-news-alternative-silk.trycloudflare.com/auth/callback",
+  "https://beverage-news-alternative-silk.trycloudflare.com/auth/shopify/callback",
+  "https://beverage-news-alternative-silk.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -30,7 +30,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://mess-belief-eagle-junior.trycloudflare.com/api/subscription"
+url = "https://beverage-news-alternative-silk.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

@@ -21,7 +21,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
-import { getSubscriptions, getExportData } from "../controllers/planController";
+import { getSubscriptions, getExportData , } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx";
@@ -203,10 +203,10 @@ export default function ContractData() {
   const handleNextPage = () => {
     shopify.loading(true);
     setTableSkel(true);
-    setPage(page + 1);
+    setPage(Number(page) + 1);
     const params = new URLSearchParams();
     params.set("search", searchValue);
-    params.set("page", page + 1);
+    params.set("page", Number(page) + 1);
     submit(params, {
       method: "get",
     });
@@ -215,10 +215,10 @@ export default function ContractData() {
   const handlePrevPage = () => {
     shopify.loading(true);
     setTableSkel(true);
-    setPage(page - 1);
+    setPage(Number(page) - 1);
     const params = new URLSearchParams();
     params.set("search", searchValue);
-    params.set("page", page - 1);
+    params.set("page", Number(page) - 1);
     submit(params, {
       method: "get",
     });

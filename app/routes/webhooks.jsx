@@ -135,7 +135,9 @@ export const action = async ({ request }) => {
           orderId: orderId || "",
           contractId: contractId || "",
           customerName:
-            `${cusRes?.data?.customer?.firstName || ""} ${cusRes?.data?.customer?.lastName || ""}`.trim(),
+          cusRes?.data?.customer?.firstName?.trim() +
+          " " +
+          cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           sellingPlanName: planName,
@@ -159,9 +161,9 @@ export const action = async ({ request }) => {
           orderId: orderId || "",
           contractId: contractId || "",
           customerName:
-            cusRes?.data?.customer?.firstName +
+            cusRes?.data?.customer?.firstName?.trim() +
             " " +
-            cusRes?.data?.customer?.lastName,
+            cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           products: products,
