@@ -155,7 +155,6 @@ export default function ContractData() {
     const date = new Date(isoDate);
     return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
   }
-  console.log("tableData==", tableData)
   const rows = tableData?.map((itm, index) => [
     <Text>{itm?.orderId}</Text>,
     <Text alignment="center"> {itm?.customerName}</Text>,

@@ -24,19 +24,13 @@ import { useEffect, useState } from "react";
 import {
   cancelContract,
   getConstractDetailById,
-  getSpecificContract,
 } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 
 export const loader = async ({ params, request }) => {
   const { admin } = await authenticate.admin(request);
   let res;
-  // if (params?.id?.length > 15) {
-  //   res = await getSpecificContract(admin, params?.id);
-  // } else {
   res = await getConstractDetailById(admin, params?.id);
-  // }
-
   return json({ ...res, id: params?.id });
 };
 
