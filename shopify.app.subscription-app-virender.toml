@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://beverage-news-alternative-silk.trycloudflare.com"
+application_url = "https://marriage-tony-recorders-mercury.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_orders,write_orders,read_products,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://beverage-news-alternative-silk.trycloudflare.com/auth/callback",
-  "https://beverage-news-alternative-silk.trycloudflare.com/auth/shopify/callback",
-  "https://beverage-news-alternative-silk.trycloudflare.com/api/auth/callback"
+  "https://marriage-tony-recorders-mercury.trycloudflare.com/auth/callback",
+  "https://marriage-tony-recorders-mercury.trycloudflare.com/auth/shopify/callback",
+  "https://marriage-tony-recorders-mercury.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -30,7 +30,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://beverage-news-alternative-silk.trycloudflare.com/api/subscription"
+url = "https://marriage-tony-recorders-mercury.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

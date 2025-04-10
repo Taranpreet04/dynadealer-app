@@ -41,6 +41,7 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
+        console.log("payload==", payload)
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
@@ -253,9 +254,11 @@ export const action = async ({ request }) => {
           );
 
           if (oneTimeProductExist) {
-            entries = product?.properties?.find(
+            entries = (product?.properties?.find(
               (property) => property?.name == "entries",
-            )?.value;
+            )?.value) * product?.quantity;
+
+            console.log("entries==", entries)
             let drawIds = [];
             if (Number(entries) > 0) {
              
@@ -329,7 +332,7 @@ export const action = async ({ request }) => {
                     productName: product.title,
                     price: product?.price,
                     currency: product?.price_set?.shop_money?.currency_code,
-                    quantity: 1,
+                    quantity: product?.quantity,
                     entries: entries,
                   },
                 ],

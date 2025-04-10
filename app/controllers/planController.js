@@ -1,10 +1,11 @@
+import { sendOrderEmail } from "../db.mailcontroller";
 import {
   billingModel,
   planDetailsModel,
   subscriptionContractModel,
   templateModel,
 } from "../schema";
-// import fs from "fs";
+import fs from "fs";
 
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
@@ -689,13 +690,13 @@ export const getSubscriptions = async (admin, page, search) => {
   try {
     const { shop } = admin.rest.session;
     let skip = 0;
-    let limitN= 50
+    let limitN = 50
     page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
     let total_data = 0;
     let details = [];
     if (search == "") {
       details = await subscriptionContractModel
-        .find({ shop }).sort({ createdAt: -1 }) 
+        .find({ shop }).sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitN);
       total_data = await subscriptionContractModel
@@ -706,7 +707,7 @@ export const getSubscriptions = async (admin, page, search) => {
         .find({
           shop: shop,
           customerName: { $regex: search, $options: "i" },
-        }).sort({ createdAt: -1 }) 
+        }).sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitN);
       total_data = await subscriptionContractModel
@@ -730,9 +731,9 @@ export const getSubscriptions = async (admin, page, search) => {
 
 export const getConstractDetailById = async (admin, id) => {
   const { shop } = admin.rest.session;
-  const details = await subscriptionContractModel.findOne({ shop , _id: id});
+  const details = await subscriptionContractModel.findOne({ shop, _id: id });
   // return { message: "success", data: details, status: 200 };
-  if(details?.contractId){
+  if (details?.contractId) {
 
     const query = `
               query {
@@ -778,7 +779,6 @@ export const getConstractDetailById = async (admin, id) => {
                         variantId
                         variantTitle
                         title
-                        quantity
                         variantImage {
                           url
                         }
@@ -838,8 +838,8 @@ export const getConstractDetailById = async (admin, id) => {
       dbDetails: details,
       status: 200,
     };
-  }else{
-    return { message: "success", dbDetails: details, status: 200 }; 
+  } else {
+    return { message: "success", dbDetails: details, status: 200 };
   }
 };
 export const getCustomerDataByContractId = async (admin, id) => {
@@ -886,7 +886,6 @@ export const getCustomerDataByContractId = async (admin, id) => {
                       variantId
                       variantTitle
                       title
-                      quantity
                       variantImage {
                         url
                       }
@@ -952,7 +951,8 @@ export const getExportData = async (admin, data, date) => {
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
     endIST = toIST(endIST);
-   
+console.log("startIST==",startIST)
+console.log("endIST==",endIST, data[0])
     let dateRange = {
       $gte: startIST,
       $lte: endIST,
@@ -1040,27 +1040,27 @@ export const checkMincycleComplete = async (detail) => {
   }
 };
 
-export const getLiveRaffle=async (shop)=>{
+export const getLiveRaffle = async (shop) => {
   // const { shop } = admin.rest.session;
-try{
-  let productAr = []
-  let activeDraws = await planDetailsModel.find({ shop: shop, showOnPortal: true })
-  activeDraws.map((item) => {
-    item?.products.map((product) => {
-      productAr.push({
-        id: product.product_id,
-        title: product.product_name,
-        image: product.product_image,
-        raffleType: item?.raffleType,
-        spots: item?.spots,
+  try {
+    let productAr = []
+    let activeDraws = await planDetailsModel.find({ shop: shop, showOnPortal: true })
+    activeDraws.map((item) => {
+      item?.products.map((product) => {
+        productAr.push({
+          id: product.product_id,
+          title: product.product_name,
+          image: product.product_image,
+          raffleType: item?.raffleType,
+          spots: item?.spots,
+        })
       })
     })
-  })
-  return { message: "success", activeDraws: productAr };
-}catch(error){
-  console.error("Error processing POST request:", error);
-  return { message: "Error processing request", status: 500 };
-}
+    return { message: "success", activeDraws: productAr };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
 }
 export const getAllContracts = async (admin) => {
   try {
@@ -1072,15 +1072,15 @@ export const getAllContracts = async (admin) => {
     return { message: "Error processing request", status: 500 };
   }
 };
-export const getSpecificContract=async(admin, id)=>{
-try{
-  const { shop } = admin.rest.session;
-    const details = await subscriptionContractModel.findOne({ shop , _id: id});
+export const getSpecificContract = async (admin, id) => {
+  try {
+    const { shop } = admin.rest.session;
+    const details = await subscriptionContractModel.findOne({ shop, _id: id });
     return { message: "success", data: details, status: 200 };
-}catch(err){
-  console.error("Error processing POST request:", error);
-  return { message: "Error processing request", status: 500 };
-}
+  } catch (err) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
 }
 
 export const setDefaultTemplate = async (shop) => {
@@ -1102,7 +1102,7 @@ export const setDefaultTemplate = async (shop) => {
           </pre>
           
           `,
-          monthlyHtml:`p>Hi {{customerName}},</p>
+      monthlyHtml: `p>Hi {{customerName}},</p>
             <p>Thank you for joining the DynaDealer community and becoming a member!</p>
             <p>Members get automatic monthly entries to win our bikes. Your entries NEVER EXPIRE.</p>
             <p>Don't like the current giveaway bike? You can pool your entries in your dashboard and assign them to new giveaway bikes as we launch them.</p>
@@ -1344,245 +1344,237 @@ export const updateTemplate = async (admin, data) => {
 
 
 
+export const getOrders = async (admin) => {
+  try {
+    const { shop } = admin.rest.session;
+    let packageOrders = ['#3789', '#3753']
+    let normal = ["#3794", '#3778', '#3777', '#3775', '#3772', '#3771', '#3767', '#3766', '#3759', '#3740', '#3729', '#3718', '#3712', '#3682']
+    
+    for (let id of normal) {
+
+      console.log("id==", id)
+      const query = `{
+    orders(query: "name:${id}", first: 5) {
+      edges {
+        node {
+          id
+          name
+          email
+          createdAt
+          totalPrice
+          customer {
+            id
+            email
+            firstName
+            lastName
+          }
+          lineItems(first: 10) {
+            nodes {
+              id
+              name
+              quantity
+              product {
+                id
+                title
+                handle
+              }
+            }
+          }
+        }
+      }
+    }
+  }`
+      const ordersResponse = await admin.graphql(query);
+      const ordersResult = await ordersResponse.json();
+
+      const dataString = typeof ordersResult === "string" ? ordersResult : JSON.stringify(ordersResult);
+      fs.writeFile("checkkkk.txt", dataString, (err) => {
+        if (err) {
+          console.error("Error writing to file:", err);
+        } else {
+          console.log("Data written to file successfully!");
+        }
+      });
+      if (ordersResult?.data?.orders?.userErrors?.length > 0) {
+        return {
+          message: "error",
+          data: ordersResult.data.orders.userErrors[0].message,
+          status: 400,
+        };
+      }
+      if (ordersResult?.data?.orders?.edges[0]?.node) {
+        let data = ordersResult?.data?.orders?.edges[0]?.node
+        console.log(data?.id, data?.customer?.firstName)
+        let exist = await subscriptionContractModel?.findOne({ shop, orderId: data?.id?.split('gid://shopify/Order/')[1] })
+        console.log(" exist?.orderId==", exist?.orderId)
+        let drawIds = [];
+        let entries = packageOrders.includes(id) ? 
+        parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity) :
+        parseInt(8)* Number(data?.lineItems?.nodes[0]?.quantity)
+        console.log(Number(data?.lineItems?.nodes[0]?.quantity),"entries===",packageOrders.includes(id), entries)
+        if (!exist) {
+          for (let i = 0; i < entries; i++) {
+            // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+            let unique = (
+              Date.now().toString(36).substring(0, 4) +
+              Math.random().toString(36).substring(2, 5)
+            )
+              .toUpperCase()
+              .substring(0, 7);
+            drawIds.push(unique);
+          }
+
+          let ticketDetails = {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied: Number(drawIds?.length),
+            appliedTicketsList: drawIds,
+            available: 0,
+            availableTicketsList: [],
+            appliedForDetail: [
+              {
+                tickets: Number(drawIds?.length),
+                productId: "gid://shopify/Product/8848887546070",
+                productName: "Digital Download for Giveaway #6 Entry",
+                appliedDate: data?.createdAt,
+                appliedList: drawIds,
+              },
+            ],
+          };
 
 
-// const checkOptions = async (admin, productId) => {
-//   try {
-//     console.log("productId==", productId)
-//     const query = `query {
-//     product(id: "${productId}") {
-//       options {
+          let contractDetail = await subscriptionContractModel.create({
+            shop: shop,
+            orderId: data?.id?.split('gid://shopify/Order/')[1],
+            contractId: "",
+            customerName:
+              data?.customer?.firstName?.trim() +
+              " " +
+              data?.customer?.lastName?.trim(),
+            customerEmail: data?.customer.email,
+            customerId: data?.customer?.id?.split("gid://shopify/Customer/")[1],
+            planUpdateDetail: {
+              sellingPlanUpdate: false,
+              upgradeTo: "",
+              futureEntries: 0,
+            },
+            billing_policy: {
+              interval: "onetime",
+              interval_count: 1,
+              min_cycles: 1,
+            },
+            products: [
+              {
+                productId: data?.lineItems?.nodes[0].product?.id,
+                productName: data?.lineItems?.nodes[0].product?.title,
+                price: data?.totalPrice,
+                currency: "USD",
+                quantity: data?.lineItems?.nodes[0]?.quantity,
+                entries: drawIds?.length,
+              },
+            ],
+            drawIds: drawIds,
+            status: "ONETIME",
+            nextBillingDate: new Date().toISOString(),
+            ticketDetails: ticketDetails,
+            // createdAt: data?.createdAt,
+            // updatedAt: data?.createdAt
+          });
+
+          console.log("contract cretaed successfully")
+          const currentDate = new Date().toISOString();
+          let billing = await billingModel.create({
+            shop: shop,
+            orderId: data?.id?.split('gid://shopify/Order/')[1],
+            contractId: "",
+            customerName:
+              data?.customer?.firstName?.trim() +
+              " " +
+              data?.customer?.lastName?.trim(),
+            customerEmail: data?.customer.email,
+            customerId: data?.customer?.id?.split("gid://shopify/Customer/")[1],
+            products: [
+              {
+                productId: data?.lineItems?.nodes[0].product?.id,
+                productName: data?.lineItems?.nodes[0].product?.title,
+                price: data?.totalPrice,
+                currency: "USD",
+                quantity: data?.lineItems?.nodes[0]?.quantity,
+                entries: drawIds?.length,
+              },
+            ],
+            billing_policy: {
+              interval: "onetime",
+              interval_count: 1,
+              min_cycles: 1,
+            },
+            entries: drawIds?.length,
+            planUpdateDetail: {
+              sellingPlanUpdate: false,
+              upgradeTo: "",
+              futureEntries: 0,
+            },
+            drawIds: drawIds,
+            status: "done",
+            billing_attempt_date: data?.createdAt,
+            renewal_date: data?.createdAt,
+            applied: false,
+          });
+          console.log("biling cretaed successfully")
+
+          await sendOrderEmail(contractDetail);
+
+        }
+      }
+    }
+    return;
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+}
+
+
+
+
+//     const query = `{
+//   orders(first: 1) {
+//     edges {
+//       cursor
+//       node {
 //         id
+//         email
+//         createdAt
+//         currencyCode
+//         customer {
+//           email
+//           firstName
+//           lastName
+//           id
+//           updatedAt
+//         }
 //         name
-//         values
-//       }
-//     }
-//   }`;
-//     const response = await admin.graphql(query);
-//     const productOptions = await response.json();
-//     // const dataString = typeof productOptions === "string" ? productOptions : JSON.stringify(productOptions);
-//     // fs.writeFile("checkkkk.txt", dataString, (err) => {
-//     //   if (err) {
-//     //     console.error("Error writing to file:", err);
-//     //   } else {
-//     //     console.log("Data written to file successfully!");
-//     //   }
-//     // });
-//     let totalOptions = productOptions?.data?.product?.options.length
-//     if (totalOptions > 0) {
-//       const ticketOption = productOptions?.data?.product?.options?.find(
-//         option => option?.name === "Tickets"
-//       );
-
-//       console.log("Ticket Option ID:", ticketOption?.id);
-//       return ticketOption?.id;
-//     }
-
-//     return null;
-//   } catch (err) {
-
-//   }
-// }
-// export const createOption = async (admin, productId) => {
-//   try {
-//     const mutation = `#graphql
-//   mutation createOptions($productId: ID!, $options: [OptionCreateInput!]!) {
-//     productOptionsCreate(productId: $productId, options: $options) {
-//       userErrors {
-//         field
-//         message
-//         code
-//       }
-//       product {
-//         id
-//         title
-//         options {
-//           name
-//           values
-//         }
-//       }
-//     }
-//   }`;
-
-//     const variables = {
-//       productId: productId,
-//       options: [
-//         {
-//           name: "Tickets",
-//           values: [
-//             {
-//               name: "1 Entry",
-//             },
-//           ],
-//         },
-//       ],
-//     };
-
-//     const response = await admin.graphql(mutation, { variables });
-
-//     const data = await response.json();
-   
-//     if (data?.data?.productOptionsCreate?.userErrors?.length <= 0) {
-//       console.log("no reeor")
-//       return data?.data?.productOptionsCreate?.product?.options[0]?.id
-//     }
-//     console.log("err", data?.data?.productOptionsCreate?.userErrors)
-//     return null
-//   } catch (err) {
-//     console.log(err)
-//     return null
-//   }
-
-
-// }
-// export const createPlanAndVariants = async (admin, newPlanDetail) => {
-//   let onetimePlans=[]
-//   let otherPlans=[]
-//   // newPlanDetail?.plans?.map((plan)=>{
-//   //   plan?.purchaseType=='day'? onetimePlans.push(newPlanDetail)
-//   // })
-//   let optionExist = await checkOptions(admin, newPlanDetail?.products[0]?.product_id)
-//   console.log("result----checkOptions-exist", optionExist)
-//   if (optionExist) {
-//     console.log("time to create variants")
-//     // updateVariants()
-//   } else {
-//     let optionId = await createOption(admin, newPlanDetail?.products[0]?.product_id)
-//     console.log("option==", optionId)
-//     if(optionId){
-//         createVariants()
-//     }
-//   }
-// }
-// export const createVariants=async(admin, productId, optionId)=>{
-//   try{
-//     const response = await admin.graphql(
-//       `#graphql
-//       mutation ProductVariantsCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-//         productVariantsBulkCreate(productId: $productId, variants: $variants) {
-//           productVariants {
+//         lineItems(first: 10) {
+//           nodes {
 //             id
-//             title
-//             selectedOptions {
-//               name
-//               value
+//             name
+//             product {
+//               handle
+//               id
+//               title
 //             }
-//           }
-//           userErrors {
-//             field
-//             message
+//             quantity
 //           }
 //         }
-//       }`,
-//       {
-//         variables: {
-//           "productId": productId,
-//           "variants": [
-//             {
-//               "price": 15.99,
-//               "compareAtPrice": 19.99,
-//               "optionValues": [
-//                 {
-//                   "name": "Entry 2",
-//                   "optionId": optionId
-//                 }
-//               ]
-//             },
-//             {
-//               "price": 15.99,
-//               "compareAtPrice": 19.99,
-//               "optionValues": [
-//                 {
-//                   "name": "Entry 3",
-//                   "optionId": optionId
-//                 }
-//               ]
-//             },
-//             {
-//               "price": 15.99,
-//               "compareAtPrice": 19.99,
-//               "optionValues": [
-//                 {
-//                   "name": "Entry 4",
-//                   "optionId": optionId
-//                 }
-//               ]
-//             }
-//           ]
-//         },
-//       },
-//     );
-    
-//     const data = await response.json();
-    
-//   }catch(err){
-
+//         totalPrice
+//         subtotalPrice
+//       }
+//     }
+//     pageInfo {
+//       hasNextPage
+//       hasPreviousPage
+//       startCursor
+//       endCursor
+//     }
 //   }
-// }
-// export const updateVariants=async(admin, productId, optionId)=>{
-//   try{
-//     const response = await admin.graphql(
-//       `#graphql
-//       mutation ProductVariantsCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-//         productVariantsBulkCreate(productId: $productId, variants: $variants) {
-//           productVariants {
-//             id
-//             title
-//             selectedOptions {
-//               name
-//               value
-//             }
-//           }
-//           userErrors {
-//             field
-//             message
-//           }
-//         }
-//       }`,
-//       {
-//         variables: {
-//           "productId": productId,
-//           "variants": [
-//             {
-//               "price": 15.99,
-//               "compareAtPrice": 19.99,
-//               "optionValues": [
-//                 {
-//                   "name": "Golden",
-//                   "optionId": optionId
-//                 }
-//               ]
-//             },
-//             {
-//               "price": 15.99,
-//               "compareAtPrice": 19.99,
-//               "optionValues": [
-//                 {
-//                   "name": "Golden",
-//                   "optionId": optionId
-//                 }
-//               ]
-//             },
-//             {
-//               "price": 15.99,
-//               "compareAtPrice": 19.99,
-//               "optionValues": [
-//                 {
-//                   "name": "Golden",
-//                   "optionId": optionId
-//                 }
-//               ]
-//             }
-//           ]
-//         },
-//       },
-//     );
-    
-//     const data = await response.json();
-    
-//   }catch(err){
-
-//   }
-// }
-
-
+// }`;

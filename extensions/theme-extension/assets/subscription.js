@@ -1,7 +1,7 @@
 console.log("js--________");
 
-let serverPath = "https://dynadealersapp.com";
-// let serverPath = "https://mess-belief-eagle-junior.trycloudflare.com";
+// let serverPath = "https://dynadealersapp.com";
+let serverPath = "https://marriage-tony-recorders-mercury.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;

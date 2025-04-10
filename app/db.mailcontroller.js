@@ -2,8 +2,8 @@ import nodemailer from 'nodemailer'
 import {  templateModel } from './schema';
 export async function sendOrderEmail(data) {
     try {
-        console.log("data==", data)
-        console.log("data?.products[0]?.productName==", data?.products[0]?.productName)
+        // console.log("data==", data)
+        // console.log("data?.products[0]?.productName==", data?.products[0]?.productName)
         let template = await templateModel.findOne({shop: data?.shop}, {orderTemplate:1, shop: 1})
        
         let interval=data?.billing_policy?.interval.toUpperCase()
