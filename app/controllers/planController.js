@@ -1342,195 +1342,270 @@ export const updateTemplate = async (admin, data) => {
 
 
 
-
-
-export const getOrders = async (admin) => {
+export const updateDocument = async (admin) => {
   try {
     const { shop } = admin.rest.session;
-    let packageOrders = ['#3789', '#3753']
-    // let normal = ["#3794", '#3778', '#3777', '#3775', '#3772', '#3771', '#3767', '#3766', '#3759', '#3740', '#3729', '#3718', '#3712', '#3682']
-    
-    for (let id of packageOrders) {
+    console.log("shop==", shop)
+    const ids = ['5919681347798'];
 
-      console.log("id==", id)
-      const query = `{
-    orders(query: "name:${id}", first: 5) {
-      edges {
-        node {
-          id
-          name
-          email
-          createdAt
-          totalPrice
-          customer {
-            id
-            email
-            firstName
-            lastName
-          }
-          lineItems(first: 10) {
-            nodes {
-              id
-              name
-              quantity
-              product {
-                id
-                title
-                handle
-              }
+    console.log("IDs to update:", ids);
+
+    for (const id of ids) {
+      console.log("Processing Order ID:", id);
+
+      const exist = await subscriptionContractModel.findOne({ shop, orderId: id });
+      if (!exist) {
+        console.log(`No record found for orderId: ${id}`);
+        continue;
+      }
+
+      console.log("Existing document:", exist);
+
+      // Generate new draw IDs equal to existing drawIds length
+      if(exist?.drawIds?.length<15){
+
+        const newDrawIds = Array.from({ length: exist.drawIds.length }, () =>
+          (
+            Date.now().toString(36).substring(0, 4) +
+            Math.random().toString(36).substring(2, 5)
+          )
+            .toUpperCase()
+            .substring(0, 7)
+        );
+           console.log("newDrawIds",newDrawIds)
+         const updateResult = await subscriptionContractModel.updateOne(
+          { shop, orderId: id },
+          {
+            $push: {
+              drawIds: { $each: newDrawIds },
+              "ticketDetails.totalTicketsList": { $each: newDrawIds },
+              "ticketDetails.appliedTicketsList": { $each: newDrawIds },
+              "ticketDetails.appliedForDetail.0.appliedList": { $each: newDrawIds }
+            },
+            $inc: {
+              "ticketDetails.total": newDrawIds.length,
+              "ticketDetails.applied": newDrawIds.length,
+              "ticketDetails.appliedForDetail.0.tickets": newDrawIds.length
+            },
+            $set: {
+              updatedAt: new Date()
             }
           }
-        }
-      }
-    }
-  }`
-      const ordersResponse = await admin.graphql(query);
-      const ordersResult = await ordersResponse.json();
-
-      const dataString = typeof ordersResult === "string" ? ordersResult : JSON.stringify(ordersResult);
-      fs.writeFile("checkkkk.txt", dataString, (err) => {
-        if (err) {
-          console.error("Error writing to file:", err);
-        } else {
-          console.log("Data written to file successfully!");
-        }
-      });
-      if (ordersResult?.data?.orders?.userErrors?.length > 0) {
-        return {
-          message: "error",
-          data: ordersResult.data.orders.userErrors[0].message,
-          status: 400,
-        };
-      }
-      if (ordersResult?.data?.orders?.edges[0]?.node) {
-        let data = ordersResult?.data?.orders?.edges[0]?.node
-        console.log(data?.id, data?.customer?.firstName)
-        let exist = await subscriptionContractModel?.findOne({ shop, orderId: data?.id?.split('gid://shopify/Order/')[1] })
-        console.log(" exist?.orderId==", exist?.orderId)
-        let drawIds = [];
-        let entries =  parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity) 
-        console.log(Number(data?.lineItems?.nodes[0]?.quantity),"entries===",packageOrders.includes(id), entries)
-        if (!exist) {
-          for (let i = 0; i < entries; i++) {
-            // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-            let unique = (
-              Date.now().toString(36).substring(0, 4) +
-              Math.random().toString(36).substring(2, 5)
-            )
-              .toUpperCase()
-              .substring(0, 7);
-            drawIds.push(unique);
+        );
+         const billingResult = await billingModel.updateOne(
+          { shop, orderId: id },
+          {
+            $push: {
+              drawIds: { $each: newDrawIds },
+            },
+            $set: {
+              updatedAt: new Date()
+            }
           }
-
-          let ticketDetails = {
-            total: Number(drawIds?.length),
-            totalTicketsList: drawIds,
-            applied: Number(drawIds?.length),
-            appliedTicketsList: drawIds,
-            available: 0,
-            availableTicketsList: [],
-            appliedForDetail: [
-              {
-                tickets: Number(drawIds?.length),
-                productId: "gid://shopify/Product/8848887546070",
-                productName: "Digital Download for Giveaway #6 Entry",
-                appliedDate: data?.createdAt,
-                appliedList: drawIds,
-              },
-            ],
-          };
-
-
-          let contractDetail = await subscriptionContractModel.create({
-            shop: shop,
-            orderId: data?.id?.split('gid://shopify/Order/')[1],
-            contractId: "",
-            customerName:
-              data?.customer?.firstName?.trim() +
-              " " +
-              data?.customer?.lastName?.trim(),
-            customerEmail: data?.customer.email,
-            customerId: data?.customer?.id?.split("gid://shopify/Customer/")[1],
-            planUpdateDetail: {
-              sellingPlanUpdate: false,
-              upgradeTo: "",
-              futureEntries: 0,
-            },
-            billing_policy: {
-              interval: "onetime",
-              interval_count: 1,
-              min_cycles: 1,
-            },
-            products: [
-              {
-                productId: data?.lineItems?.nodes[0].product?.id,
-                productName: data?.lineItems?.nodes[0].product?.title,
-                price: data?.totalPrice,
-                currency: "USD",
-                quantity: data?.lineItems?.nodes[0]?.quantity,
-                entries: drawIds?.length,
-              },
-            ],
-            drawIds: drawIds,
-            status: "ONETIME",
-            nextBillingDate: new Date().toISOString(),
-            ticketDetails: ticketDetails,
-            // createdAt: data?.createdAt,
-            // updatedAt: data?.createdAt
-          });
-
-          console.log("contract cretaed successfully")
-          const currentDate = new Date().toISOString();
-          let billing = await billingModel.create({
-            shop: shop,
-            orderId: data?.id?.split('gid://shopify/Order/')[1],
-            contractId: "",
-            customerName:
-              data?.customer?.firstName?.trim() +
-              " " +
-              data?.customer?.lastName?.trim(),
-            customerEmail: data?.customer.email,
-            customerId: data?.customer?.id?.split("gid://shopify/Customer/")[1],
-            products: [
-              {
-                productId: data?.lineItems?.nodes[0].product?.id,
-                productName: data?.lineItems?.nodes[0].product?.title,
-                price: data?.totalPrice,
-                currency: "USD",
-                quantity: data?.lineItems?.nodes[0]?.quantity,
-                entries: drawIds?.length,
-              },
-            ],
-            billing_policy: {
-              interval: "onetime",
-              interval_count: 1,
-              min_cycles: 1,
-            },
-            entries: drawIds?.length,
-            planUpdateDetail: {
-              sellingPlanUpdate: false,
-              upgradeTo: "",
-              futureEntries: 0,
-            },
-            drawIds: drawIds,
-            status: "done",
-            billing_attempt_date: data?.createdAt,
-            renewal_date: data?.createdAt,
-            applied: false,
-          });
-          console.log("biling cretaed successfully")
-
-          await sendOrderEmail(contractDetail);
-
-        }
+        );
+  
+        console.log("Update successful:", updateResult, billingResult);
+      }else{
+        console.log("updated before")
       }
+  
     }
-    return;
+    return { message: "Documents updated successfully", status: 200 };
+
   } catch (error) {
-    console.error("Error processing POST request:", error);
+    console.error("Error updating documents:", error);
     return { message: "Error processing request", status: 500 };
   }
-}
+};
+
+
+// export const getOrders = async (admin) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     let packageOrders = ['#3789', '#3753']
+//     // let normal = ["#3794", '#3778', '#3777', '#3775', '#3772', '#3771', '#3767', '#3766', '#3759', '#3740', '#3729', '#3718', '#3712', '#3682']
+    
+//     for (let id of packageOrders) {
+
+//       console.log("id==", id)
+//       const query = `{
+//     orders(query: "name:${id}", first: 5) {
+//       edges {
+//         node {
+//           id
+//           name
+//           email
+//           createdAt
+//           totalPrice
+//           customer {
+//             id
+//             email
+//             firstName
+//             lastName
+//           }
+//           lineItems(first: 10) {
+//             nodes {
+//               id
+//               name
+//               quantity
+//               product {
+//                 id
+//                 title
+//                 handle
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }`
+//       const ordersResponse = await admin.graphql(query);
+//       const ordersResult = await ordersResponse.json();
+
+//       const dataString = typeof ordersResult === "string" ? ordersResult : JSON.stringify(ordersResult);
+//       fs.writeFile("checkkkk.txt", dataString, (err) => {
+//         if (err) {
+//           console.error("Error writing to file:", err);
+//         } else {
+//           console.log("Data written to file successfully!");
+//         }
+//       });
+//       if (ordersResult?.data?.orders?.userErrors?.length > 0) {
+//         return {
+//           message: "error",
+//           data: ordersResult.data.orders.userErrors[0].message,
+//           status: 400,
+//         };
+//       }
+//       if (ordersResult?.data?.orders?.edges[0]?.node) {
+//         let data = ordersResult?.data?.orders?.edges[0]?.node
+//         console.log(data?.id, data?.customer?.firstName)
+//         let exist = await subscriptionContractModel?.findOne({ shop, orderId: data?.id?.split('gid://shopify/Order/')[1] })
+//         console.log(" exist?.orderId==", exist?.orderId)
+//         let drawIds = [];
+//         let entries =  parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity) 
+//         console.log(Number(data?.lineItems?.nodes[0]?.quantity),"entries===",packageOrders.includes(id), entries)
+//         if (!exist) {
+//           for (let i = 0; i < entries; i++) {
+//             // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+//             let unique = (
+//               Date.now().toString(36).substring(0, 4) +
+//               Math.random().toString(36).substring(2, 5)
+//             )
+//               .toUpperCase()
+//               .substring(0, 7);
+//             drawIds.push(unique);
+//           }
+
+//           let ticketDetails = {
+//             total: Number(drawIds?.length),
+//             totalTicketsList: drawIds,
+//             applied: Number(drawIds?.length),
+//             appliedTicketsList: drawIds,
+//             available: 0,
+//             availableTicketsList: [],
+//             appliedForDetail: [
+//               {
+//                 tickets: Number(drawIds?.length),
+//                 productId: "gid://shopify/Product/8848887546070",
+//                 productName: "Digital Download for Giveaway #6 Entry",
+//                 appliedDate: data?.createdAt,
+//                 appliedList: drawIds,
+//               },
+//             ],
+//           };
+
+
+//           let contractDetail = await subscriptionContractModel.create({
+//             shop: shop,
+//             orderId: data?.id?.split('gid://shopify/Order/')[1],
+//             contractId: "",
+//             customerName:
+//               data?.customer?.firstName?.trim() +
+//               " " +
+//               data?.customer?.lastName?.trim(),
+//             customerEmail: data?.customer.email,
+//             customerId: data?.customer?.id?.split("gid://shopify/Customer/")[1],
+//             planUpdateDetail: {
+//               sellingPlanUpdate: false,
+//               upgradeTo: "",
+//               futureEntries: 0,
+//             },
+//             billing_policy: {
+//               interval: "onetime",
+//               interval_count: 1,
+//               min_cycles: 1,
+//             },
+//             products: [
+//               {
+//                 productId: data?.lineItems?.nodes[0].product?.id,
+//                 productName: data?.lineItems?.nodes[0].product?.title,
+//                 price: data?.totalPrice,
+//                 currency: "USD",
+//                 quantity: data?.lineItems?.nodes[0]?.quantity,
+//                 entries: drawIds?.length,
+//               },
+//             ],
+//             drawIds: drawIds,
+//             status: "ONETIME",
+//             nextBillingDate: new Date().toISOString(),
+//             ticketDetails: ticketDetails,
+//             // createdAt: data?.createdAt,
+//             // updatedAt: data?.createdAt
+//           });
+
+//           console.log("contract cretaed successfully")
+//           const currentDate = new Date().toISOString();
+//           let billing = await billingModel.create({
+//             shop: shop,
+//             orderId: data?.id?.split('gid://shopify/Order/')[1],
+//             contractId: "",
+//             customerName:
+//               data?.customer?.firstName?.trim() +
+//               " " +
+//               data?.customer?.lastName?.trim(),
+//             customerEmail: data?.customer.email,
+//             customerId: data?.customer?.id?.split("gid://shopify/Customer/")[1],
+//             products: [
+//               {
+//                 productId: data?.lineItems?.nodes[0].product?.id,
+//                 productName: data?.lineItems?.nodes[0].product?.title,
+//                 price: data?.totalPrice,
+//                 currency: "USD",
+//                 quantity: data?.lineItems?.nodes[0]?.quantity,
+//                 entries: drawIds?.length,
+//               },
+//             ],
+//             billing_policy: {
+//               interval: "onetime",
+//               interval_count: 1,
+//               min_cycles: 1,
+//             },
+//             entries: drawIds?.length,
+//             planUpdateDetail: {
+//               sellingPlanUpdate: false,
+//               upgradeTo: "",
+//               futureEntries: 0,
+//             },
+//             drawIds: drawIds,
+//             status: "done",
+//             billing_attempt_date: data?.createdAt,
+//             renewal_date: data?.createdAt,
+//             applied: false,
+//           });
+//           console.log("biling cretaed successfully")
+
+//           await sendOrderEmail(contractDetail);
+
+//         }
+//       }
+//     }
+//     return;
+//   } catch (error) {
+//     console.error("Error processing POST request:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// }
 
 
 
