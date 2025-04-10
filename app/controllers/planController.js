@@ -1348,9 +1348,9 @@ export const getOrders = async (admin) => {
   try {
     const { shop } = admin.rest.session;
     let packageOrders = ['#3789', '#3753']
-    let normal = ["#3794", '#3778', '#3777', '#3775', '#3772', '#3771', '#3767', '#3766', '#3759', '#3740', '#3729', '#3718', '#3712', '#3682']
+    // let normal = ["#3794", '#3778', '#3777', '#3775', '#3772', '#3771', '#3767', '#3766', '#3759', '#3740', '#3729', '#3718', '#3712', '#3682']
     
-    for (let id of normal) {
+    for (let id of packageOrders) {
 
       console.log("id==", id)
       const query = `{
@@ -1408,9 +1408,7 @@ export const getOrders = async (admin) => {
         let exist = await subscriptionContractModel?.findOne({ shop, orderId: data?.id?.split('gid://shopify/Order/')[1] })
         console.log(" exist?.orderId==", exist?.orderId)
         let drawIds = [];
-        let entries = packageOrders.includes(id) ? 
-        parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity) :
-        parseInt(8)* Number(data?.lineItems?.nodes[0]?.quantity)
+        let entries =  parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity) 
         console.log(Number(data?.lineItems?.nodes[0]?.quantity),"entries===",packageOrders.includes(id), entries)
         if (!exist) {
           for (let i = 0; i < entries; i++) {
