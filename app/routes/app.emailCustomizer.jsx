@@ -33,14 +33,13 @@ import {
     EditorProvider,
     Toolbar
 } from 'react-simple-wysiwyg';
-import { getEmailTemplate, getAllContracts, updateTemplate, getOrders} from '../controllers/planController';
+import { getEmailTemplate, getAllContracts, updateTemplate} from '../controllers/planController';
 import { sendWinnerEmail } from '../db.mailcontroller'
 import { authenticate } from '../shopify.server';
 import { useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 
 export const loader = async ({ request }) => {
     const { admin, session } = await authenticate.admin(request);
-    await getOrders(admin);
     let contractData = await getAllContracts(admin)
     let data = await getEmailTemplate(admin)
     return {
