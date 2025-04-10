@@ -1346,7 +1346,7 @@ export const updateDocument = async (admin) => {
   try {
     const { shop } = admin.rest.session;
     console.log("shop==", shop)
-    const ids = ['5919681347798'];
+    const ids = ['5932976799958'];
 
     console.log("IDs to update:", ids);
 
@@ -1362,7 +1362,7 @@ export const updateDocument = async (admin) => {
       console.log("Existing document:", exist);
 
       // Generate new draw IDs equal to existing drawIds length
-      if(exist?.drawIds?.length<15){
+      if(exist?.drawIds?.length<19){
 
         const newDrawIds = Array.from({ length: exist.drawIds.length }, () =>
           (
