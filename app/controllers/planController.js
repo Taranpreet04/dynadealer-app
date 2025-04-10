@@ -1342,81 +1342,81 @@ export const updateTemplate = async (admin, data) => {
 
 
 
-export const updateDocument = async (admin) => {
-  try {
-    const { shop } = admin.rest.session;
-    console.log("shop==", shop)
-    const ids = ['5932976799958'];
+// export const updateDocument = async (admin) => {
+//   try {
+//     const { shop } = admin.rest.session;
+//     console.log("shop==", shop)
+//     const ids = ['5932976799958'];
 
-    console.log("IDs to update:", ids);
+//     console.log("IDs to update:", ids);
 
-    for (const id of ids) {
-      console.log("Processing Order ID:", id);
+//     for (const id of ids) {
+//       console.log("Processing Order ID:", id);
 
-      const exist = await subscriptionContractModel.findOne({ shop, orderId: id });
-      if (!exist) {
-        console.log(`No record found for orderId: ${id}`);
-        continue;
-      }
+//       const exist = await subscriptionContractModel.findOne({ shop, orderId: id });
+//       if (!exist) {
+//         console.log(`No record found for orderId: ${id}`);
+//         continue;
+//       }
 
-      console.log("Existing document:", exist);
+//       console.log("Existing document:", exist);
 
-      // Generate new draw IDs equal to existing drawIds length
-      if(exist?.drawIds?.length<19){
+//       // Generate new draw IDs equal to existing drawIds length
+//       if(exist?.drawIds?.length<19){
 
-        const newDrawIds = Array.from({ length: exist.drawIds.length }, () =>
-          (
-            Date.now().toString(36).substring(0, 4) +
-            Math.random().toString(36).substring(2, 5)
-          )
-            .toUpperCase()
-            .substring(0, 7)
-        );
-           console.log("newDrawIds",newDrawIds)
-         const updateResult = await subscriptionContractModel.updateOne(
-          { shop, orderId: id },
-          {
-            $push: {
-              drawIds: { $each: newDrawIds },
-              "ticketDetails.totalTicketsList": { $each: newDrawIds },
-              "ticketDetails.appliedTicketsList": { $each: newDrawIds },
-              "ticketDetails.appliedForDetail.0.appliedList": { $each: newDrawIds }
-            },
-            $inc: {
-              "ticketDetails.total": newDrawIds.length,
-              "ticketDetails.applied": newDrawIds.length,
-              "ticketDetails.appliedForDetail.0.tickets": newDrawIds.length
-            },
-            $set: {
-              updatedAt: new Date()
-            }
-          }
-        );
-         const billingResult = await billingModel.updateOne(
-          { shop, orderId: id },
-          {
-            $push: {
-              drawIds: { $each: newDrawIds },
-            },
-            $set: {
-              updatedAt: new Date()
-            }
-          }
-        );
+//         const newDrawIds = Array.from({ length: exist.drawIds.length }, () =>
+//           (
+//             Date.now().toString(36).substring(0, 4) +
+//             Math.random().toString(36).substring(2, 5)
+//           )
+//             .toUpperCase()
+//             .substring(0, 7)
+//         );
+//            console.log("newDrawIds",newDrawIds)
+//          const updateResult = await subscriptionContractModel.updateOne(
+//           { shop, orderId: id },
+//           {
+//             $push: {
+//               drawIds: { $each: newDrawIds },
+//               "ticketDetails.totalTicketsList": { $each: newDrawIds },
+//               "ticketDetails.appliedTicketsList": { $each: newDrawIds },
+//               "ticketDetails.appliedForDetail.0.appliedList": { $each: newDrawIds }
+//             },
+//             $inc: {
+//               "ticketDetails.total": newDrawIds.length,
+//               "ticketDetails.applied": newDrawIds.length,
+//               "ticketDetails.appliedForDetail.0.tickets": newDrawIds.length
+//             },
+//             $set: {
+//               updatedAt: new Date()
+//             }
+//           }
+//         );
+//          const billingResult = await billingModel.updateOne(
+//           { shop, orderId: id },
+//           {
+//             $push: {
+//               drawIds: { $each: newDrawIds },
+//             },
+//             $set: {
+//               updatedAt: new Date()
+//             }
+//           }
+//         );
   
-        console.log("Update successful:", updateResult, billingResult);
-      }else{
-        console.log("updated before")
-      }
+//         console.log("Update successful:", updateResult, billingResult);
+//       }else{
+//         console.log("updated before")
+//       }
   
-    }
-    return { message: "Documents updated successfully", status: 200 };
+//     }
+//     return { message: "Documents updated successfully", status: 200 };
 
-  } catch (error) {
-    console.error("Error updating documents:", error);
-    return { message: "Error processing request", status: 500 };
-  }
-};
+//   } catch (error) {
+//     console.error("Error updating documents:", error);
+//     return { message: "Error processing request", status: 500 };
+//   }
+// };
 
 
 // export const getOrders = async (admin) => {
