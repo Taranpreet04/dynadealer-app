@@ -8,8 +8,6 @@ import {
   Grid,
   Badge,
   BlockStack,
-  SkeletonDisplayText,
-  SkeletonBodyText,
   Button,
 } from "@shopify/polaris";
 import {
