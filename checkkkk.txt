@@ -1,1 +1,431 @@
-{"data":{"orders":{"edges":[]}},"extensions":{"cost":{"requestedQueryCost":38,"actualQueryCost":2,"throttleStatus":{"maximumAvailable":2000,"currentlyAvailable":1998,"restoreRate":100}}},"headers":{"Alt-Svc":["h3=\":443\"; ma=86400"],"Cf-Cache-Status":["DYNAMIC"],"Cf-Ray":["92e10c8dcc636ecb-BOM"],"Connection":["keep-alive"],"Content-Encoding":["gzip"],"Content-Language":["en"],"Content-Security-Policy":["default-src 'self' data: blob: 'unsafe-inline' 'unsafe-eval' https://* shopify-pos://*; block-all-mixed-content; child-src 'self' https://* shopify-pos://*; connect-src 'self' wss://* https://*; frame-ancestors 'none'; img-src 'self' data: blob: https:; script-src https://cdn.shopify.com https://cdn.shopifycdn.net https://checkout.pci.shopifyinc.com https://checkout.pci.shopifyinc.com/build/75a428d/card_fields.js https://api.stripe.com https://mpsnare.iesnare.com https://appcenter.intuit.com https://www.paypal.com https://js.braintreegateway.com https://c.paypal.com https://maps.googleapis.com https://www.google-analytics.com https://v.shopify.com 'self' 'unsafe-inline' 'unsafe-eval'; upgrade-insecure-requests; report-uri /csp-report?source%5Baction%5D=query&source%5Bapp%5D=Shopify&source%5Bcontroller%5D=admin%2Fgraphql&source%5Bsection%5D=admin_api&source%5Buuid%5D=a864bca6-d49c-4ae9-8af6-7df9429be2b2-1744275575; report-to shopify-csp"],"Content-Type":["application/json; charset=utf-8"],"Date":["Thu, 10 Apr 2025 08:59:36 GMT"],"Nel":["{\"success_fraction\":0.01,\"report_to\":\"cf-nel\",\"max_age\":604800}"],"Referrer-Policy":["origin-when-cross-origin"],"Report-To":["{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=qn1PboD7QfqE%2FCKJLaya2kO8bbZHtX0IadT5uSQGjFHOL6yhN8I7lVOyMQsRdOHUM6%2B61153XNFNNGHke%2BpEtiiJn54ZHXNSRAZQBscTAlS4BQqRvTmKKHOZAZs6%2FL4aGxl%2Bf9Zc%2BDn2i8CQZImi\"}],\"group\":\"cf-nel\",\"max_age\":604800}"],"Reporting-Endpoints":["shopify-csp=\"/csp-report?source%5Baction%5D=query&source%5Bapp%5D=Shopify&source%5Bcontroller%5D=admin%2Fgraphql&source%5Bsection%5D=admin_api&source%5Buuid%5D=a864bca6-d49c-4ae9-8af6-7df9429be2b2-1744275575\""],"Server":["cloudflare"],"Server-Timing":["processing;dur=69, graphql;desc=\"admin/query/other\", cfRequestDuration;dur=411.000013"],"Shopify-Edge-Ip":["23.227.38.74"],"Strict-Transport-Security":["max-age=7889238"],"Transfer-Encoding":["chunked"],"Vary":["Accept-Encoding"],"X-Content-Type-Options":["nosniff"],"X-Dc":["gcp-us-central1,gcp-us-east1,gcp-us-east1"],"X-Download-Options":["noopen"],"X-Frame-Options":["DENY"],"X-Permitted-Cross-Domain-Policies":["none"],"X-Request-Id":["a864bca6-d49c-4ae9-8af6-7df9429be2b2-1744275575"],"X-Shardid":["189"],"X-Shopid":["63688999102"],"X-Shopify-Api-Deprecated-Reason":["https://shopify.dev/api/usage/versioning#deprecation-practices"],"X-Shopify-Api-Version":["2024-10"],"X-Sorting-Hat-Podid":["189"],"X-Sorting-Hat-Shopid":["63688999102"],"X-Stats-Apiclientid":["38370410497"],"X-Stats-Apipermissionid":["528014704830"],"X-Stats-Userid":[""],"X-Xss-Protection":["1; mode=block"]}}
+{
+  "id": 6649441190078,
+  "admin_graphql_api_id": "gid://shopify/Order/6649441190078",
+  "app_id": 580111,
+  "browser_ip": "185.136.159.181",
+  "buyer_accepts_marketing": false,
+  "cancel_reason": null,
+  "cancelled_at": null,
+  "cart_token": "Z2NwLXVzLWVhc3QxOjAxSlMxNzE0OVpDUDRTOUFaSlpQQTlXWVg1",
+  "checkout_id": 29603797500094,
+  "checkout_token": "6e73f1de9c59c5efe7a4f2b336818337",
+  "client_details": {
+    "accept_language": "en-IO",
+    "browser_height": null,
+    "browser_ip": "185.136.159.181",
+    "browser_width": null,
+    "session_hash": null,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+  },
+  "closed_at": null,
+  "company": null,
+  "confirmation_number": "FMFRTQ8Q8",
+  "confirmed": true,
+  "contact_email": "mahi11@yopmail.com",
+  "created_at": "2025-04-17T02:34:08-04:00",
+  "currency": "USD",
+  "current_shipping_price_set": {
+    "shop_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    }
+  },
+  "current_subtotal_price": "67.50",
+  "current_subtotal_price_set": {
+    "shop_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    }
+  },
+  "current_total_additional_fees_set": null,
+  "current_total_discounts": "7.50",
+  "current_total_discounts_set": {
+    "shop_money": {
+      "amount": "7.50",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "7.50",
+      "currency_code": "USD"
+    }
+  },
+  "current_total_duties_set": null,
+  "current_total_price": "67.50",
+  "current_total_price_set": {
+    "shop_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    }
+  },
+  "current_total_tax": "0.00",
+  "current_total_tax_set": {
+    "shop_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    }
+  },
+  "customer_locale": "en-IO",
+  "device_id": null,
+  "discount_codes": [
+    {
+      "code": "MY-TICKET",
+      "amount": "7.50",
+      "type": "percentage"
+    }
+  ],
+  "duties_included": false,
+  "email": "mahi11@yopmail.com",
+  "estimated_taxes": false,
+  "financial_status": "paid",
+  "fulfillment_status": null,
+  "landing_site": "/password",
+  "landing_site_ref": null,
+  "location_id": null,
+  "merchant_business_entity_id": "MTYzNjg4OTk5MTAy",
+  "merchant_of_record_app_id": null,
+  "name": "#1159",
+  "note": null,
+  "note_attributes": [],
+  "number": 159,
+  "order_number": 1159,
+  "order_status_url": "https://virendertesting.myshopify.com/63688999102/orders/2cd7e898306f0684b1cf6832938ad01a/authenticate?key=4dbd5463f28076dab9479500b1cc161a",
+  "original_total_additional_fees_set": null,
+  "original_total_duties_set": null,
+  "payment_gateway_names": [
+    "bogus"
+  ],
+  "phone": null,
+  "po_number": null,
+  "presentment_currency": "USD",
+  "processed_at": "2025-04-17T02:34:07-04:00",
+  "reference": null,
+  "referring_site": "",
+  "source_identifier": null,
+  "source_name": "web",
+  "source_url": null,
+  "subtotal_price": "67.50",
+  "subtotal_price_set": {
+    "shop_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    }
+  },
+  "tags": "",
+  "tax_exempt": false,
+  "tax_lines": [],
+  "taxes_included": false,
+  "test": true,
+  "token": "2cd7e898306f0684b1cf6832938ad01a",
+  "total_cash_rounding_payment_adjustment_set": {
+    "shop_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    }
+  },
+  "total_cash_rounding_refund_adjustment_set": {
+    "shop_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    }
+  },
+  "total_discounts": "7.50",
+  "total_discounts_set": {
+    "shop_money": {
+      "amount": "7.50",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "7.50",
+      "currency_code": "USD"
+    }
+  },
+  "total_line_items_price": "75.00",
+  "total_line_items_price_set": {
+    "shop_money": {
+      "amount": "75.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "75.00",
+      "currency_code": "USD"
+    }
+  },
+  "total_outstanding": "0.00",
+  "total_price": "67.50",
+  "total_price_set": {
+    "shop_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "67.50",
+      "currency_code": "USD"
+    }
+  },
+  "total_shipping_price_set": {
+    "shop_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    }
+  },
+  "total_tax": "0.00",
+  "total_tax_set": {
+    "shop_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    },
+    "presentment_money": {
+      "amount": "0.00",
+      "currency_code": "USD"
+    }
+  },
+  "total_tip_received": "0.00",
+  "total_weight": 0,
+  "updated_at": "2025-04-17T02:34:09-04:00",
+  "user_id": null,
+  "billing_address": {
+    "first_name": "rohan",
+    "address1": "New Delhi Railway Station Bhavbhuti Marg Kamla Market Ajmeri Gate",
+    "phone": null,
+    "city": "New Delhi",
+    "zip": "110006",
+    "province": null,
+    "country": "British Indian Ocean Territory",
+    "last_name": "preet",
+    "address2": "near Vishal apartment",
+    "company": null,
+    "latitude": 28.6428915,
+    "longitude": 77.2190894,
+    "name": "rohan preet",
+    "country_code": "IO",
+    "province_code": null
+  },
+  "customer": {
+    "id": 8258782658750,
+    "email": "mahi11@yopmail.com",
+    "created_at": "2025-04-17T02:34:07-04:00",
+    "updated_at": "2025-04-17T02:34:08-04:00",
+    "first_name": "rohan",
+    "last_name": "preet",
+    "state": "disabled",
+    "note": null,
+    "verified_email": true,
+    "multipass_identifier": null,
+    "tax_exempt": false,
+    "phone": null,
+    "email_marketing_consent": {
+      "state": "not_subscribed",
+      "opt_in_level": "single_opt_in",
+      "consent_updated_at": null
+    },
+    "sms_marketing_consent": null,
+    "tags": "",
+    "currency": "USD",
+    "tax_exemptions": [],
+    "admin_graphql_api_id": "gid://shopify/Customer/8258782658750",
+    "default_address": {
+      "id": 9912098619582,
+      "customer_id": 8258782658750,
+      "first_name": "rohan",
+      "last_name": "preet",
+      "company": null,
+      "address1": "New Delhi Railway Station Bhavbhuti Marg Kamla Market Ajmeri Gate",
+      "address2": "near Vishal apartment",
+      "city": "New Delhi",
+      "province": null,
+      "country": "British Indian Ocean Territory",
+      "zip": "110006",
+      "phone": null,
+      "name": "rohan preet",
+      "province_code": null,
+      "country_code": "IO",
+      "country_name": "British Indian Ocean Territory",
+      "default": true
+    }
+  },
+  "discount_applications": [
+    {
+      "target_type": "line_item",
+      "type": "discount_code",
+      "value": "10.0",
+      "value_type": "percentage",
+      "allocation_method": "each",
+      "target_selection": "entitled",
+      "code": "MY-TICKET"
+    }
+  ],
+  "fulfillments": [],
+  "line_items": [
+    {
+      "id": 15213546766526,
+      "admin_graphql_api_id": "gid://shopify/LineItem/15213546766526",
+      "attributed_staffs": [],
+      "current_quantity": 1,
+      "fulfillable_quantity": 1,
+      "fulfillment_service": "manual",
+      "fulfillment_status": null,
+      "gift_card": false,
+      "grams": 0,
+      "name": "GIVEAWAY T-SHIRT: Chrome Will Get You Home Men's Short Sleeve T-Shirt - s / 8 Entries",
+      "price": "75.00",
+      "price_set": {
+        "shop_money": {
+          "amount": "75.00",
+          "currency_code": "USD"
+        },
+        "presentment_money": {
+          "amount": "75.00",
+          "currency_code": "USD"
+        }
+      },
+      "product_exists": true,
+      "product_id": 8409448874174,
+      "properties": [
+        {
+          "name": "entries",
+          "value": "8"
+        },
+        {
+          "name": "plan-type",
+          "value": "onetime"
+        }
+      ],
+      "quantity": 1,
+      "requires_shipping": true,
+      "sku": null,
+      "taxable": true,
+      "title": "GIVEAWAY T-SHIRT: Chrome Will Get You Home Men's Short Sleeve T-Shirt",
+      "total_discount": "0.00",
+      "total_discount_set": {
+        "shop_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        },
+        "presentment_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        }
+      },
+      "variant_id": 44822369140926,
+      "variant_inventory_management": "shopify",
+      "variant_title": "s / 8 Entries",
+      "vendor": "Dyna Dealer",
+      "tax_lines": [],
+      "duties": [],
+      "discount_allocations": [
+        {
+          "amount": "7.50",
+          "amount_set": {
+            "shop_money": {
+              "amount": "7.50",
+              "currency_code": "USD"
+            },
+            "presentment_money": {
+              "amount": "7.50",
+              "currency_code": "USD"
+            }
+          },
+          "discount_application_index": 0
+        }
+      ]
+    }
+  ],
+  "payment_terms": null,
+  "refunds": [],
+  "shipping_address": {
+    "first_name": "rohan",
+    "address1": "New Delhi Railway Station Bhavbhuti Marg Kamla Market Ajmeri Gate",
+    "phone": null,
+    "city": "New Delhi",
+    "zip": "110006",
+    "province": null,
+    "country": "British Indian Ocean Territory",
+    "last_name": "preet",
+    "address2": "near Vishal apartment",
+    "company": null,
+    "latitude": 28.6428915,
+    "longitude": 77.2190894,
+    "name": "rohan preet",
+    "country_code": "IO",
+    "province_code": null
+  },
+  "shipping_lines": [
+    {
+      "id": 5142485893310,
+      "carrier_identifier": null,
+      "code": "Standard",
+      "current_discounted_price_set": {
+        "shop_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        },
+        "presentment_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        }
+      },
+      "discounted_price": "0.00",
+      "discounted_price_set": {
+        "shop_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        },
+        "presentment_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        }
+      },
+      "is_removed": false,
+      "phone": null,
+      "price": "0.00",
+      "price_set": {
+        "shop_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        },
+        "presentment_money": {
+          "amount": "0.00",
+          "currency_code": "USD"
+        }
+      },
+      "requested_fulfillment_service_id": null,
+      "source": "shopify",
+      "title": "Standard",
+      "tax_lines": [],
+      "discount_allocations": []
+    }
+  ],
+  "returns": []
+}

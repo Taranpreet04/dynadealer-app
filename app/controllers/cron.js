@@ -59,6 +59,7 @@ export async function recurringOrderCron() {
             .subscriptionBillingAttempt.id
         ) {
           const currentDate = new Date().toISOString();
+          console.log("currentDate==", currentDate)
           let entries =
             Number(data[i]?.sellingPlanName?.split("-entries-")?.[1]) * 1;
           let drawIds = [];

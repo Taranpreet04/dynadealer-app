@@ -1,4 +1,4 @@
-import { sendOrderEmail } from "../db.mailcontroller";
+import { sendBonusEmail, sendOrderEmail } from "../db.mailcontroller";
 import {
   getCustomerDataByContractId,
   getLiveRaffle,
@@ -21,6 +21,18 @@ export const action = async ({ request }) => {
     return new Response("Unauthorised user!", { status: 401 });
   }
 
+  const waitForContract = async (orderId, maxAttempts = 3, delay = 700) => {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      // const contract = await subscriptionContractModel.findOne({ orderId });
+      const orderExist = await subscriptionContractModel
+      .findOne({ orderId: orderId })
+      .sort({ createdAt: -1 });
+      if (orderExist) return orderExist;
+      await new Promise((res) => setTimeout(res, delay)); // wait
+    }
+
+    return null; // contract not found after retries
+  };
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
@@ -41,18 +53,43 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
-        console.log("payload==", payload)
+        console.log("payload==contract create");
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-
+        const dataString =
+          typeof cusRes === "string" ? cusRes : JSON.stringify(cusRes);
+        fs.writeFile("checkkkkSub.txt", dataString, (err) => {
+          if (err) {
+            console.error("Error writing to file:", err);
+          } else {
+            console.log("payload written to file successfully!");
+          }
+        });
+        // const code = cusRes?.data?.originOrder?.discountCode;
+        // console.log("code===", code);
+        // const check = cusRes?.data?.originOrder?.lineItems?.edges?.some(
+        //   (item) => {
+        //     const hasDiscount = item?.node?.discountAllocations?.length !== 0;
+        //     const isSubPurchase = item?.node?.sellingPlan;
+        //     console.log("hasDiscount==", hasDiscount);
+        //     console.log("isOneTimePurchase==", isSubPurchase);
+        //     return hasDiscount && isSubPurchase;
+        //   },
+        // );
+        // console.log("check==", check);
+        let entries = 0;
+        // if (check) {
+        //   entries = Number(code.split("-")[1]);
+        // }
+        // console.log("code.split('-')[0]==", code.split("-")[1]);
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
-
+        entries = Number(entries) + Number(planName.split("-entries-")[1]);
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
             productId: product?.node?.productId,
@@ -64,7 +101,7 @@ export const action = async ({ request }) => {
           products.push(detail);
         });
         let drawIds = [];
-        for (let i = 0; i < Number(planName.split("-entries-")[1]); i++) {
+        for (let i = 0; i < Number(entries); i++) {
           // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
           let unique = (
             Date.now().toString(36).substring(0, 4) +
@@ -98,47 +135,46 @@ export const action = async ({ request }) => {
           });
         }
 
+        let liveRaffle = await getLiveRaffle(shop);
+        console.log("liveRaffle=", liveRaffle);
+        if (liveRaffle?.activeDraws?.length > 0) {
+          ticketDetails = {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied: Number(drawIds?.length),
+            appliedTicketsList: drawIds,
+            available: 0,
+            availableTicketsList: [],
+            appliedForDetail: [
+              {
+                tickets: Number(drawIds?.length),
+                productId: liveRaffle?.activeDraws[0]?.id,
+                productName: liveRaffle?.activeDraws[0].title,
+                appliedDate: new Date(),
+                appliedList: drawIds,
+              },
+            ],
+          };
+        } else {
+          ticketDetails = {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied: 0,
+            appliedTicketsList: [],
+            available: Number(drawIds?.length),
+            availableTicketsList: drawIds,
+            appliedForDetail: [],
+          };
+        }
 
-          let liveRaffle = await getLiveRaffle(shop);
-              console.log("liveRaffle=", liveRaffle);
-              if (liveRaffle?.activeDraws?.length > 0) {
-                ticketDetails = {
-                  total: Number(drawIds?.length),
-                  totalTicketsList: drawIds,
-                  applied: Number(drawIds?.length),
-                  appliedTicketsList: drawIds,
-                  available: 0,
-                  availableTicketsList: [],
-                  appliedForDetail: [
-                    {
-                      tickets: Number(drawIds?.length),
-                      productId: liveRaffle?.activeDraws[0]?.id,
-                      productName: liveRaffle?.activeDraws[0].title,
-                      appliedDate: new Date(),
-                      appliedList: drawIds,
-                    },
-                  ],
-                };
-              } else {
-                ticketDetails = {
-                  total: Number(drawIds?.length),
-                  totalTicketsList: drawIds,
-                  applied: 0,
-                  appliedTicketsList: [],
-                  available: Number(drawIds?.length),
-                  availableTicketsList: drawIds,
-                  appliedForDetail: [],
-                };
-              }
-       
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
           contractId: contractId || "",
           customerName:
-          cusRes?.data?.customer?.firstName?.trim() +
-          " " +
-          cusRes?.data?.customer?.lastName?.trim(),
+            cusRes?.data?.customer?.firstName?.trim() +
+            " " +
+            cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
           customerId: customerId || "",
           sellingPlanName: planName,
@@ -151,7 +187,7 @@ export const action = async ({ request }) => {
           billing_policy: billing_policy,
           products: products,
           drawIds: drawIds,
-          status:"ACTIVE",
+          status: "ACTIVE",
           nextBillingDate: cusRes?.data?.nextBillingDate,
           ticketDetails: ticketDetails,
         });
@@ -169,7 +205,7 @@ export const action = async ({ request }) => {
           customerId: customerId || "",
           products: products,
           billing_policy: billing_policy,
-          entries: planName.split("-entries-")[1],
+          entries: entries,
           planUpdateDetail: {
             sellingPlanUpdate: planDetails?.sellingPlanUpdate,
             upgradeTo: planDetails?.upgradeTo,
@@ -234,34 +270,46 @@ export const action = async ({ request }) => {
       }
     case "ORDERS_CREATE":
       try {
-        let entries;
-
+        console.log("payload==order  create");
+        // let appliedOnce= false;
         // const dataString =
-        //   typeof liveRaffle === "string"
-        //     ? liveRaffle
-        //     : JSON.stringify(liveRaffle);
-        // fs.writeFile("checkkkk.txt", dataString, (err) => {
+        //   typeof payload === "string" ? payload : JSON.stringify(payload);
+        // fs.writeFile("checkkkkOnetime.txt", dataString, (err) => {
         //   if (err) {
         //     console.error("Error writing to file:", err);
         //   } else {
-        //     console.log("Data written to file successfully!");
+        //     console.log("payload written to file successfully!");
         //   }
         // });
+        // let liveRaffle = [];
+        const liveRaffle = await getLiveRaffle(shop);
         for (const product of payload?.line_items || []) {
+          let entries = 0;
+
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
               property?.name == "plan-type" && property?.value == "onetime",
           );
 
           if (oneTimeProductExist) {
-            entries = (product?.properties?.find(
-              (property) => property?.name == "entries",
-            )?.value) * product?.quantity;
+            // console.log(
+            //   "product?.discount_codes?.length==",
+            //   product?.discount_codes?.length,
+            // );
+            // if (product?.discount_allocations?.length > 0 && code) {
+            //   entries = entries + Number(code?.split('-')[1]);
+            // }
+            console.log("entries==", entries);
+            entries =
+              entries +
+              product?.properties?.find(
+                (property) => property?.name == "entries",
+              )?.value *
+                product?.quantity;
 
-            console.log("entries==", entries)
+            console.log("entries==", entries);
             let drawIds = [];
             if (Number(entries) > 0) {
-             
               for (let i = 0; i < Number(entries); i++) {
                 let unique = (
                   Date.now().toString(36).substring(0, 4) +
@@ -272,8 +320,6 @@ export const action = async ({ request }) => {
                 drawIds.push(unique);
               }
 
-              let liveRaffle = await getLiveRaffle(shop);
-              console.log("liveRaffle=", liveRaffle);
               let ticketDetails;
               if (liveRaffle?.activeDraws?.length > 0) {
                 ticketDetails = {
@@ -380,7 +426,6 @@ export const action = async ({ request }) => {
                 applied: false,
               });
 
-
               let membershiplevel = product?.properties
                 ?.find((property) => property?.name == "membership")
                 ?.value?.toLowerCase();
@@ -399,6 +444,106 @@ export const action = async ({ request }) => {
               }
               sendOrderEmail(contractDetail);
             }
+          }
+        }
+
+        let code = payload?.discount_codes?.[0]?.code;
+
+        if (code) {
+          console.log("code==", code);
+
+          let bonusEntries = Number(code.split("-")[1]);
+          let newIds = [];
+
+          if (bonusEntries > 0) {
+            for (let i = 0; i < bonusEntries; i++) {
+              let unique = (
+                Date.now().toString(36).substring(0, 3) +
+                Math.random().toString(36).substring(1, 5)
+              )
+                .toUpperCase()
+                .substring(0, 7);
+              newIds.push(unique);
+            }
+
+            console.log("newIds==", newIds);
+
+            const activeDraw = liveRaffle?.activeDraws?.[0];
+            if (!activeDraw) {
+              console.log("No active draw found");
+              // return;
+              return new Response(
+                "Error processing webhook---No active draw found",
+                { status: 200 },
+              );
+            }
+
+            const orderExist = await waitForContract(payload?.id);
+            // if (!contract) {
+            //   console.log("Subscription contract not found after retries");
+            //   return;
+            // }
+            // Proceed with your logic
+            // const orderExist = await subscriptionContractModel
+            //   .findOne({ orderId: payload?.id })
+            //   .sort({ createdAt: -1 });
+
+            if (!orderExist) {
+              console.log("Order not found");
+              // return;
+              return new Response(
+                "Error processing webhook---Order not found",
+                { status: 200 },
+              );
+            }
+
+            let ticketDetails = orderExist.ticketDetails || {};
+
+            let newTicketDetails = {
+              ...ticketDetails,
+              total: (ticketDetails.total || 0) + bonusEntries,
+              totalTicketsList: [
+                ...(ticketDetails.totalTicketsList || []),
+                ...newIds,
+              ],
+              applied: (ticketDetails.applied || 0) + bonusEntries,
+              appliedTicketsList: [
+                ...(ticketDetails.appliedTicketsList || []),
+                ...newIds,
+              ],
+              appliedForDetail: [
+                ...(ticketDetails.appliedForDetail || []),
+                {
+                  tickets: bonusEntries,
+                  productId: activeDraw.id,
+                  productName: activeDraw.title,
+                  appliedDate: new Date(),
+                  appliedList: newIds,
+                  bonusEntry: true,
+                },
+              ],
+            };
+
+            const updatedContract =
+              await subscriptionContractModel.findOneAndUpdate(
+                { orderId: payload?.id },
+                {
+                  $set: {
+                    ticketDetails: newTicketDetails,
+                  },
+                },
+                { new: true },
+              );
+
+              let data={
+                customerName: orderExist?.customerName,
+                orderId: payload?.id,
+                customerEmail: orderExist?.customerEmail,
+                productName: activeDraw.title,
+                newIds: newIds
+              }
+              sendBonusEmail(data)
+            console.log("Updated contract==", updatedContract);
           }
         }
 

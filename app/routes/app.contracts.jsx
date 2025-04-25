@@ -21,7 +21,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
-import { getSubscriptions, getExportData , } from "../controllers/planController";
+import { getSubscriptions, getExportData } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx";
@@ -75,7 +75,7 @@ export default function ContractData() {
     setDate({ month, year });
   };
   useEffect(() => {
-    let limit=50
+    let limit = 50;
     shopify.loading(true);
     setTableSkel(true);
     loaderData?.planDetails
@@ -107,15 +107,18 @@ export default function ContractData() {
       let detail = actionData?.data;
 
       let dataToExport = [];
-
       detail.map((detail) => {
-        detail?.appliedForDetail[0]?.appliedList.map((data) => {
-          dataToExport.push({
-            drawId: data,
-            customerId: detail?.customerId,
-            customerName: detail?.customerName,
-            orderId: detail?.orderId,
-          });
+        detail?.appliedForDetail?.map((list) => {
+          if (list?.productId == products[0]) {
+            list?.appliedList.map((data) => {
+              dataToExport.push({
+                drawId: data,
+                customerId: detail?.customerId,
+                customerName: detail?.customerName,
+                orderId: detail?.orderId,
+              });
+            });
+          }
         });
       });
       if (dataToExport?.length > 0) {

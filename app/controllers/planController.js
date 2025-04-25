@@ -857,6 +857,29 @@ export const getCustomerDataByContractId = async (admin, id) => {
                     }
                   }
                   customerLocale
+                  discountCode
+      cartDiscountAmount
+      lineItems(first: 10) {
+        edges {
+          node {
+            discountAllocations {
+              allocatedAmount {
+                amount
+                currencyCode
+              }
+            }
+            totalDiscount
+            sellingPlan {
+              name
+              sellingPlanId
+            }
+            name
+            id
+            title
+          }
+        }
+      }
+      totalDiscounts
                 }
                 customer {
                   firstName
@@ -1165,17 +1188,17 @@ export const setDefaultTemplate = async (shop) => {
       footer: `Best Regards,
             Dyna dealers`,
       html: `
-            <p>Hi {{customerName}},</p>
+              <p>Hi {{customerName}},</p>
 
-            <p>Your orderId is: {{orderId}}</p>
-            <p>Your have {{drawIdsLength}} chances for winning.</p>
-            <p>Here, the list of your ticket Entries which are applied for {{productName}} giveaway</p>
-           
-                {{drawIdsList}}
-               
-            <pre>
-                {{footer}}
-            </pre>`,
+              <p>Your orderId is: {{orderId}}</p>
+              <p>Your have {{drawIdsLength}} chances for winning.</p>
+              <p>Here, the list of your ticket Entries which are applied for {{productName}} giveaway</p>
+            
+                  {{drawIdsList}}
+                
+              <pre>
+                  {{footer}}
+              </pre>`,
 
       appliedMailParameters: [
         {
@@ -1339,6 +1362,7 @@ export const updateTemplate = async (admin, data) => {
     return { message: "Error processing request", status: 500 };
   }
 };
+
 
 
 
