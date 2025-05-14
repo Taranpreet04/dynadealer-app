@@ -1342,6 +1342,70 @@ export const updateTemplate = async (admin, data) => {
 
 
 
+export const updateDb=async(admin, check)=>{
+  try{
+    const {skip, limit} = check
+    const { shop } = admin.rest.session;
+let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(0).limit(5)
+console.log("data==",data)
+data.forEach(async(item)=>{
+  console.log("item?.orderId==", item?.orderId)
+  const query = `{
+  order(id: "gid://shopify/Order/${item?.orderId}") {
+    id
+    name
+    email
+    createdAt
+    customer {
+      id
+      firstName
+      lastName
+      email
+      phone
+    }
+  }
+}
+`;
+  const orderRes = await admin.graphql(query);
+  const orderResponse = await orderRes.json();
+  //  const dataString = typeof orderResponse === "string" ? orderResponse : JSON.stringify(orderResponse);
+    // fs.appendFile("checkkkk.txt", dataString, (err) => {
+    //     if (err) {
+    //         console.error("Error writing to file:", err);
+    //     } else {
+    //         console.log("Data written to file successfully!");
+    //     }
+    // });
+    console.log("order-res", orderResponse?.data?.order)
+    const newData = orderResponse?.data?.order;
+    console.log("newData?.customer?.phone",newData?.customer?.phone)
+    console.log("newData?.name", newData?.name)
+if(newData){
+
+  const detailUpdate = await subscriptionContractModel.updateMany(
+    { shop, orderId: item?.orderId },
+    {
+      $set: {
+        customerPhone: newData?.customer?.phone || null,
+        orderHashId: newData?.name || null,
+      },
+    },
+    { new: true } // returns the updated document
+  );
+}
+
+})
+  return { message: "success" };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+}
+
+
+
+
+
 // export const updateDocument = async (admin) => {
 //   try {
 //     const { shop } = admin.rest.session;
