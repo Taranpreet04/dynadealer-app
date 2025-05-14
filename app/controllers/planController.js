@@ -1346,7 +1346,7 @@ export const updateDb=async(admin, check)=>{
   try{
     const {skip, limit} = check
     const { shop } = admin.rest.session;
-let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(600).limit(300)
+let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(900).limit(500)
 console.log("data==",data)
 data.forEach(async(item)=>{
   console.log("item?.orderId==", item?.orderId)
