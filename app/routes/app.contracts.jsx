@@ -127,12 +127,11 @@ export default function ContractData() {
           {
             sheet: "tickets",
             columns: [
-              { label: "Customer Name", value: "customerName" },
               { label: "Customer Id", value: "customerId" },
+              { label: "Order ID", value: "orderHashId" },
+              { label: "Customer Name", value: "customerName" },
               { label: "Email", value: "customerEmail" },
               { label: "Phone", value: "customerPhone" },
-              { label: "Order ID", value: "orderId" },
-              { label: "Order Hash ID", value: "orderHashId" },
               { label: "Draw ID", value: "drawId" },
             ],
             content: dataToExport,

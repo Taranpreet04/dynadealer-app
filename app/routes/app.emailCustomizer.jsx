@@ -61,7 +61,8 @@ export default function EmailCustomizer() {
     const [winnerAccount, setWinnerAccount] = useState([]);
     const [orderTemplateFor, setOrderTemplateFor] = useState('onetime');
     const [reCheckWinner, setReCheckWinner] = useState(false);
-    const submit = useSubmit()
+    const submit = useSubmit();
+
     useEffect(() => {
      
         if (loaderData) {
@@ -77,6 +78,7 @@ export default function EmailCustomizer() {
             setContracts(details)
         }
     }, [loaderData])
+
     useEffect(() => {
         console.log("actionData==", actionData)
         if (actionData) {
@@ -87,8 +89,8 @@ export default function EmailCustomizer() {
             }
         }
     }, [actionData])
+
     const handleEditorChange = (e) => {
-     
         let data = templates
         tabSelected == 0 && orderTemplateFor=='onetime'?
             (data.orderTemplate.html = e.target.value)
@@ -160,7 +162,6 @@ export default function EmailCustomizer() {
             drawIds: JSON.stringify(winnerDetail?.drawIds),
             billing_policy: JSON.stringify(winnerDetail?.billing_policy),
         }
-     
         submit(formData, {
             method: "post"
         })
