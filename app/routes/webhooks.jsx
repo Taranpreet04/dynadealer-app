@@ -12,7 +12,7 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-import fs from "fs";
+// import fs from "fs";
 
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
@@ -41,14 +41,14 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
-        console.log("payload==", payload)
+       
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-
+       
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
@@ -98,48 +98,49 @@ export const action = async ({ request }) => {
           });
         }
 
+        let liveRaffle = await getLiveRaffle(shop);
+        console.log("liveRaffle=", liveRaffle);
+        if (liveRaffle?.activeDraws?.length > 0) {
+          ticketDetails = {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied: Number(drawIds?.length),
+            appliedTicketsList: drawIds,
+            available: 0,
+            availableTicketsList: [],
+            appliedForDetail: [
+              {
+                tickets: Number(drawIds?.length),
+                productId: liveRaffle?.activeDraws[0]?.id,
+                productName: liveRaffle?.activeDraws[0].title,
+                appliedDate: new Date(),
+                appliedList: drawIds,
+              },
+            ],
+          };
+        } else {
+          ticketDetails = {
+            total: Number(drawIds?.length),
+            totalTicketsList: drawIds,
+            applied: 0,
+            appliedTicketsList: [],
+            available: Number(drawIds?.length),
+            availableTicketsList: drawIds,
+            appliedForDetail: [],
+          };
+        }
 
-          let liveRaffle = await getLiveRaffle(shop);
-              console.log("liveRaffle=", liveRaffle);
-              if (liveRaffle?.activeDraws?.length > 0) {
-                ticketDetails = {
-                  total: Number(drawIds?.length),
-                  totalTicketsList: drawIds,
-                  applied: Number(drawIds?.length),
-                  appliedTicketsList: drawIds,
-                  available: 0,
-                  availableTicketsList: [],
-                  appliedForDetail: [
-                    {
-                      tickets: Number(drawIds?.length),
-                      productId: liveRaffle?.activeDraws[0]?.id,
-                      productName: liveRaffle?.activeDraws[0].title,
-                      appliedDate: new Date(),
-                      appliedList: drawIds,
-                    },
-                  ],
-                };
-              } else {
-                ticketDetails = {
-                  total: Number(drawIds?.length),
-                  totalTicketsList: drawIds,
-                  applied: 0,
-                  appliedTicketsList: [],
-                  available: Number(drawIds?.length),
-                  availableTicketsList: drawIds,
-                  appliedForDetail: [],
-                };
-              }
-       
         let contractDetail = await subscriptionContractModel.create({
           shop: shop,
           orderId: orderId || "",
+          orderHashId: cusRes?.data?.originOrder?.name || "",
           contractId: contractId || "",
           customerName:
-          cusRes?.data?.customer?.firstName?.trim() +
-          " " +
-          cusRes?.data?.customer?.lastName?.trim(),
+            cusRes?.data?.customer?.firstName?.trim() +
+            " " +
+            cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
+          customerPhone: cusRes?.data?.customer.phone,
           customerId: customerId || "",
           sellingPlanName: planName,
           sellingPlanId: planId,
@@ -151,7 +152,7 @@ export const action = async ({ request }) => {
           billing_policy: billing_policy,
           products: products,
           drawIds: drawIds,
-          status:"ACTIVE",
+          status: "ACTIVE",
           nextBillingDate: cusRes?.data?.nextBillingDate,
           ticketDetails: ticketDetails,
         });
@@ -236,17 +237,6 @@ export const action = async ({ request }) => {
       try {
         let entries;
 
-        // const dataString =
-        //   typeof liveRaffle === "string"
-        //     ? liveRaffle
-        //     : JSON.stringify(liveRaffle);
-        // fs.writeFile("checkkkk.txt", dataString, (err) => {
-        //   if (err) {
-        //     console.error("Error writing to file:", err);
-        //   } else {
-        //     console.log("Data written to file successfully!");
-        //   }
-        // });
         for (const product of payload?.line_items || []) {
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
@@ -254,14 +244,14 @@ export const action = async ({ request }) => {
           );
 
           if (oneTimeProductExist) {
-            entries = (product?.properties?.find(
-              (property) => property?.name == "entries",
-            )?.value) * product?.quantity;
+            entries =
+              product?.properties?.find(
+                (property) => property?.name == "entries",
+              )?.value * product?.quantity;
 
-            console.log("entries==", entries)
+            console.log("entries==", entries);
             let drawIds = [];
             if (Number(entries) > 0) {
-             
               for (let i = 0; i < Number(entries); i++) {
                 let unique = (
                   Date.now().toString(36).substring(0, 4) +
@@ -308,11 +298,13 @@ export const action = async ({ request }) => {
               let contractDetail = await subscriptionContractModel.create({
                 shop: shop,
                 orderId: payload?.id,
+                orderHashId: payload?.name,
                 contractId: "",
                 customerName: `${payload?.customer?.first_name || ""} ${
                   payload?.customer?.last_name || ""
                 }`.trim(),
                 customerEmail: payload?.customer?.email,
+                customerPhone: payload?.customer?.phone|| null,
                 customerId: payload?.customer?.id || "",
                 // sellingPlanName: "",
                 // sellingPlanId: "",
@@ -379,7 +371,6 @@ export const action = async ({ request }) => {
                 renewal_date: currentDate,
                 applied: false,
               });
-
 
               let membershiplevel = product?.properties
                 ?.find((property) => property?.name == "membership")

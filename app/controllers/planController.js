@@ -863,6 +863,8 @@ export const getCustomerDataByContractId = async (admin, id) => {
                   lastName
                   id
                   email
+                  phone
+                 
                 }
                 nextBillingDate
                 billingPolicy {
@@ -931,6 +933,7 @@ export const getCustomerDataByContractId = async (admin, id) => {
             }`;
   const contractResponse = await admin.graphql(query);
   const contractResult = await contractResponse.json();
+  
   if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
     return {
       message: "error",
