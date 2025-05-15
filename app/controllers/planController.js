@@ -972,6 +972,8 @@ console.log("endIST==",endIST, data[0])
           customerId: 1,
           customerName: 1,
           customerEmail: 1,
+          customerPhone:1,
+          orderHashId:1,
           appliedForDetail: {
             $filter: {
               input: "$ticketDetails.appliedForDetail",

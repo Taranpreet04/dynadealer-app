@@ -114,18 +114,25 @@ export default function ContractData() {
             drawId: data,
             customerId: detail?.customerId,
             customerName: detail?.customerName,
+            customerEmail: detail?.customerEmail,
+            customerPhone: detail?.customerPhone,
+            orderHashId: detail?.orderHashId,
             orderId: detail?.orderId,
           });
         });
       });
+      console.log("dataToExport==", dataToExport)
       if (dataToExport?.length > 0) {
         let data = [
           {
             sheet: "tickets",
             columns: [
-              { label: "Public info (username)", value: "customerName" },
-              { label: "Private info", value: "customerId" },
+              { label: "Customer Name", value: "customerName" },
+              { label: "Customer Id", value: "customerId" },
+              { label: "Email", value: "customerEmail" },
+              { label: "Phone", value: "customerPhone" },
               { label: "Order ID", value: "orderId" },
+              { label: "Order Hash ID", value: "orderHashId" },
               { label: "Draw ID", value: "drawId" },
             ],
             content: dataToExport,

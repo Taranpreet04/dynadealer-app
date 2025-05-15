@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://gzip-bell-charter-blink.trycloudflare.com"
+application_url = "https://nylon-mexico-signal-operates.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://gzip-bell-charter-blink.trycloudflare.com/auth/callback",
-  "https://gzip-bell-charter-blink.trycloudflare.com/auth/shopify/callback",
-  "https://gzip-bell-charter-blink.trycloudflare.com/api/auth/callback"
+  "https://nylon-mexico-signal-operates.trycloudflare.com/auth/callback",
+  "https://nylon-mexico-signal-operates.trycloudflare.com/auth/shopify/callback",
+  "https://nylon-mexico-signal-operates.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -30,7 +30,7 @@ api_version = "2024-10"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [app_proxy]
-url = "https://gzip-bell-charter-blink.trycloudflare.com/api/subscription"
+url = "https://nylon-mexico-signal-operates.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
