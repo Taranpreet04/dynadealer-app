@@ -21,6 +21,7 @@ export const action = async ({ request }) => {
     return new Response("Unauthorised user!", { status: 401 });
   }
 
+  console.log("helooo",topic)
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
@@ -48,14 +49,14 @@ export const action = async ({ request }) => {
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-       
+
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
-
+        
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
-            productId: product?.node?.productId,
+            productId: product?.node?.productId,      
             productName: product?.node?.title,
             quantity: product?.node?.quantity,
             sellingPlanName: product?.node?.sellingPlanName,

@@ -1,4 +1,4 @@
-import { sendOrderEmail } from "../db.mailcontroller";
+import { cancelContractMail, sendOrderEmail } from "../db.mailcontroller";
 import {
   billingModel,
   planDetailsModel,
@@ -673,6 +673,12 @@ export const cancelContract = async (admin, data) => {
         { $set: { status: "CANCELLED" } },
         { new: true },
       );
+
+
+// cancelContractMail()
+
+
+
       return {
         success: true,
         result: "Successfully cancel plan.",

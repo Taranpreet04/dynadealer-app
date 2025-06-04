@@ -1,26 +1,10 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
+application_url = "https://hardly-museums-hardcover-ln.trycloudflare.com"
+embedded = true
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://nylon-mexico-signal-operates.trycloudflare.com"
-embedded = true
-
-[build]
-automatically_update_urls_on_dev = true
-dev_store_url = "virendertesting.myshopify.com"
-include_config_on_deploy = true
-
-[access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscription_contracts,write_products,write_purchase_options"
-
-[auth]
-redirect_urls = [
-  "https://nylon-mexico-signal-operates.trycloudflare.com/auth/callback",
-  "https://nylon-mexico-signal-operates.trycloudflare.com/auth/shopify/callback",
-  "https://nylon-mexico-signal-operates.trycloudflare.com/api/auth/callback"
-]
 
 [webhooks]
 api_version = "2024-10"
@@ -29,10 +13,24 @@ api_version = "2024-10"
   uri = "https://ampland-technique-roy-due.trycloudflare.com/api/webhooks"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscription_contracts,write_products,write_purchase_options"
+
+[auth]
+redirect_urls = [
+  "https://hardly-museums-hardcover-ln.trycloudflare.com/auth/callback",
+  "https://hardly-museums-hardcover-ln.trycloudflare.com/auth/shopify/callback",
+  "https://hardly-museums-hardcover-ln.trycloudflare.com/api/auth/callback"
+]
+
 [app_proxy]
-url = "https://nylon-mexico-signal-operates.trycloudflare.com/api/subscription"
+url = "https://hardly-museums-hardcover-ln.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
 [pos]
 embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
