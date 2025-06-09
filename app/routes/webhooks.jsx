@@ -12,7 +12,6 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-// import fs from "fs";
 
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
@@ -50,6 +49,10 @@ export const action = async ({ request }) => {
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
 
+    let addressLength= cusRes?.data?.customer?.addresses?.length
+    console.log("addressLength==", addressLength)
+    const actualAddress= cusRes?.data?.customer?.addresses[addressLength-1]
+        console.log("phone in contraxct===actualAddress",actualAddress)
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
@@ -141,7 +144,7 @@ export const action = async ({ request }) => {
             " " +
             cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
-          customerPhone: cusRes?.data?.customer.phone,
+          customerPhone: cusRes?.data?.customer?.phone || actualAddress?.phone || null,
           customerId: customerId || "",
           sellingPlanName: planName,
           sellingPlanId: planId,
@@ -237,8 +240,9 @@ export const action = async ({ request }) => {
     case "ORDERS_CREATE":
       try {
         let entries;
-
+        console.log("phone====",  payload?.customer?.phone)
         for (const product of payload?.line_items || []) {
+          // console.log("these are the entries", payload);
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
               property?.name == "plan-type" && property?.value == "onetime",
@@ -305,7 +309,7 @@ export const action = async ({ request }) => {
                   payload?.customer?.last_name || ""
                 }`.trim(),
                 customerEmail: payload?.customer?.email,
-                customerPhone: payload?.customer?.phone|| null,
+                customerPhone: payload?.customer?.phone || payload?.customer?.default_address?.phone ||null,
                 customerId: payload?.customer?.id || "",
                 // sellingPlanName: "",
                 // sellingPlanId: "",

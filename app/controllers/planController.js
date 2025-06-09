@@ -673,11 +673,18 @@ export const cancelContract = async (admin, data) => {
         { $set: { status: "CANCELLED" } },
         { new: true },
       );
+            
 
-
-// cancelContractMail()
-
-
+      console.log("Sending cancel email with: ", {
+        customerName: res?.customerName,
+        productName: res?.products[0]?.productName,
+        customerEmail: res?.customerEmail
+});
+      await cancelContractMail({
+        customerName: res?.customerName,
+        productName: res?.products[0]?.productName,
+        customerEmail: res?.customerEmail
+      })
 
       return {
         success: true,
@@ -738,9 +745,10 @@ export const getSubscriptions = async (admin, page, search) => {
 export const getConstractDetailById = async (admin, id) => {
   const { shop } = admin.rest.session;
   const details = await subscriptionContractModel.findOne({ shop, _id: id });
+  // console.log("DB controller contract:", details);
   // return { message: "success", data: details, status: 200 };
   if (details?.contractId) {
-
+    
     const query = `
               query {
                 subscriptionContract(id: "gid://shopify/SubscriptionContract/${details?.contractId}") {
@@ -870,7 +878,12 @@ export const getCustomerDataByContractId = async (admin, id) => {
                   id
                   email
                   phone
-                 
+                  addresses {
+                      phone
+                        name
+                        id
+                        lastName
+                  }
                 }
                 nextBillingDate
                 billingPolicy {
@@ -1111,8 +1124,8 @@ export const setDefaultTemplate = async (shop) => {
             <pre>
             {{footer}}
           </pre>
-          
-          `,
+
+          `,          
       monthlyHtml: `p>Hi {{customerName}},</p>
             <p>Thank you for joining the DynaDealer community and becoming a member!</p>
             <p>Members get automatic monthly entries to win our bikes. Your entries NEVER EXPIRE.</p>
@@ -1406,7 +1419,7 @@ if(newData){
 }
 
 })
-  return { message: "success" };
+  return { message: "success" };     
   } catch (error) {
     console.error("Error processing POST request:", error);
     return { message: "Error processing request", status: 500 };
