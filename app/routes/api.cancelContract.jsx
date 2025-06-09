@@ -26,7 +26,7 @@ export const action = async ({ request }) => {
                     headers
                 }
             );
-        }
+        } 
 
         let res = await cancelContract(admin, data);
 
