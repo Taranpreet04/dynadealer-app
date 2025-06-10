@@ -864,6 +864,7 @@ export const getCustomerDataByContractId = async (admin, id) => {
                 originOrder {
                   id
                   name
+                  totalPrice
                   totalPriceSet {
                     presentmentMoney {
                       amount

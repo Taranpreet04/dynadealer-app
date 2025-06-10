@@ -1,7 +1,7 @@
 console.log("js--________");
 
 // let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://mercury-accused-gas-gate.trycloudflare.com";
+let serverPath = "https://beginner-meeting-josh-specification.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -54,7 +54,7 @@ if (currentUrl.includes("account")) {
     cusDiv.insertAdjacentHTML("afterend", "<br>");
   }
 }
-
+document.getElementsByTagName("product-subscriptions")[0]?.remove();
 if (subscription_page_type == "product") {
   if (filtered_selling_plan_groups?.length > 0) {
     filtered_selling_plan_groups?.forEach((item) => {
@@ -131,6 +131,7 @@ if (subscription_page_type == "product") {
 
 
   const sendPlanDataToCart = (plan) => {
+    console.log("sendPlanDataToCart==", plan);
     if (!plan || !plan.id) {
       console.warn("Invalid plan data provided");
       return;
@@ -251,7 +252,7 @@ if (subscription_page_type == "product") {
       purchaseOption = "subscription-purchase"
       sendPlanDataToCart(allSellingPlans[0]);
     }
-  } 
+  }
   // else if (productJson?.variants?.length === 1) {
   //   let variant = productJson?.variants[0]?.title.split(' ')[0]
   //   if (Number(variant) > 0) {
@@ -260,11 +261,11 @@ if (subscription_page_type == "product") {
   //     handleOnetimePlan(variant)
   //   }
   // } 
-  else if (productJson?.options?.includes('Entries') && allSellingPlans?.length==0) {
+  else if (productJson?.options?.includes('Entries') && allSellingPlans?.length == 0) {
     // productJson?.variants?.map(vairant=>{
-      if(productJson?.type.toLowerCase()== "bronze"||productJson?.type.toLowerCase()== "silver"||productJson?.type.toLowerCase()== "gold"||productJson?.type.toLowerCase()== "platinum"){
-        oneTimeMembership = true
-      }
+    if (productJson?.type.toLowerCase() == "bronze" || productJson?.type.toLowerCase() == "silver" || productJson?.type.toLowerCase() == "gold" || productJson?.type.toLowerCase() == "platinum") {
+      oneTimeMembership = true
+    }
     let data = productJson?.variants[0]
     let variant
     if (data?.option1?.toLowerCase()?.includes('entry') || data?.option1?.toLowerCase()?.includes('entries')) {

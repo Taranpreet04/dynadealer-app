@@ -3,7 +3,7 @@
 client_id = "e708894b40138257983227c922e97135"
 name = "subscription"
 handle = "subscription-155"
-application_url = "https://mens-conferences-spokesman-selective.trycloudflare.com"
+application_url = "https://contribution-hire-prophet-bay.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://mens-conferences-spokesman-selective.trycloudflare.com/auth/callback",
-  "https://mens-conferences-spokesman-selective.trycloudflare.com/auth/shopify/callback",
-  "https://mens-conferences-spokesman-selective.trycloudflare.com/api/auth/callback"
+  "https://contribution-hire-prophet-bay.trycloudflare.com/auth/callback",
+  "https://contribution-hire-prophet-bay.trycloudflare.com/auth/shopify/callback",
+  "https://contribution-hire-prophet-bay.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2025-04"
 
 [app_proxy]
-url = "https://mens-conferences-spokesman-selective.trycloudflare.com/api/subscription"
+url = "https://contribution-hire-prophet-bay.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

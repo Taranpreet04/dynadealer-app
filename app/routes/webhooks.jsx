@@ -12,7 +12,7 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-
+import fs from "fs";
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
     await authenticate.webhook(request);
@@ -20,7 +20,7 @@ export const action = async ({ request }) => {
     return new Response("Unauthorised user!", { status: 401 });
   }
 
-  console.log("helooo",topic)
+  console.log("helooo", topic);
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
@@ -41,25 +41,31 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
-       
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-
-    let addressLength= cusRes?.data?.customer?.addresses?.length
-    console.log("addressLength==", addressLength)
-    const actualAddress= cusRes?.data?.customer?.addresses[addressLength-1]
-        console.log("phone in contraxct===actualAddress",actualAddress)
+        const dataString =
+          typeof cusRes === "string" ? cusRes : JSON.stringify(cusRes);
+        fs.writeFile("checkkkk.txt", dataString, (err) => {
+          if (err) {
+            console.error("Error writing to file:", err);
+          } else {
+            console.log("Data written to file successfully!");
+          }
+        });
+        let addressLength = cusRes?.data?.customer?.addresses?.length;
+        const actualAddress =
+          cusRes?.data?.customer?.addresses[addressLength - 1];
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
-        
+
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
-            productId: product?.node?.productId,      
+            productId: product?.node?.productId,
             productName: product?.node?.title,
             quantity: product?.node?.quantity,
             sellingPlanName: product?.node?.sellingPlanName,
@@ -138,13 +144,15 @@ export const action = async ({ request }) => {
           shop: shop,
           orderId: orderId || "",
           orderHashId: cusRes?.data?.originOrder?.name || "",
+          totalPrice: cusRes?.data?.originOrder?.totalPrice || 0,
           contractId: contractId || "",
           customerName:
             cusRes?.data?.customer?.firstName?.trim() +
             " " +
             cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
-          customerPhone: cusRes?.data?.customer?.phone || actualAddress?.phone || null,
+          customerPhone:
+            cusRes?.data?.customer?.phone || actualAddress?.phone || null,
           customerId: customerId || "",
           sellingPlanName: planName,
           sellingPlanId: planId,
@@ -240,7 +248,16 @@ export const action = async ({ request }) => {
     case "ORDERS_CREATE":
       try {
         let entries;
-        console.log("phone====",  payload?.customer?.phone)
+        const dataString =
+          typeof payload === "string" ? payload : JSON.stringify(payload);
+        fs.writeFile("chkkorder.txt", dataString, (err) => {
+          if (err) {
+            console.error("Error writing to file:", err);
+          } else {
+            console.log("Data written to file successfully!");
+          }
+        });
+        console.log("phone====", payload?.customer?.phone);
         for (const product of payload?.line_items || []) {
           // console.log("these are the entries", payload);
           let oneTimeProductExist = product?.properties?.find(
@@ -304,12 +321,16 @@ export const action = async ({ request }) => {
                 shop: shop,
                 orderId: payload?.id,
                 orderHashId: payload?.name,
+                totalPrice: Number(payload?.total_price),
                 contractId: "",
                 customerName: `${payload?.customer?.first_name || ""} ${
                   payload?.customer?.last_name || ""
                 }`.trim(),
                 customerEmail: payload?.customer?.email,
-                customerPhone: payload?.customer?.phone || payload?.customer?.default_address?.phone ||null,
+                customerPhone:
+                  payload?.customer?.phone ||
+                  payload?.customer?.default_address?.phone ||
+                  null,
                 customerId: payload?.customer?.id || "",
                 // sellingPlanName: "",
                 // sellingPlanId: "",

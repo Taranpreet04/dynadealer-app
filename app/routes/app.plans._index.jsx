@@ -16,7 +16,7 @@ import ContentSkeleton from "../components/contentSkeleton";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
-
+console.log("session", session)
   const planDetails = await getAllPlans(admin);
   return json(planDetails)
 }

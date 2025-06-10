@@ -1,0 +1,86 @@
+{
+  "message": "success",
+  "data": {
+    "id": "gid://shopify/SubscriptionContract/12667912294",
+    "status": "ACTIVE",
+    "originOrder": {
+      "id": "gid://shopify/Order/6004870676582",
+      "name": "#1001",
+      "totalPriceSet": {
+        "presentmentMoney": {
+          "amount": "5.9",
+          "currencyCode": "INR"
+        }
+      },
+      "customerLocale": "en-IN"
+    },
+    "customer": {
+      "firstName": "mahi",
+      "lastName": "preet",
+      "id": "gid://shopify/Customer/7781571035238",
+      "email": "mahipreet121@yopmail.com",
+      "phone": null,
+      "addresses": [
+        {
+          "phone": null,
+          "name": "mahi preet",
+          "id": "gid://shopify/MailingAddress/8878739259494?model_name=CustomerAddress",
+          "lastName": "preet"
+        }
+      ]
+    },
+    "nextBillingDate": "2025-07-10T07:00:00Z",
+    "billingPolicy": {
+      "intervalCount": 1,
+      "interval": "MONTH",
+      "maxCycles": null,
+      "minCycles": 1
+    },
+    "deliveryPolicy": {
+      "intervalCount": 1
+    },
+    "lines": {
+      "edges": [
+        {
+          "node": {
+            "id": "gid://shopify/SubscriptionLine/36c586a6-ee0a-44b7-8f9a-a3b6abf190cc",
+            "quantity": 1,
+            "sellingPlanId": "gid://shopify/SellingPlan/2329444454",
+            "sellingPlanName": "monthly1-entries-1",
+            "productId": "gid://shopify/Product/7653992333414",
+            "requiresShipping": true,
+            "variantId": "gid://shopify/ProductVariant/42816240058470",
+            "variantTitle": "1 Entry",
+            "title": "The Videographer Snowboard",
+            "variantImage": {
+              "url": "https://cdn.shopify.com/s/files/1/0646/7855/9846/files/Main.jpg?v=1748238509"
+            },
+            "discountAllocations": [],
+            "pricingPolicy": {
+              "basePrice": {
+                "amount": "885.95"
+              },
+              "cycleDiscounts": [
+                {
+                  "adjustmentType": "PRICE",
+                  "afterCycle": 0,
+                  "computedPrice": {
+                    "amount": "5.0"
+                  },
+                  "adjustmentValue": {
+                    "amount": "5.0"
+                  }
+                }
+              ]
+            },
+            "currentPrice": {
+              "amount": "5.0",
+              "currencyCode": "INR"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "status": 200
+}
