@@ -1,7 +1,7 @@
 console.log("js--________", window.location.pathname);
 // const locationPath = window.location.pathname;
-let serverPath = "https://dynadealersapp.com";
-// let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
+// let serverPath = "https://dynadealersapp.com";
+let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -128,8 +128,19 @@ if (subscription_page_type == "product") {
     });
   };
 
-
+  const checkFreeProduct = (plan) => {
+    let planName = plan?.name?.toLowerCase();
+    let cycle = plan?.options[0]?.value.split(' ')[0]
+    if (planName?.includes('silver') && cycle == "year") {
+      alert("yearly silver")
+    } else if (planName?.includes('gold') && cycle == "year") {
+      alert("yearly gold")
+    } else if (planName?.includes('platinum') && cycle == "year") {
+      alert("yearly platinum")
+    }
+  }
   const sendPlanDataToCart = (plan) => {
+    console.log("sendPlanDataToCart==", plan);
     if (!plan || !plan.id) {
       console.warn("Invalid plan data provided");
       return;
@@ -165,6 +176,8 @@ if (subscription_page_type == "product") {
         });
       }
     });
+
+    checkFreeProduct(plan)
   };
 
 
@@ -266,16 +279,16 @@ if (subscription_page_type == "product") {
     let data = productJson?.variants[0]
     let variant
     if (data?.option1?.toLowerCase()?.includes('entry') || data?.option1?.toLowerCase()?.includes('entries')) {
-    
+
       variant = data?.option1?.split(' ')[0]
     } else if (data?.option2?.toLowerCase()?.includes('entry') || data?.option2?.toLowerCase()?.includes('entries')) {
-    
+
       variant = data?.option2?.split(' ')[0]
     } else if (data?.option3?.toLowerCase()?.includes('entry') || data?.option3?.toLowerCase()?.includes('entries')) {
-     
+
       variant = data?.option3?.split(' ')[0]
     }
-  
+
     if (Number(variant) > 0) {
       purchaseOption = "oneTime-purchase"
       handleOnetimePlan(variant)
