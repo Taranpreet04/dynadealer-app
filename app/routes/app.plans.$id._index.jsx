@@ -314,7 +314,7 @@ export default function CreateUpdatePlan() {
     // { label: "One-time", value: "day" },
     { label: "Monthly", value: "month" },
     // { label: "Weekly", value: "week" },
-    { label: "Yearly", value: "year" },
+    // { label: "Yearly", value: "year" },
   ];
   const upgradeOptions = [
     { label: "Bronze", value: "bronze" },
