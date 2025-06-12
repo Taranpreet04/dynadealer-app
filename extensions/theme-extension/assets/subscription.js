@@ -1,7 +1,7 @@
 console.log("js--________", window.location.pathname);
 // const locationPath = window.location.pathname;
-// let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
+let serverPath = "https://dynadealersapp.com";
+// let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -32,6 +32,20 @@ let options = [
 ];
 let selectedTimePlans = [];
 let selectedPlan;
+//live
+
+// const sweatShirt='46962651922646'
+// const tshirt='46962641109206'
+// const hat='46962642845910'
+
+//local
+const hat = "42830762999910"
+const tshirt = '42830791082086'
+const sweatShirt = '42830884700262'
+const silverYearlyGift = [hat]
+const goldYearlyGift = [hat, tshirt]
+const platinumYearlyGift = [hat, tshirt, sweatShirt]
+let freeProductList = []
 
 if (currentUrl.includes("account")) {
   let targetElement = document.querySelector(".customer__title");
@@ -128,15 +142,61 @@ if (subscription_page_type == "product") {
     });
   };
 
+
+  function addFreeProduct(list) {
+    fetch('/cart.js')
+      .then(res => res.json())
+      .then(cart => {
+        let items = []
+        list?.forEach((gift) => {
+          items?.push({
+            id: gift,
+            quantity: 1,
+            properties: {
+              _free: true
+            }
+          })
+        })
+        // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
+        // if (!alreadyInCart) {
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            items: items
+          })
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log('Free product added:', data);
+          })
+          .catch(err => console.error('Error adding free product:', err));
+        // }
+      })
+
+  }
+
+  // Hook onto any cart add button (adapt this to your theme)
+  document.querySelectorAll('form[action*="/cart/add"]').forEach(form => {
+    form.addEventListener('submit', () => {
+      setTimeout(addFreeProduct(freeProductList), 1000); // Delay to ensure first product is added
+    });
+  });
   const checkFreeProduct = (plan) => {
+
     let planName = plan?.name?.toLowerCase();
     let cycle = plan?.options[0]?.value.split(' ')[0]
     if (planName?.includes('silver') && cycle == "year") {
-      alert("yearly silver")
+      console.log("silverYearlyGift==", silverYearlyGift);
+      freeProductList = silverYearlyGift
     } else if (planName?.includes('gold') && cycle == "year") {
-      alert("yearly gold")
+      console.log("goldYearlyGift==", goldYearlyGift);
+      freeProductList = goldYearlyGift
     } else if (planName?.includes('platinum') && cycle == "year") {
-      alert("yearly platinum")
+      console.log("platinumYearlyGift==", platinumYearlyGift);
+      freeProductList = platinumYearlyGift
     }
   }
   const sendPlanDataToCart = (plan) => {
