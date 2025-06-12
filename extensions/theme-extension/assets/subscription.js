@@ -1,7 +1,7 @@
 console.log("js--________", window.location.pathname);
 // const locationPath = window.location.pathname;
-// let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
+let serverPath = "https://dynadealersapp.com";
+// let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
