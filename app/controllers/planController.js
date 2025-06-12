@@ -251,14 +251,7 @@ export const deletePlanById = async (admin, data) => {
     );
 
     const result = await response.json();
-    // const dataString = typeof result === "string" ? result : JSON.stringify(result);
-    // fs.writeFile("checkkkk.txt", dataString, (err) => {
-    //     if (err) {
-    //         console.error("Error writing to file:", err);
-    //     } else {
-    //         console.log("Data written to file successfully!");
-    //     }
-    // });
+    
     let deletedPlanId =
       result?.data?.sellingPlanGroupDelete?.deletedSellingPlanGroupId;
     if (deletedPlanId) {
@@ -302,16 +295,11 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
 
   try {
     const { shop } = admin.rest.session;
-    // console.log("data--", data)
     let dbproductlist = data?.dbProducts;
-    // console.log("dbproductlist==", dbproductlist)
     const date = newPlanDetails?.offerValidity;
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
-    // console.log("after add 5:30hrs start date=", startIST)
-    // console.log("after add 5:30hrs end date=", endIST)
     endIST.setHours(23, 59, 59, 999);
-    // endIST = toIST(endIST);
 
     let dateRange = {
       start: startIST,
@@ -324,7 +312,6 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
       spotsPerPerson: newPlanDetails?.spots,
     };
 
-    // checkOptions(admin, product_id)
     const allVariants = newPlanDetails?.products.reduce((acc, product) => {
       return acc.concat(product.variants);
     }, []);
@@ -674,12 +661,6 @@ export const cancelContract = async (admin, data) => {
         { new: true },
       );
             
-
-      console.log("Sending cancel email with: ", {
-        customerName: res?.customerName,
-        productName: res?.products[0]?.productName,
-        customerEmail: res?.customerEmail
-});
       await cancelContractMail({
         customerName: res?.customerName,
         productName: res?.products[0]?.productName,
@@ -974,8 +955,6 @@ export const getExportData = async (admin, data, date) => {
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
     endIST = toIST(endIST);
-console.log("startIST==",startIST)
-console.log("endIST==",endIST, data[0])
     let dateRange = {
       $gte: startIST,
       $lte: endIST,
@@ -1372,9 +1351,8 @@ export const updateDb=async(admin, check)=>{
     const {skip, limit} = check
     const { shop } = admin.rest.session;
 let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(900).limit(500)
-console.log("data==",data)
+
 data.forEach(async(item)=>{
-  console.log("item?.orderId==", item?.orderId)
   const query = `{
   order(id: "gid://shopify/Order/${item?.orderId}") {
     id
@@ -1393,18 +1371,8 @@ data.forEach(async(item)=>{
 `;
   const orderRes = await admin.graphql(query);
   const orderResponse = await orderRes.json();
-  //  const dataString = typeof orderResponse === "string" ? orderResponse : JSON.stringify(orderResponse);
-    // fs.appendFile("checkkkk.txt", dataString, (err) => {
-    //     if (err) {
-    //         console.error("Error writing to file:", err);
-    //     } else {
-    //         console.log("Data written to file successfully!");
-    //     }
-    // });
-    console.log("order-res", orderResponse?.data?.order)
+  
     const newData = orderResponse?.data?.order;
-    console.log("newData?.customer?.phone",newData?.customer?.phone)
-    console.log("newData?.name", newData?.name)
 if(newData){
 
   const detailUpdate = await subscriptionContractModel.updateMany(

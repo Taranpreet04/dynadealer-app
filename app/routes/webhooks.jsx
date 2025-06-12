@@ -12,7 +12,6 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-import fs from "fs";
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
     await authenticate.webhook(request);
@@ -20,7 +19,6 @@ export const action = async ({ request }) => {
     return new Response("Unauthorised user!", { status: 401 });
   }
 
-  console.log("helooo", topic);
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
@@ -47,15 +45,7 @@ export const action = async ({ request }) => {
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-        const dataString =
-          typeof cusRes === "string" ? cusRes : JSON.stringify(cusRes);
-        fs.writeFile("checkkkk.txt", dataString, (err) => {
-          if (err) {
-            console.error("Error writing to file:", err);
-          } else {
-            console.log("Data written to file successfully!");
-          }
-        });
+        
         let addressLength = cusRes?.data?.customer?.addresses?.length;
         const actualAddress =
           cusRes?.data?.customer?.addresses[addressLength - 1];
@@ -102,14 +92,13 @@ export const action = async ({ request }) => {
             contractId: contractId || "",
             membershipLevel: planName?.split("-")[0]?.toLowerCase() || "",
             membershipType:
-              payload?.billing_policy?.interval == "day" ? "ONETIME" : "ACTIVE",
+              payload?.billing_policy?.interval == "day" ? "ONETIME" : `${payload?.billing_policy?.interval}ly`,
             sellingPlanName: planName,
             sellingPlanId: planId,
           });
         }
 
         let liveRaffle = await getLiveRaffle(shop);
-        console.log("liveRaffle=", liveRaffle);
         if (liveRaffle?.activeDraws?.length > 0) {
           ticketDetails = {
             total: Number(drawIds?.length),
@@ -248,18 +237,8 @@ export const action = async ({ request }) => {
     case "ORDERS_CREATE":
       try {
         let entries;
-        const dataString =
-          typeof payload === "string" ? payload : JSON.stringify(payload);
-        fs.writeFile("chkkorder.txt", dataString, (err) => {
-          if (err) {
-            console.error("Error writing to file:", err);
-          } else {
-            console.log("Data written to file successfully!");
-          }
-        });
-        console.log("phone====", payload?.customer?.phone);
+       
         for (const product of payload?.line_items || []) {
-          // console.log("these are the entries", payload);
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
               property?.name == "plan-type" && property?.value == "onetime",
@@ -271,7 +250,6 @@ export const action = async ({ request }) => {
                 (property) => property?.name == "entries",
               )?.value * product?.quantity;
 
-            console.log("entries==", entries);
             let drawIds = [];
             if (Number(entries) > 0) {
               for (let i = 0; i < Number(entries); i++) {
@@ -285,7 +263,6 @@ export const action = async ({ request }) => {
               }
 
               let liveRaffle = await getLiveRaffle(shop);
-              console.log("liveRaffle=", liveRaffle);
               let ticketDetails;
               if (liveRaffle?.activeDraws?.length > 0) {
                 ticketDetails = {
@@ -324,16 +301,13 @@ export const action = async ({ request }) => {
                 totalPrice: Number(payload?.total_price),
                 contractId: "",
                 customerName: `${payload?.customer?.first_name || ""} ${
-                  payload?.customer?.last_name || ""
-                }`.trim(),
+                  payload?.customer?.last_name || ""}`.trim(),
                 customerEmail: payload?.customer?.email,
                 customerPhone:
                   payload?.customer?.phone ||
                   payload?.customer?.default_address?.phone ||
                   null,
                 customerId: payload?.customer?.id || "",
-                // sellingPlanName: "",
-                // sellingPlanId: "",
                 planUpdateDetail: {
                   sellingPlanUpdate: false,
                   upgradeTo: "",
@@ -410,8 +384,6 @@ export const action = async ({ request }) => {
                   contractId: "",
                   membershipLevel: membershiplevel?.toLowerCase() || "",
                   membershipType: "ONETIME",
-                  // sellingPlanName: planName,
-                  // sellingPlanId: planId,
                 });
               }
               sendOrderEmail(contractDetail);

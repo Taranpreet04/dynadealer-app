@@ -37,7 +37,7 @@ export async function sendOrderEmail(data) {
         <tbody>
             {{rows}}                            
         </tbody>
-    </table>`                            
+    </table>`
         let html
         if (interval == "ONETIME") {
             html = template?.orderTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
@@ -70,25 +70,26 @@ export async function sendOrderEmail(data) {
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully!")
 
-        const ticketList = data?.drawIds?.join(', ');
-        const message = `Hi ${data?.customerName}, your order for ${data?.products[0]?.productName} is confirmed.
+        const customerPhone = data?.customerPhone;
+        if (customerPhone && customerPhone.length >= 10) {
+
+            const ticketList = data?.drawIds?.join(', ');
+            const message = `Hi ${data?.customerName}, your order for ${data?.products[0]?.productName} is confirmed.
         Your tickets are applied for ${data?.ticketDetails?.appliedForDetail[0]?.productName}
         Tickets: ${ticketList}
         Total Tickets: ${data?.drawIds?.length}
         Thank you!`;
-
-        console.log("Customer phone before sending SMS:", data?.customerPhone);
-        // console.log("Full data before sending SMS:", data);                                                                                       
-        await sendSMS(
-            data?.customerPhone?.startsWith('+') ? data.customerPhone : `+91${data.customerPhone}`,
-            message
-        );  
-        console.log("SMS sent successfully!");
-        return {
-            success: true,
-            result: "Email and sms sent successfully!",
-        };
-
+                                                                                   
+            await sendSMS(
+                data?.customerPhone?.startsWith('+') ? data.customerPhone : `+91${data.customerPhone}`,
+                message
+            );
+            console.log("SMS sent successfully!");
+            return {
+                success: true,
+                result: "Email and sms sent successfully!",
+            };
+        }
     } catch (error) {
         console.error("Error sending email:", error);
         return {
@@ -129,7 +130,7 @@ export async function sendApplyEmail(data) {
         <tbody>
             {{rows}}
         </tbody>
-    </table>`                       
+    </table>`
 
         let html = template?.appliedTemplate?.html?.replace('{{customerName}}', `${data?.customerName}`);
         html = html?.replace('{{orderId}}', `${data?.orderId}`);
@@ -145,7 +146,7 @@ export async function sendApplyEmail(data) {
             subject: template?.appliedTemplate?.subject,
             html: html,
         };
-         
+
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully!")
         return {
@@ -154,7 +155,7 @@ export async function sendApplyEmail(data) {
         };
     } catch (error) {
         console.error("Error sending email:", error);
-        return {    
+        return {
             success: false,
             result: error,
         };
@@ -190,7 +191,7 @@ export async function sendWinnerEmail(data) {
             };
 
             await transporter.sendMail(mailOptions);
-            console.log("Email sent ti winner successfully!")
+            console.log("Email sent to winner successfully!")
             return {
                 success: true,
                 result: "Email sent successfully!",
@@ -210,22 +211,21 @@ export async function sendWinnerEmail(data) {
     }
 }
 
-export async function cancelContractMail(data){
-    console.log("cancelContractMail called", data);
-    try{
+export async function cancelContractMail(data) {
+    try {
         let transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
             port: 465,
             secure: true,
-            auth:{
+            auth: {
                 user: CONFIGURATION?.emailUser,
                 pass: CONFIGURATION?.emailPass,
             }
         })
 
         const cancelDate = new Date().toLocaleDateString();
-          
-        const html =`
+
+        const html = `
             <div style="line-height: 1.5;">
                 <h2>Subscription Cancelled</h2>
 
@@ -233,49 +233,46 @@ export async function cancelContractMail(data){
                 <p>We wanted to inform you that  <strong> ${data?.customerName}'s </strong> subscription for the <strong>${data?.productName}</strong> has been successfully cancelled as of <strong>${cancelDate}</strong>. </p>
                 <p>Thank you,<br />Team Membership App</p>
             </div>                          
-        `;                              
+        `;
         let mailOptions = {
             from: "Membership App",
-             to: CONFIGURATION?.emailUser,
+            to: CONFIGURATION?.emailUser,
             //   to: data?.customerEmail,
             subject: `${data?.customerName}'s  subscription has been cancelled`,
-            html: html, 
+            html: html,
         }
 
-         
+
         await transporter.sendMail(mailOptions);
         console.log("cancel membersship email sent");
-        return{
+        return {
             success: true,
             result: "Cancel membership email sent successfully"
         };
-    }catch (error){
-        console.log("error sending cancel mail",error);
-        return{
-            success:false,
-            result:error
+    } catch (error) {
+        console.log("error sending cancel mail", error);
+        return {
+            success: false,
+            result: error
         };
     }
 }
 
 const accountSid = CONFIGURATION?.accountSid;
 const authToken = CONFIGURATION?.authToken;
-const twillioPhone= CONFIGURATION?.twillioPhone
+const twillioPhone = CONFIGURATION?.twillioPhone
 const client = twilio(accountSid, authToken);
 
 export async function sendSMS(to, message) {
-    console.log("SMS to====>",to)
     try {
         const result = await client.messages.create({
             body: message,
-            from: CONFIGURATION?.twillioPhone,
+            from: twillioPhone,
             to: to
         });
-        console.log("message SID", result.sid);
-        console.log("Full Twilio SMS Result:", result);
-        return result;                                      
+        return result;
     } catch (error) {
-        console.log("SMS failed", error);
+        console.err("SMS failed", error);
         throw error
     }
 }

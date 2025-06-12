@@ -1,7 +1,7 @@
-console.log("js--________");
-
+console.log("js--________", window.location.pathname);
+// const locationPath = window.location.pathname;
 // let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://beginner-meeting-josh-specification.trycloudflare.com";
+let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -34,7 +34,6 @@ let selectedTimePlans = [];
 let selectedPlan;
 
 if (currentUrl.includes("account")) {
-  console.log("hello from account page");
   let targetElement = document.querySelector(".customer__title");
   if (targetElement) {
     let cusDiv = document.createElement("div");
@@ -131,7 +130,6 @@ if (subscription_page_type == "product") {
 
 
   const sendPlanDataToCart = (plan) => {
-    console.log("sendPlanDataToCart==", plan);
     if (!plan || !plan.id) {
       console.warn("Invalid plan data provided");
       return;
@@ -223,7 +221,6 @@ if (subscription_page_type == "product") {
     // let oneTimePriceDiv =
     //   document.getElementsByClassName("oneTimePrice")[0];
     let subscriptionPriceDiv = document.getElementsByClassName("subscriptionPrice");
-    console.log("subscriptionPriceDiv==", subscriptionPriceDiv);
 
     // Convert HTMLCollection to an array and loop over it
     Array.from(subscriptionPriceDiv).forEach((div) => {
@@ -269,16 +266,16 @@ if (subscription_page_type == "product") {
     let data = productJson?.variants[0]
     let variant
     if (data?.option1?.toLowerCase()?.includes('entry') || data?.option1?.toLowerCase()?.includes('entries')) {
-      console.log("option1")
+    
       variant = data?.option1?.split(' ')[0]
     } else if (data?.option2?.toLowerCase()?.includes('entry') || data?.option2?.toLowerCase()?.includes('entries')) {
-      console.log("option2")
+    
       variant = data?.option2?.split(' ')[0]
     } else if (data?.option3?.toLowerCase()?.includes('entry') || data?.option3?.toLowerCase()?.includes('entries')) {
-      console.log("option3")
+     
       variant = data?.option3?.split(' ')[0]
     }
-    console.log("entries==", variant)
+  
     if (Number(variant) > 0) {
       purchaseOption = "oneTime-purchase"
       handleOnetimePlan(variant)
@@ -544,3 +541,6 @@ if (subscription_page_type == "product") {
   }
 
 }
+// if(locationPath=='/pages/memberships'){
+//     getMemberships();
+// }

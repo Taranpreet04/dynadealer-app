@@ -80,7 +80,6 @@ export default function EmailCustomizer() {
     }, [loaderData])
 
     useEffect(() => {
-        console.log("actionData==", actionData)
         if (actionData) {
             setBtnLoader(false)
             setMailBtnLoader(false)
@@ -154,7 +153,6 @@ export default function EmailCustomizer() {
     const sendWinnerMail = () => {
         setReCheckWinner(false)
         let winnerDetail = loaderData?.contractDetails?.find(itm => winnerAccount == `${itm?.customerName} (${itm?.orderId})`)
-        console.log("winnerDetail==", winnerDetail)
         let formData = {
             ...winnerDetail,
             winner: true,

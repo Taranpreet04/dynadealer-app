@@ -78,8 +78,6 @@ export const action = async ({ params, request }) => {
     offerValidity: offerValidity,
   };
   try {
-    console.log("offerValidity.start", offerValidity?.start)
-    console.log("offerValidity.end", offerValidity?.end)
     let detail = { updatePlans, deletePlans, newPlans, dbProducts };
     let planDetails = {
       success: false,
@@ -493,8 +491,6 @@ export default function CreateUpdatePlan() {
     navigate("/app/plans");
   };
 
-
-  console.log("planDetail?.offerValidity==", planDetail?.offerValidity)
   return (
     <>
       {tableSkel ? (
