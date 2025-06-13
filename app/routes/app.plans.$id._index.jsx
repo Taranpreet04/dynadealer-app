@@ -78,8 +78,6 @@ export const action = async ({ params, request }) => {
     offerValidity: offerValidity,
   };
   try {
-    console.log("offerValidity.start", offerValidity?.start)
-    console.log("offerValidity.end", offerValidity?.end)
     let detail = { updatePlans, deletePlans, newPlans, dbProducts };
     let planDetails = {
       success: false,
@@ -316,7 +314,7 @@ export default function CreateUpdatePlan() {
     // { label: "One-time", value: "day" },
     { label: "Monthly", value: "month" },
     // { label: "Weekly", value: "week" },
-    { label: "Yearly", value: "year" },
+    // { label: "Yearly", value: "year" },
   ];
   const upgradeOptions = [
     { label: "Bronze", value: "bronze" },
@@ -493,8 +491,6 @@ export default function CreateUpdatePlan() {
     navigate("/app/plans");
   };
 
-
-  console.log("planDetail?.offerValidity==", planDetail?.offerValidity)
   return (
     <>
       {tableSkel ? (

@@ -21,7 +21,6 @@ export const action = async ({ request }) => {
     const shop = data?.shop;
     const contractId = data?.contractId;
     let id= contractId.split('SubscriptionContract/')[1]
-    console.log("id==", id)
     if (id?.length > 15) {
       const details = await subscriptionContractModel.findOne({ shop , _id: id});
    

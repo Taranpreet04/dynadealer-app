@@ -5,10 +5,10 @@
 {% schema %}
 {
   "name": "Subscription",
-  "templates": [
-    "index",
-    "product"
-  ],
+  "enabled_on": {
+      "templates": ["*"],
+      "groups": ["*"]
+    },
   "target": "section",
   "settings": [
     {
