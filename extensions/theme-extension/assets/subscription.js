@@ -1,7 +1,68 @@
-console.log("js--________", window.location.pathname);
-// const locationPath = window.location.pathname;
+
+//live
+
+const sweatShirt='46962651922646'
+const tshirt='46962641109206'
+const hat='46962642845910'
 let serverPath = "https://dynadealersapp.com";
-// let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
+const data = [
+    {
+      name: 'Silver',
+      variants: [
+        { id: '46952891252950', also_added: hat } // silver main product
+      ]
+    },
+    {
+      name: 'Gold',
+      variants: [
+        { id: '46952894202070', also_added: hat },
+        { id: '46952894202070', also_added: tshirt } // same main product, different gifts
+      ]
+    },
+    {
+      name: 'Platinum',
+      variants: [
+        { id: '46952896299222', also_added: hat },
+        { id: '46952896299222', also_added: tshirt },
+        { id: '46952896299222', also_added: sweatShirt }
+      ]
+    }
+  ];
+
+
+//local
+// const hat = "42830762999910"
+// const tshirt = '42830791082086'
+// const sweatShirt = '42830884700262'
+// let serverPath = "https://flashing-then-that-balloon.trycloudflare.com";
+// const data = [
+//   {
+//     name: 'Silver',
+//     variants: [
+//       { id: '42813523394662', also_added: hat } // silver main product
+//     ]
+//   },
+//   {
+//     name: 'Gold',
+//     variants: [
+//       { id: '42813523427430', also_added: hat },
+//       { id: '42813523427430', also_added: tshirt } // same main product, different gifts
+//     ]
+//   },
+//   {
+//     name: 'Platinum',
+//     variants: [
+//       { id: '42813523460198', also_added: hat },
+//       { id: '42813523460198', also_added: tshirt },
+//       { id: '42813523460198', also_added: sweatShirt }
+//     ]
+//   }
+// ];
+
+
+console.log("js--________", window.location.pathname);
+const locationPath = window.location.pathname;
+
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -32,20 +93,204 @@ let options = [
 ];
 let selectedTimePlans = [];
 let selectedPlan;
-//live
 
-// const sweatShirt='46962651922646'
-// const tshirt='46962641109206'
-// const hat='46962642845910'
-
-//local
-const hat = "42830762999910"
-const tshirt = '42830791082086'
-const sweatShirt = '42830884700262'
 const silverYearlyGift = [hat]
 const goldYearlyGift = [hat, tshirt]
 const platinumYearlyGift = [hat, tshirt, sweatShirt]
 let freeProductList = []
+
+const getcartItems = async () => {
+  fetch('/cart.js')
+    .then(res => res.json())
+    .then(cart => {
+      let items = []
+      list?.forEach((gift) => {
+        items?.push({
+          id: gift,
+          quantity: 1,
+          properties: {
+            // _free: true
+          }
+        })
+      })
+      // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
+      // if (!alreadyInCart) {
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          items: items
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Free product added:', data);
+        })
+        .catch(err => console.error('Error adding free product:', err));
+      // }
+    })
+}
+if (locationPath === '/cart') {
+  (function () {
+
+    let refreshTriggered = false;
+
+    // Replace this with your actual mapping
+
+    function deepEqual(obj1, obj2) {
+      return JSON.stringify(obj1) === JSON.stringify(obj2);
+    }
+
+    function buildExpectedCartState(cartItems) {
+      const cartVariantIds = cartItems.map(item => item.variant_id.toString());
+      let expected = {};
+      let alsoAddedMap = {};
+      let oneTimeNeeded = false;
+
+      data.forEach(product => {
+        product.variants.forEach(variant => {
+          const isMainInCart = cartVariantIds.includes(variant.id);
+          const alsoAddedId = variant.also_added;
+
+          if (isMainInCart) {
+            oneTimeNeeded = true;
+            expected[alsoAddedId] = (expected[alsoAddedId] || 0) + 1;
+            alsoAddedMap[alsoAddedId] = true;
+          } else {
+            if (!alsoAddedMap[alsoAddedId]) {
+              expected[alsoAddedId] = 0;
+            }
+          }
+        });
+      });
+
+      // expected[one_time_activation_variant] = oneTimeNeeded ? 1 : 0;
+
+      return expected;
+    }
+
+    function getCurrentRelevantItems(cartItems) {
+      const allAlsoAdded = data.flatMap(p => p.variants.map(v => v.also_added));
+      const allTracked = [...allAlsoAdded]
+      // , one_time_activation_variant];
+      let current = {};
+
+      cartItems.forEach(item => {
+        const id = item.variant_id.toString();
+        if (allTracked.includes(id)) {
+          current[id] = item.quantity;
+        }
+      });
+
+      return current;
+    }
+
+    function updateCartQuantities(expected, currentState) {
+      let hasRealChange = false;
+      const formData = new FormData();
+
+      Object.entries(expected).forEach(([id, qty]) => {
+        const currentQty = currentState[id] || 0;
+        if (qty !== currentQty) {
+          formData.append(`updates[${id}]`, qty);
+          hasRealChange = true;
+        }
+      });
+
+      if (!hasRealChange) return;
+
+      fetch('/cart/update.js', {
+        method: 'POST',
+        body: formData
+      })
+        .then(res => res.json())
+        .then(() => fetch('/cart.json'))
+        .then(res => res.json())
+        .then(updatedCart => {
+          const verified = getCurrentRelevantItems(updatedCart.items);
+          const rebuiltExpected = buildExpectedCartState(updatedCart.items);
+
+          if (deepEqual(rebuiltExpected, verified)) {
+            if (!refreshTriggered) {
+              refreshTriggered = true;
+              setTimeout(() => location.reload(), 1000);
+            }
+          } else {
+            updateCartQuantities(rebuiltExpected, verified);
+          }
+        })
+        .catch(err => console.error("❌ Failed to update cart", err));
+    }
+
+    function removeUnlinkedGifts(cartItems) {
+      const allAlsoAdded = data.flatMap(p => p.variants.map(v => v.also_added));
+      const mainIds = data.flatMap(p => p.variants.map(v => v.id));
+
+      const cartVariantIds = cartItems.map(item => item.variant_id.toString());
+      const unlinkedGiftIds = [];
+
+      allAlsoAdded.forEach(giftId => {
+        const relatedMainExists = data.some(group =>
+          group.variants.some(variant =>
+            cartVariantIds.includes(variant.id) &&
+            variant.also_added === giftId
+          )
+        );
+
+        const giftInCart = cartVariantIds.includes(giftId);
+        if (giftInCart && !relatedMainExists) {
+          unlinkedGiftIds.push(giftId);
+        }
+      });
+
+      if (unlinkedGiftIds.length === 0) return;
+
+      const formData = new FormData();
+      unlinkedGiftIds.forEach(id => {
+        formData.append(`updates[${id}]`, 0);
+      });
+
+      fetch('/cart/update.js', {
+        method: 'POST',
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log("🧹 Removed unlinked gifts:", unlinkedGiftIds);
+          location.reload();
+        })
+        .catch(err => console.error("❌ Failed to remove unlinked gifts", err));
+    }
+
+    function checkCartAndUpdate() {
+      fetch('/cart.json')
+        .then(res => res.json())
+        .then(cart => {
+          const current = getCurrentRelevantItems(cart.items);
+          const expected = buildExpectedCartState(cart.items);
+
+          if (!deepEqual(current, expected)) {
+            updateCartQuantities(expected, current);
+          }
+
+          // 🧼 Remove unlinked gifts
+          removeUnlinkedGifts(cart.items);
+        })
+        .catch(err => console.error("❌ Failed to fetch cart", err));
+    }
+
+    function startCartWatcher() {
+      checkCartAndUpdate();
+      setInterval(checkCartAndUpdate, 2000);
+    }
+
+    // 🚀 Init
+    startCartWatcher();
+  })();
+}
+
 
 if (currentUrl.includes("account")) {
   let targetElement = document.querySelector(".customer__title");
@@ -73,15 +318,7 @@ if (subscription_page_type == "product") {
     filtered_selling_plan_groups?.forEach((item) => {
       allSellingPlans?.push(...item?.selling_plans);
     });
-    // console.log("allSellingPlans==", allSellingPlans);
   }
-  // productJson?.selling_plan_groups?.map((itm) => {
-  //   let name = itm?.name?.toLowerCase();
-  //   name?.includes("level") ? (showMemebershipLevels = true) : "";
-  //   name?.includes("offer for gold membership")
-  //     ? (goldMembershipOffer = true)
-  //     : "";
-  // });
   function capitalize(str) {
     return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
   }
@@ -153,7 +390,7 @@ if (subscription_page_type == "product") {
             id: gift,
             quantity: 1,
             properties: {
-              _free: true
+              // _free: true
             }
           })
         })
@@ -614,6 +851,3 @@ if (subscription_page_type == "product") {
   }
 
 }
-// if(locationPath=='/pages/memberships'){
-//     getMemberships();
-// }

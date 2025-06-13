@@ -3,7 +3,7 @@
 client_id = "e708894b40138257983227c922e97135"
 name = "subscription"
 handle = "subscription-155"
-application_url = "https://propose-voice-liable-unable.trycloudflare.com"
+application_url = "https://flashing-then-that-balloon.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,16 +17,16 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://propose-voice-liable-unable.trycloudflare.com/auth/callback",
-  "https://propose-voice-liable-unable.trycloudflare.com/auth/shopify/callback",
-  "https://propose-voice-liable-unable.trycloudflare.com/api/auth/callback"
+  "https://flashing-then-that-balloon.trycloudflare.com/auth/callback",
+  "https://flashing-then-that-balloon.trycloudflare.com/auth/shopify/callback",
+  "https://flashing-then-that-balloon.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2025-04"
 
 [app_proxy]
-url = "https://propose-voice-liable-unable.trycloudflare.com/api/subscription"
+url = "https://flashing-then-that-balloon.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
