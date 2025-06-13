@@ -39,6 +39,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-simple-wysiwyg": "^3.2.0",
+    "recharts": "^2.15.3",
     "tinymce": "^7.6.1",
     "twilio": "^5.7.0",
     "vite-tsconfig-paths": "^5.0.1"

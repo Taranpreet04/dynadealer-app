@@ -8,7 +8,7 @@ export const loader = async ({ request }) => {
   await authenticate.admin(request)
   const url = new URL(request.url);
   if (url.searchParams.get("shop")) {
-    throw redirect(`/app?${url.searchParams.toString()}`);
+    // throw redirect(`/app?${url.searchParams.toString()}`);
   }
 
   return json({ showForm: Boolean(login) });
@@ -23,7 +23,7 @@ export default function App() {
         <h1 className={styles.heading}>Welcome to Shine subscription app</h1>
         <p className={styles.text}>
           {/* A builder that Compatible with any store */}
-        </p>
+        </p>           
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
             <label className={styles.label}>

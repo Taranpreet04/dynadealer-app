@@ -70,25 +70,28 @@ export async function sendOrderEmail(data) {
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully!")
 
+        const customerPhone = data?.customerPhone;
+        if(customerPhone && customerPhone.length >= 10){
+
         const ticketList = data?.drawIds?.join(', ');
         const message = `Hi ${data?.customerName}, your order for ${data?.products[0]?.productName} is confirmed.
         Your tickets are applied for ${data?.ticketDetails?.appliedForDetail[0]?.productName}
         Tickets: ${ticketList}
         Total Tickets: ${data?.drawIds?.length}
         Thank you!`;
-
+                             
         console.log("Customer phone before sending SMS:", data?.customerPhone);
         // console.log("Full data before sending SMS:", data);                                                                                       
         await sendSMS(
             data?.customerPhone?.startsWith('+') ? data.customerPhone : `+91${data.customerPhone}`,
             message
-        );  
+        );                                            
         console.log("SMS sent successfully!");
         return {
             success: true,
             result: "Email and sms sent successfully!",
         };
-
+        }
     } catch (error) {
         console.error("Error sending email:", error);
         return {
