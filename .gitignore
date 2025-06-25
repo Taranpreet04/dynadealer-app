@@ -6,10 +6,8 @@ node_modules
 /public/build/
 /public/_dev
 /app/public/build
-/prisma/dev.sqlite
-/prisma/dev.sqlite-journal
-database.sqlite
-/app/config.jsx
+
+/app/config
 .env
 .env.*
 

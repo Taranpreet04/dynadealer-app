@@ -4,4 +4,3 @@ public/build
 shopify-app-remix
 */*.yml
 .shopify
-/app/config.jsx
