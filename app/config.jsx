@@ -7,4 +7,4 @@ const CONFIGURATION = {
     "twillioPhone": '+18446170106'
 }
 
-export default CONFIGURATION    
+export default CONFIGURATION     
