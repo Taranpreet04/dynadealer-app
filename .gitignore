@@ -11,8 +11,10 @@ node_modules
 /app/config.jsx
 database.sqlite
 
+/app/config
 .env
 .env.*
+
 
 
 

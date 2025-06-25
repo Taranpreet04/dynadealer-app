@@ -16,9 +16,7 @@ const headers = {
 export const action =async({request})=>{
     const data = await request.json(); 
     try {
-      console.log("data?.cid==", data?.cid)
       let details= await subscriptionContractModel.find({customerId: data?.cid})
-    
         return new Response(JSON.stringify({ message: "success", details: details }), {
             status: 200,
             headers

@@ -1,7 +1,7 @@
-console.log("js--________");
-
+console.log("js--________", window.location.pathname);
+// const locationPath = window.location.pathname;
 // let serverPath = "https://dynadealersapp.com";
-let serverPath = "https://mercury-accused-gas-gate.trycloudflare.com";
+let serverPath = "https://john-soft-buyers-arena.trycloudflare.com";
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -32,9 +32,22 @@ let options = [
 ];
 let selectedTimePlans = [];
 let selectedPlan;
+//live
+
+// const sweatShirt='46962651922646'
+// const tshirt='46962641109206'
+// const hat='46962642845910'
+
+//local
+const hat = "42830762999910"
+const tshirt = '42830791082086'
+const sweatShirt = '42830884700262'
+const silverYearlyGift = [hat]
+const goldYearlyGift = [hat, tshirt]
+const platinumYearlyGift = [hat, tshirt, sweatShirt]
+let freeProductList = []
 
 if (currentUrl.includes("account")) {
-  console.log("hello from account page");
   let targetElement = document.querySelector(".customer__title");
   if (targetElement) {
     let cusDiv = document.createElement("div");
@@ -54,7 +67,7 @@ if (currentUrl.includes("account")) {
     cusDiv.insertAdjacentHTML("afterend", "<br>");
   }
 }
-
+document.getElementsByTagName("product-subscriptions")[0]?.remove();
 if (subscription_page_type == "product") {
   if (filtered_selling_plan_groups?.length > 0) {
     filtered_selling_plan_groups?.forEach((item) => {
@@ -130,7 +143,64 @@ if (subscription_page_type == "product") {
   };
 
 
+  function addFreeProduct(list) {
+    fetch('/cart.js')
+      .then(res => res.json())
+      .then(cart => {
+        let items = []
+        list?.forEach((gift) => {
+          items?.push({
+            id: gift,
+            quantity: 1,
+            properties: {
+              _free: true
+            }
+          })
+        })
+        // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
+        // if (!alreadyInCart) {
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            items: items
+          })
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log('Free product added:', data);
+          })
+          .catch(err => console.error('Error adding free product:', err));
+        // }
+      })
+
+  }
+
+  // Hook onto any cart add button (adapt this to your theme)
+  document.querySelectorAll('form[action*="/cart/add"]').forEach(form => {
+    form.addEventListener('submit', () => {
+      setTimeout(addFreeProduct(freeProductList), 1000); // Delay to ensure first product is added
+    });
+  });
+  const checkFreeProduct = (plan) => {
+
+    let planName = plan?.name?.toLowerCase();
+    let cycle = plan?.options[0]?.value.split(' ')[0]
+    if (planName?.includes('silver') && cycle == "year") {
+      console.log("silverYearlyGift==", silverYearlyGift);
+      freeProductList = silverYearlyGift
+    } else if (planName?.includes('gold') && cycle == "year") {
+      console.log("goldYearlyGift==", goldYearlyGift);
+      freeProductList = goldYearlyGift
+    } else if (planName?.includes('platinum') && cycle == "year") {
+      console.log("platinumYearlyGift==", platinumYearlyGift);
+      freeProductList = platinumYearlyGift
+    }
+  }
   const sendPlanDataToCart = (plan) => {
+    console.log("sendPlanDataToCart==", plan);
     if (!plan || !plan.id) {
       console.warn("Invalid plan data provided");
       return;
@@ -166,6 +236,8 @@ if (subscription_page_type == "product") {
         });
       }
     });
+
+    checkFreeProduct(plan)
   };
 
 
@@ -222,7 +294,6 @@ if (subscription_page_type == "product") {
     // let oneTimePriceDiv =
     //   document.getElementsByClassName("oneTimePrice")[0];
     let subscriptionPriceDiv = document.getElementsByClassName("subscriptionPrice");
-    console.log("subscriptionPriceDiv==", subscriptionPriceDiv);
 
     // Convert HTMLCollection to an array and loop over it
     Array.from(subscriptionPriceDiv).forEach((div) => {
@@ -251,7 +322,7 @@ if (subscription_page_type == "product") {
       purchaseOption = "subscription-purchase"
       sendPlanDataToCart(allSellingPlans[0]);
     }
-  } 
+  }
   // else if (productJson?.variants?.length === 1) {
   //   let variant = productJson?.variants[0]?.title.split(' ')[0]
   //   if (Number(variant) > 0) {
@@ -260,24 +331,24 @@ if (subscription_page_type == "product") {
   //     handleOnetimePlan(variant)
   //   }
   // } 
-  else if (productJson?.options?.includes('Entries') && allSellingPlans?.length==0) {
+  else if (productJson?.options?.includes('Entries') && allSellingPlans?.length == 0) {
     // productJson?.variants?.map(vairant=>{
-      if(productJson?.type.toLowerCase()== "bronze"||productJson?.type.toLowerCase()== "silver"||productJson?.type.toLowerCase()== "gold"||productJson?.type.toLowerCase()== "platinum"){
-        oneTimeMembership = true
-      }
+    if (productJson?.type.toLowerCase() == "bronze" || productJson?.type.toLowerCase() == "silver" || productJson?.type.toLowerCase() == "gold" || productJson?.type.toLowerCase() == "platinum") {
+      oneTimeMembership = true
+    }
     let data = productJson?.variants[0]
     let variant
     if (data?.option1?.toLowerCase()?.includes('entry') || data?.option1?.toLowerCase()?.includes('entries')) {
-      console.log("option1")
+
       variant = data?.option1?.split(' ')[0]
     } else if (data?.option2?.toLowerCase()?.includes('entry') || data?.option2?.toLowerCase()?.includes('entries')) {
-      console.log("option2")
+
       variant = data?.option2?.split(' ')[0]
     } else if (data?.option3?.toLowerCase()?.includes('entry') || data?.option3?.toLowerCase()?.includes('entries')) {
-      console.log("option3")
+
       variant = data?.option3?.split(' ')[0]
     }
-    console.log("entries==", variant)
+
     if (Number(variant) > 0) {
       purchaseOption = "oneTime-purchase"
       handleOnetimePlan(variant)
@@ -543,3 +614,6 @@ if (subscription_page_type == "product") {
   }
 
 }
+// if(locationPath=='/pages/memberships'){
+//     getMemberships();
+// }

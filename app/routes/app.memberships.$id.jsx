@@ -170,7 +170,6 @@ export default function CreateUpdatePlan() {
       const offsetInMinutes = 330;
       return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
     };
-    console.log("loaderdaata---", loaderData)
     if (loaderData !== null) {
     
       const dates = {
@@ -316,7 +315,7 @@ export default function CreateUpdatePlan() {
     // { label: "One-time", value: "day" },
     // { label: "Weekly", value: "week" },
     { label: "Monthly", value: "month" },
-    // { label: "Yearly", value: "year" },
+    { label: "Yearly", value: "year" },
   ];
   const upgradeOptions = [
     { label: "Bronze", value: "bronze" },
@@ -379,7 +378,6 @@ export default function CreateUpdatePlan() {
   };
 
   const handleAddPlan = () => {
-   console.log("planDetail==in add", planDetail)
     if (!editSellingPlan) {
       let match = 0;
       let nameExist = 0;
@@ -428,7 +426,6 @@ export default function CreateUpdatePlan() {
     }
   };
   const handleUpdatePlan = () => {
-    console.log("planDetail==in update", planDetail)
     if (editSellingPlan) {
       let plans = [];
       let nameExist = 0;
@@ -499,7 +496,6 @@ export default function CreateUpdatePlan() {
     navigate("/app/memberships");
   };
 
-  console.log("planDetail--", planDetail?.plans, planDetail?.plans.length)
   return (
     <>
       {tableSkel ? (

@@ -40,6 +40,7 @@ const credentialSchema = new mongoose.Schema({
 const subscriptionContract = new mongoose.Schema({
   shop: String,
   orderId: String,
+  totalPrice: Number,
   orderHashId: String,
   contractId: String,
   customerId: String,

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for customer porta")
     // let serverPath = "https://dynadealersapp.com";
-    let serverPath = "https://acm-exhibits-heavy-strips.trycloudflare.com";
+    let serverPath = "https://john-soft-buyers-arena.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -511,7 +511,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateProductRows = () => {
         let tbody = document.getElementById("product-row")
         let products = dbData ? contractDetailShopify?.products : contractDetailShopify?.lines?.edges
-        console.log("selectedSubscription==prod", selectedSubscription)
         products?.map((item, index) => {
             let tr = document.createElement('tr');
             tr.id = index
@@ -555,7 +554,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.style.display = "block";
         resetModalContent()
         if (status == "active") {
-
             let modal = document.getElementById('myModal')
             btn.onclick = function () {
                 modal.style.display = "block";

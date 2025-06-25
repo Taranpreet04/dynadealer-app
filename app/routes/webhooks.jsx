@@ -12,7 +12,6 @@ import {
 } from "../schema";
 import { authenticate } from "../shopify.server";
 import shopify from "../shopify.server";
-
 export const action = async ({ request }) => {
   const { topic, shop, session, admin, payload } =
     await authenticate.webhook(request);
@@ -20,7 +19,6 @@ export const action = async ({ request }) => {
     return new Response("Unauthorised user!", { status: 401 });
   }
 
-  console.log("helooo",topic)
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
@@ -41,25 +39,23 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
-       
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-
-    let addressLength= cusRes?.data?.customer?.addresses?.length
-    console.log("addressLength==", addressLength)
-    const actualAddress= cusRes?.data?.customer?.addresses[addressLength-1]
-        console.log("phone in contraxct===actualAddress",actualAddress)
+        
+        let addressLength = cusRes?.data?.customer?.addresses?.length;
+        const actualAddress =
+          cusRes?.data?.customer?.addresses[addressLength - 1];
         let products = [];
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
-        
+
         cusRes?.data?.lines?.edges?.map((product) => {
           let detail = {
-            productId: product?.node?.productId,      
+            productId: product?.node?.productId,
             productName: product?.node?.title,
             quantity: product?.node?.quantity,
             sellingPlanName: product?.node?.sellingPlanName,
@@ -96,14 +92,13 @@ export const action = async ({ request }) => {
             contractId: contractId || "",
             membershipLevel: planName?.split("-")[0]?.toLowerCase() || "",
             membershipType:
-              payload?.billing_policy?.interval == "day" ? "ONETIME" : "ACTIVE",
+              payload?.billing_policy?.interval == "day" ? "ONETIME" : `${payload?.billing_policy?.interval}ly`,
             sellingPlanName: planName,
             sellingPlanId: planId,
           });
         }
 
         let liveRaffle = await getLiveRaffle(shop);
-        console.log("liveRaffle=", liveRaffle);
         if (liveRaffle?.activeDraws?.length > 0) {
           ticketDetails = {
             total: Number(drawIds?.length),
@@ -138,13 +133,15 @@ export const action = async ({ request }) => {
           shop: shop,
           orderId: orderId || "",
           orderHashId: cusRes?.data?.originOrder?.name || "",
+          totalPrice: cusRes?.data?.originOrder?.totalPrice || 0,
           contractId: contractId || "",
           customerName:
             cusRes?.data?.customer?.firstName?.trim() +
             " " +
             cusRes?.data?.customer?.lastName?.trim(),
           customerEmail: cusRes?.data?.customer.email,
-          customerPhone: cusRes?.data?.customer?.phone || actualAddress?.phone || null,
+          customerPhone:
+            cusRes?.data?.customer?.phone || actualAddress?.phone || null,
           customerId: customerId || "",
           sellingPlanName: planName,
           sellingPlanId: planId,
@@ -240,9 +237,8 @@ export const action = async ({ request }) => {
     case "ORDERS_CREATE":
       try {
         let entries;
-        console.log("phone====",  payload?.customer?.phone)
+       
         for (const product of payload?.line_items || []) {
-          // console.log("these are the entries", payload);
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
               property?.name == "plan-type" && property?.value == "onetime",
@@ -254,7 +250,6 @@ export const action = async ({ request }) => {
                 (property) => property?.name == "entries",
               )?.value * product?.quantity;
 
-            console.log("entries==", entries);
             let drawIds = [];
             if (Number(entries) > 0) {
               for (let i = 0; i < Number(entries); i++) {
@@ -268,7 +263,6 @@ export const action = async ({ request }) => {
               }
 
               let liveRaffle = await getLiveRaffle(shop);
-              console.log("liveRaffle=", liveRaffle);
               let ticketDetails;
               if (liveRaffle?.activeDraws?.length > 0) {
                 ticketDetails = {
@@ -304,15 +298,16 @@ export const action = async ({ request }) => {
                 shop: shop,
                 orderId: payload?.id,
                 orderHashId: payload?.name,
+                totalPrice: Number(payload?.total_price),
                 contractId: "",
                 customerName: `${payload?.customer?.first_name || ""} ${
-                  payload?.customer?.last_name || ""
-                }`.trim(),
+                  payload?.customer?.last_name || ""}`.trim(),
                 customerEmail: payload?.customer?.email,
-                customerPhone: payload?.customer?.phone || payload?.customer?.default_address?.phone ||null,
+                customerPhone:
+                  payload?.customer?.phone ||
+                  payload?.customer?.default_address?.phone ||
+                  null,
                 customerId: payload?.customer?.id || "",
-                // sellingPlanName: "",
-                // sellingPlanId: "",
                 planUpdateDetail: {
                   sellingPlanUpdate: false,
                   upgradeTo: "",
@@ -389,8 +384,6 @@ export const action = async ({ request }) => {
                   contractId: "",
                   membershipLevel: membershiplevel?.toLowerCase() || "",
                   membershipType: "ONETIME",
-                  // sellingPlanName: planName,
-                  // sellingPlanId: planId,
                 });
               }
               sendOrderEmail(contractDetail);
