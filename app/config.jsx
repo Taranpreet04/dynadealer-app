@@ -5,7 +5,7 @@ const CONFIGURATION = {
     "emailUser": "kyle@dynadealer.com",
     "emailPass": "flux zfci tshc mfsm",
     "twillioPhone": '+18446170106',
-    "test":"check again11"
+    "test":"check again77"
 }
 
 export default CONFIGURATION
