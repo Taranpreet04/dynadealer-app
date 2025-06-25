@@ -1,10 +1,14 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
-application_url = "https://dame-millions-panel-thick.trycloudflare.com"
+application_url = "https://believes-lincoln-failures-pcs.trycloudflare.com"
 embedded = true
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
+
+[build]
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
 
 [webhooks]
 api_version = "2024-10"
@@ -19,18 +23,15 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://dame-millions-panel-thick.trycloudflare.com/auth/callback",
-  "https://dame-millions-panel-thick.trycloudflare.com/auth/shopify/callback",
-  "https://dame-millions-panel-thick.trycloudflare.com/api/auth/callback"
+  "https://believes-lincoln-failures-pcs.trycloudflare.com/auth/callback",
+  "https://believes-lincoln-failures-pcs.trycloudflare.com/auth/shopify/callback",
+  "https://believes-lincoln-failures-pcs.trycloudflare.com/api/auth/callback"
 ]
 
 [app_proxy]
-url = "https://dame-millions-panel-thick.trycloudflare.com/api/subscription"
+url = "https://believes-lincoln-failures-pcs.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
 [pos]
 embedded = false
-
-[build]
-automatically_update_urls_on_dev = true

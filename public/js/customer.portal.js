@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for customer porta")
-    let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://phone-retro-bloomberg-bahamas.trycloudflare.com";
+    // let serverPath = "https://dynadealersapp.com";
+    let serverPath = "https://john-soft-buyers-arena.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;

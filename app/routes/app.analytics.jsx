@@ -79,8 +79,7 @@ export const action = async ({ request }) => {
 
   return null
 };
-export default function Index() {
-
+export default function Analytics() {
   const [selectedProduct, setSelectedProduct] = useState("all");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { salesData, stats, totalRevenue, totalSubscribers } = useLoaderData();
@@ -144,7 +143,7 @@ export default function Index() {
       year: "numeric",
     });
   const selectedDateLabel = `${formatDate(selectedDates.start)} - ${formatDate(selectedDates.end)}`;
-
+          
   const calculateChange = (curr, prev) => {
     if (!prev || prev === 0) return "-";
     const change = ((curr - prev) / prev) * 100;
@@ -231,10 +230,7 @@ export default function Index() {
 
     // ['Retention Rate', '95.8%', '93.3%', '2.5%'],
   ];
-  const navigate = useNavigate()
-  useEffect(()=>{
-    navigate('/app/plans')
-  },[])
+
   return (
     
     <Page   fullWidth>
@@ -369,7 +365,7 @@ export default function Index() {
                       });
                     }}
                   />
-                  <YAxis /> 
+                  <YAxis />
                   <Tooltip />
                   <Legend />
                   <Line type="monotone" dataKey="sales" stroke="#007bff" />
