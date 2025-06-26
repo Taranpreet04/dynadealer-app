@@ -143,12 +143,12 @@ export default function Analytics() {
       year: "numeric",
     });
   const selectedDateLabel = `${formatDate(selectedDates.start)} - ${formatDate(selectedDates.end)}`;
-          
+
   const calculateChange = (curr, prev) => {
     if (!prev || prev === 0) return "-";
     const change = ((curr - prev) / prev) * 100;
     return `${change.toFixed(1)}%`;
-  };
+  }; 
   const rows = [
     [
       'Total Subscribers',
@@ -161,7 +161,7 @@ export default function Analytics() {
         }}>
           {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
         </span>
-      ),
+      ),     
     ],
     ['New Subscribers', totalSubscribers.newSubscribers.toString(), '-', '-'],
     [

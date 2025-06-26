@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer'
 import twilio from 'twilio'
 import CONFIGURATION from './config';
+// console.log("connnnn",CONFIGURATION);
 import { templateModel } from './schema';
 export async function sendOrderEmail(data) {
     try {
@@ -106,7 +107,7 @@ export async function sendApplyEmail(data) {
 
         let transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 465,
+            port: 465, 
             secure: true,
             auth: {
                 user: CONFIGURATION?.emailUser,

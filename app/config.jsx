@@ -6,6 +6,6 @@ const CONFIGURATION = {
     "emailPass": "flux zfci tshc mfsm",
     "twillioPhone": '+18446170106',
     "test":"check again111111"
-}
-
+}                              
+        
 export default CONFIGURATION
