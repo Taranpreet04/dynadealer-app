@@ -1571,7 +1571,55 @@ console.log("📈 MRR Change  :", mrrChange);
 };
 
 
+export const updateDb=async(admin)=>{
+  try{
+    const { shop } = admin.rest.session;
+let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(0).limit(500)
 
+data.forEach(async(item)=>{
+  const query = `{
+  order(id: "gid://shopify/Order/${item?.orderId}") {
+    id
+    name
+    email
+    createdAt
+    totalPrice
+    customer {
+      id
+      firstName
+      lastName
+      email
+      phone
+    }
+  }
+}
+`;
+  const orderRes = await admin.graphql(query);
+  const orderResponse = await orderRes.json();
+  
+    const newData = orderResponse?.data?.order;
+if(newData){
+
+  const detailUpdate = await subscriptionContractModel.updateMany(
+    { shop, orderId: item?.orderId },
+    {
+      $set: {
+        customerPhone: newData?.customer?.phone || null,
+        orderHashId: newData?.name || null,
+        totalPrice: parseFloat(newData?.totalPrice) || 0,
+      },
+    },
+    { new: true } // returns the updated document
+  );
+}
+
+})
+  return { message: "success" };     
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: "Error processing request", status: 500 };
+  }
+}
 
 // export const updateDocument = async (admin) => {
 //   try {
