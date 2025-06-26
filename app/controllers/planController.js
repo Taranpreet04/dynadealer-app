@@ -1346,11 +1346,11 @@ export const updateTemplate = async (admin, data) => {
 
 
 
-export const updateDb=async(admin, check)=>{
+export const updateDb=async(admin)=>{
   try{
-    const {skip, limit} = check
+    // const {skip, limit} = check
     const { shop } = admin.rest.session;
-let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(900).limit(500)
+let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(0).limit(500)
 
 data.forEach(async(item)=>{
   const query = `{
@@ -1359,6 +1359,7 @@ data.forEach(async(item)=>{
     name
     email
     createdAt
+    totalPrice
     customer {
       id
       firstName
@@ -1381,6 +1382,7 @@ if(newData){
       $set: {
         customerPhone: newData?.customer?.phone || null,
         orderHashId: newData?.name || null,
+        totalPrice: parseFloat(newData?.totalPrice) || 0,
       },
     },
     { new: true } // returns the updated document
