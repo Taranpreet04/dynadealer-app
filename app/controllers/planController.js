@@ -1574,7 +1574,7 @@ console.log("📈 MRR Change  :", mrrChange);
 export const updateDb=async(admin)=>{
   try{
     const { shop } = admin.rest.session;
-let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1})
+let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0})
 
 data.forEach(async(item)=>{
   const query = `{
