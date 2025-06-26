@@ -9,13 +9,14 @@ import {
 import React, { useState, useEffect } from "react";
 import { authenticate } from "../shopify.server";
 import { EditIcon, DeleteIcon } from "@shopify/polaris-icons"
-import { getAllPlans, deletePlanById } from "../controllers/planController";
+import { getAllPlans, deletePlanById, updateDb } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
+  await updateDb(admin)
   const planDetails = await getAllPlans(admin);
   return json(planDetails)
 }
