@@ -23,7 +23,7 @@ export default function App() {
         <h1 className={styles.heading}>Welcome to Shine subscription app</h1>
         <p className={styles.text}>
           {/* A builder that Compatible with any store */}
-        </p>
+        </p>           
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
             <label className={styles.label}>

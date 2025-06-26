@@ -1346,57 +1346,229 @@ export const updateTemplate = async (admin, data) => {
 
 
 
-export const updateDb=async(admin)=>{
-  try{
-    // const {skip, limit} = check
-    const { shop } = admin.rest.session;
-let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0}).sort({createdAt:-1}).skip(0).limit(500)
+export const getSalesOverTime = async (shop, startDate, endDate) => {
+  console.log("shop received in getSalesOverTime =>", shop);
 
-data.forEach(async(item)=>{
-  const query = `{
-  order(id: "gid://shopify/Order/${item?.orderId}") {
-    id
-    name
-    email
-    createdAt
-    totalPrice
-    customer {
-      id
-      firstName
-      lastName
-      email
-      phone
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999); 
+
+  const contracts = await subscriptionContractModel.find({shop});
+
+  const groupedData = {};
+
+  contracts.forEach((item) => {
+    const date = item.createdAt.toISOString().split("T")[0];
+    const sales = item.totalPrice || 0;
+
+    if (groupedData[date]) {
+      groupedData[date] += sales;
+    } else {
+      groupedData[date] = sales;
     }
+  });
+
+  const allDates = [];
+  const loopDate = new Date(start);
+  while (loopDate <= end) {
+    const dateStr = loopDate.toISOString().split("T")[0];
+    allDates.push(dateStr);
+    loopDate.setDate(loopDate.getDate() + 1);
   }
-}
-`;
-  const orderRes = await admin.graphql(query);
-  const orderResponse = await orderRes.json();
+
+  const salesData = allDates.map((date) => ({
+    date,
+    sales: groupedData[date] || 0,
+  }));
+
+  return salesData;
+};
+
+
+export const getSubscriptionStats = async (shop) => {
+  const allSubs = await subscriptionContractModel.find({ shop });
+
+  let total = allSubs.length;
+  let cancelled = 0;
+  let oneTime = 0;
+  let active = 0;
+                                      
+  allSubs.forEach((sub) => {
+    if (sub.status === "CANCELLED") cancelled++;
+    if (!sub.sellingPlanId) oneTime++;
+    if (sub.status === "ACTIVE") active++;
+  });
+
+  return {
+    total,
+    cancelled,
+    oneTime,
+    active,
+  };
+};
+
   
-    const newData = orderResponse?.data?.order;
-if(newData){
 
-  const detailUpdate = await subscriptionContractModel.updateMany(
-    { shop, orderId: item?.orderId },
-    {
-      $set: {
-        customerPhone: newData?.customer?.phone || null,
-        orderHashId: newData?.name || null,
-        totalPrice: parseFloat(newData?.totalPrice) || 0,
-      },
-    },
-    { new: true } // returns the updated document
+export const getTotalRevenue = async (shop) => {
+  const allSubs = await subscriptionContractModel.find({ shop });
+
+  let totalRevenue = 0;
+
+  allSubs.forEach((sub) => {
+    totalRevenue += sub.totalPrice || 0;
+  });
+
+  return totalRevenue;
+};
+
+
+export const getSubscribersStats = async (shop) => {
+  const now = new Date();
+
+const currentMonthStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1)); // June 1, 00:00:00 UTC
+const currentMonthEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)); // June 30, 23:59:59 UTC
+
+const previousMonthStart = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1)); // May 1, 00:00:00 UTC
+const previousMonthEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)); // May 31, 23:59:59 UTC
+
+  console.log("Current Month Range:", currentMonthStart, currentMonthEnd);
+  console.log("Previous Month Range:", previousMonthStart, previousMonthEnd);
+
+  // Current Month
+  const currentCustomerIds = await subscriptionContractModel.distinct("customerId", {
+         
+    shop,
+    createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
+  });
+  console.log("current month ki length---",currentCustomerIds.length)
+  
+  // Previous Month
+  const previousCustomerIds = await subscriptionContractModel.distinct("customerId", {
+    shop,
+    createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
+  });
+
+  const currentCount = currentCustomerIds.length;
+  const previousCount = previousCustomerIds.length;
+console.log("Count result:", currentCount);
+  const change =
+    previousCount === 0 ? null : (((currentCount - previousCount) / previousCount) * 100).toFixed(2);
+
+
+    // NEW SUBSCRIBERS
+    const newCustomerIds = currentCustomerIds.filter(
+  (id) => !previousCustomerIds.includes(id)
+);
+
+const newSubscribers = newCustomerIds.length;
+
+    //CANCELLED SUBS
+const cancelledCurrentMonth = await subscriptionContractModel.countDocuments({
+    shop,
+    status: "CANCELLED",
+    createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
+  });
+
+  const cancelledPreviousMonth = await subscriptionContractModel.countDocuments({
+    shop,
+    status: "CANCELLED",
+    createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
+  });
+
+  const cancelledChange =
+    cancelledPreviousMonth === 0
+      ? null
+      : (((cancelledCurrentMonth - cancelledPreviousMonth) / cancelledPreviousMonth) * 100).toFixed(2);
+
+      //CHURN RATE
+      
+    const previousSubscribersSet = await subscriptionContractModel.distinct("customerId", {
+    shop,
+    createdAt: { $lte: previousMonthEnd },
+  });
+
+  const cancelledCustomersInCurrentMonth = await subscriptionContractModel.distinct("customerId", {
+    shop,
+    status: "CANCELLED",
+    updatedAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
+  });
+
+  const churnedCustomers = cancelledCustomersInCurrentMonth.filter(id =>
+    previousSubscribersSet.includes(id)
   );
-}
 
-})
-  return { message: "success" };     
-  } catch (error) {
-    console.error("Error processing POST request:", error);
-    return { message: "Error processing request", status: 500 };
+
+  const churnRate =
+    previousSubscribersSet.length > 0
+      ? ((churnedCustomers.length / previousSubscribersSet.length) * 100).toFixed(2)
+      : "0.00";
+
+       console.log("🔄 CHURN DEBUG");
+  console.log("👉 Previous Subscribers Base:", previousSubscribersSet.length);
+  console.log("👉 Cancelled in Current Month:", cancelledCustomersInCurrentMonth.length);
+  console.log("👉 Churned from Base:", churnedCustomers.length);
+  console.log("✅ Churn Rate %:", churnRate);  
+
+  //NET GROWTH
+   const netGrowth = newSubscribers - churnedCustomers.length;
+  console.log("👉 Net Growth (June):", netGrowth);
+
+  //MONTHLY REVENUE
+  //current month
+  const currentMonthSubs = await subscriptionContractModel.find({
+  shop,
+  "billing_policy.interval": "month",
+  createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
+});
+
+// PREVIOUS month
+const previousMonthSubs = await subscriptionContractModel.find({
+  shop,
+  "billing_policy.interval": "month",
+  createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
+});
+
+const currentMRR  = currentMonthSubs.reduce((sum, sub) => sum + (sub.totalPrice || 0), 0);
+const previousMRR = previousMonthSubs.reduce((sum, sub) => sum + (sub.totalPrice || 0), 0);
+
+const mrrChange =
+  previousMRR === 0
+    ? "-"
+    : (((currentMRR - previousMRR) / previousMRR) * 100).toFixed(2);
+
+console.log("🧾 MRR Current :", currentMRR);
+console.log("🧾 MRR Previous:", previousMRR);
+console.log("📈 MRR Change  :", mrrChange);
+
+  
+  
+  return {
+    current: currentCount,
+    previous: previousCount,
+    newSubscribers,
+    change: change !== null ? `${change}%` : "-",
+    cancelledSubscribers: {
+      current: cancelledCurrentMonth,
+      previous: cancelledPreviousMonth,
+      change: cancelledChange !== null ? `${cancelledChange}%` : "-",
+    },
+    churnRate: Number(churnRate),
+    churnMeta: {
+      base: previousSubscribersSet.length,
+      cancelled: churnedCustomers.length
+    },
+     netSubscriberGrowth: {
+      new: newSubscribers,
+      churned: churnedCustomers.length,
+      net: netGrowth
+    },
+     mrr: {
+    current:  currentMRR,                     // number
+    previous: previousMRR,                    // number
+    change:   mrrChange !== null ? `${mrrChange}%` : "-"
   }
-}
-
+  };
+};
 
 
 

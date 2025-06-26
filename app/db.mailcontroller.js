@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer'
 import twilio from 'twilio'
 import CONFIGURATION from './config';
+// console.log("connnnn",CONFIGURATION);
 import { templateModel } from './schema';
 export async function sendOrderEmail(data) {
     try {
@@ -71,10 +72,10 @@ export async function sendOrderEmail(data) {
         console.log("Email sent successfully!")
 
         const customerPhone = data?.customerPhone;
-        if (customerPhone && customerPhone.length >= 10) {
+        if(customerPhone && customerPhone.length >= 10){
 
-            const ticketList = data?.drawIds?.join(', ');
-            const message = `Hi ${data?.customerName}, your order for ${data?.products[0]?.productName} is confirmed.
+        const ticketList = data?.drawIds?.join(', ');
+        const message = `Hi ${data?.customerName}, your order for ${data?.products[0]?.productName} is confirmed.
         Your tickets are applied for ${data?.ticketDetails?.appliedForDetail[0]?.productName}
         Tickets: ${ticketList}
         Total Tickets: ${data?.drawIds?.length}
@@ -106,7 +107,7 @@ export async function sendApplyEmail(data) {
 
         let transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 465,
+            port: 465, 
             secure: true,
             auth: {
                 user: CONFIGURATION?.emailUser,
