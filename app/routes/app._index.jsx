@@ -236,187 +236,187 @@ export default function Index() {
     navigate('/app/plans')
   },[])
   return (
-    
-    <Page   fullWidth>
-      <BlockStack gap={800}>
-          <Card>
-        <Box padding="4">
-          <Text variant="headingMd" as="h2">📊 Key Performance Indicators</Text>
-          <Box paddingBlockStart="4">
-            <DataTable
-              columnContentTypes={['text', 'numeric', 'numeric', 'numeric']}
-              headings={['KPI', 'Current Period', 'Previous Period', 'Change (%)']}
-              rows={rows}
-            />
-          </Box>
-        </Box>
-      </Card>
-      <BlockStack gap={400}>
-        <InlineStack gap={400} align="end" >
+    <></>
+    // <Page   fullWidth>
+    //   <BlockStack gap={800}>
+    //       <Card>
+    //     <Box padding="4">
+    //       <Text variant="headingMd" as="h2">📊 Key Performance Indicators</Text>
+    //       <Box paddingBlockStart="4">
+    //         <DataTable
+    //           columnContentTypes={['text', 'numeric', 'numeric', 'numeric']}
+    //           headings={['KPI', 'Current Period', 'Previous Period', 'Change (%)']}
+    //           rows={rows}
+    //         />
+    //       </Box>
+    //     </Box>
+    //   </Card>
+    //   <BlockStack gap={400}>
+    //     <InlineStack gap={400} align="end" >
 
-          <Button
-            variant="primary"
-            // disabled={tableData?.length <= 0}
-            onClick={() => setShowDatePicker(true)}>{selectedDateLabel}
-          </Button>
-          <Button
-            variant="primary"
+    //       <Button
+    //         variant="primary"
+    //         // disabled={tableData?.length <= 0}
+    //         onClick={() => setShowDatePicker(true)}>{selectedDateLabel}
+    //       </Button>
+    //       <Button
+    //         variant="primary"
 
-            onClick={() => handleResourcePicker()}
-          >
-            Add products
-          </Button>
-        </InlineStack>
-        </BlockStack>
+    //         onClick={() => handleResourcePicker()}
+    //       >
+    //         Add products
+    //       </Button>
+    //     </InlineStack>
+    //     </BlockStack>
 
-        <BlockStack gap={400}>
+    //     <BlockStack gap={400}>
 
-          <Grid>
-            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 12, xl: 12 }}>
+    //       <Grid>
+    //         <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 12, xl: 12 }}>
           
-              <Box>
-                <BlockStack gap={300}>
-                  <Text variant="headingMd" fontWeight="bold">
-                    Subscription Details
-                  </Text>
-                  <InlineGrid gap={200} columns={5}>          
-                    <Card>
-                      <InlineStack align="center" gap={1600}>
-                        <BlockStack gap={200}>
-                          <Text variant="headingSm">Total</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.total}</Text>
-                        </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={ChartHistogramGrowthIcon} tone="base  " />
-                        </div>
-                      </InlineStack>
+    //           <Box>
+    //             <BlockStack gap={300}>
+    //               <Text variant="headingMd" fontWeight="bold">
+    //                 Subscription Details
+    //               </Text>
+    //               <InlineGrid gap={200} columns={5}>          
+    //                 <Card>
+    //                   <InlineStack align="center" gap={1600}>
+    //                     <BlockStack gap={200}>
+    //                       <Text variant="headingSm">Total</Text>
+    //                       <Text variant="headingLg" fontWeight="bold">{stats.total}</Text>
+    //                     </BlockStack>
+    //                     <div style={{ fontSize: '28px' }}>
+    //                       <Icon source={ChartHistogramGrowthIcon} tone="base  " />
+    //                     </div>
+    //                   </InlineStack>
 
-                    </Card>
-                    <Card>
-                      <InlineStack align="center" gap={1600}>
-                        <BlockStack gap={200}>
-                          <Text variant="headingSm">Cancelled</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.cancelled}</Text>
-                        </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={XCircleIcon} tone="base" />
-                        </div>
-                      </InlineStack>
-                    </Card>
-                    <Card>
-                      <InlineStack align="center" gap={1600}>
-                        <BlockStack gap={200}>
-                          <Text variant="headingSm">One-Time</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.oneTime}</Text>
-                        </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={ChartHistogramGrowthIcon} tone="base  " />
-                        </div>
-                      </InlineStack>
-                    </Card>
-                    <Card>
-                      <InlineStack align="center" gap={1600}>
-                        <BlockStack gap={200}>
-                          <Text variant="headingSm">Active</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.active}</Text>
-                        </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={StatusActiveIcon} tone="base  " />
-                        </div>
-                      </InlineStack>
-                    </Card>
-                    <Card>
-                      <InlineStack align="center" gap={800}>
-                        <BlockStack gap={200}>
-                          <Text variant="headingMd">Total Revenue</Text>
-                          <Text variant="headingMd" fontWeight="bold">
-                            ${totalRevenue?.toFixed(2)}
-                          </Text>
-                        </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={MoneyIcon} tone="base" />
-                        </div>
-                      </InlineStack>
-                    </Card>
-                  </InlineGrid>
-                </BlockStack>
-              </Box>
+    //                 </Card>
+    //                 <Card>
+    //                   <InlineStack align="center" gap={1600}>
+    //                     <BlockStack gap={200}>
+    //                       <Text variant="headingSm">Cancelled</Text>
+    //                       <Text variant="headingLg" fontWeight="bold">{stats.cancelled}</Text>
+    //                     </BlockStack>
+    //                     <div style={{ fontSize: '28px' }}>
+    //                       <Icon source={XCircleIcon} tone="base" />
+    //                     </div>
+    //                   </InlineStack>
+    //                 </Card>
+    //                 <Card>
+    //                   <InlineStack align="center" gap={1600}>
+    //                     <BlockStack gap={200}>
+    //                       <Text variant="headingSm">One-Time</Text>
+    //                       <Text variant="headingLg" fontWeight="bold">{stats.oneTime}</Text>
+    //                     </BlockStack>
+    //                     <div style={{ fontSize: '28px' }}>
+    //                       <Icon source={ChartHistogramGrowthIcon} tone="base  " />
+    //                     </div>
+    //                   </InlineStack>
+    //                 </Card>
+    //                 <Card>
+    //                   <InlineStack align="center" gap={1600}>
+    //                     <BlockStack gap={200}>
+    //                       <Text variant="headingSm">Active</Text>
+    //                       <Text variant="headingLg" fontWeight="bold">{stats.active}</Text>
+    //                     </BlockStack>
+    //                     <div style={{ fontSize: '28px' }}>
+    //                       <Icon source={StatusActiveIcon} tone="base  " />
+    //                     </div>
+    //                   </InlineStack>
+    //                 </Card>
+    //                 <Card>
+    //                   <InlineStack align="center" gap={800}>
+    //                     <BlockStack gap={200}>
+    //                       <Text variant="headingMd">Total Revenue</Text>
+    //                       <Text variant="headingMd" fontWeight="bold">
+    //                         ${totalRevenue?.toFixed(2)}
+    //                       </Text>
+    //                     </BlockStack>
+    //                     <div style={{ fontSize: '28px' }}>
+    //                       <Icon source={MoneyIcon} tone="base" />
+    //                     </div>
+    //                   </InlineStack>
+    //                 </Card>
+    //               </InlineGrid>
+    //             </BlockStack>
+    //           </Box>
 
-            </Grid.Cell>
+    //         </Grid.Cell>
 
-          </Grid>
+    //       </Grid>
 
-        </BlockStack>
-        <Card>
-          <Box padding="4">
-            <Text variant="headingMd">Sales Over Time</Text>
-            <Box style={{ height: 300, marginTop: 16 }}>
-              {/* {console.log("Chart data ===>", filteredData)} */}
-              <ResponsiveContainer width="100%" height="100%">
+    //     </BlockStack>
+    //     <Card>
+    //       <Box padding="4">
+    //         <Text variant="headingMd">Sales Over Time</Text>
+    //         <Box style={{ height: 300, marginTop: 16 }}>
+    //           {/* {console.log("Chart data ===>", filteredData)} */}
+    //           <ResponsiveContainer width="100%" height="100%">
 
-                <LineChart data={filteredData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    interval={0}
-                    angle={-45}
-                    tickFormatter={(day) => {
-                      const fullDate = new Date(day);
-                      return fullDate.toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      });
-                    }}
-                  />
-                  <YAxis /> 
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="sales" stroke="#007bff" />
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-          </Box>
-        </Card>
-      </BlockStack>
-      <Modal
-        open={showDatePicker}
-        onClose={() => {
-          setShowDatePicker(false);
-        }}
-        title={"Select Date Range"}
-        primaryAction={{
-          content: "filter",
-          onAction: () => {
-            setShowDatePicker(false);
+    //             <LineChart data={filteredData}>
+    //               <CartesianGrid strokeDasharray="3 3" />
+    //               <XAxis
+    //                 dataKey="date"
+    //                 interval={0}
+    //                 angle={-45}
+    //                 tickFormatter={(day) => {
+    //                   const fullDate = new Date(day);
+    //                   return fullDate.toLocaleDateString("en-GB", {
+    //                     day: "2-digit",
+    //                     month: "short",
+    //                     year: "numeric",
+    //                   });
+    //                 }}
+    //               />
+    //               <YAxis /> 
+    //               <Tooltip />
+    //               <Legend />
+    //               <Line type="monotone" dataKey="sales" stroke="#007bff" />
+    //             </LineChart>
+    //           </ResponsiveContainer>
+    //         </Box>
+    //       </Box>
+    //     </Card>
+    //   </BlockStack>
+    //   <Modal
+    //     open={showDatePicker}
+    //     onClose={() => {
+    //       setShowDatePicker(false);
+    //     }}
+    //     title={"Select Date Range"}
+    //     primaryAction={{
+    //       content: "filter",
+    //       onAction: () => {
+    //         setShowDatePicker(false);
 
-          },
-        }}
-        secondaryActions={[
-          {
-            content: "Cancel",
-            onAction: () => {
-              setShowDatePicker(false);
-            },
-          },
-        ]}
-      >
-        <Modal.Section>
-          <BlockStack gap={5}>
-            <DatePicker
-              month={month}
-              year={year}
-              onChange={setSelectedDates}
-              onMonthChange={handleMonthChange}
-              selected={selectedDates}
-              multiMonth
-              allowRange
-            />
-          </BlockStack>
-        </Modal.Section>
-      </Modal>
+    //       },
+    //     }}
+    //     secondaryActions={[
+    //       {
+    //         content: "Cancel",
+    //         onAction: () => {
+    //           setShowDatePicker(false);
+    //         },
+    //       },
+    //     ]}
+    //   >
+    //     <Modal.Section>
+    //       <BlockStack gap={5}>
+    //         <DatePicker
+    //           month={month}
+    //           year={year}
+    //           onChange={setSelectedDates}
+    //           onMonthChange={handleMonthChange}
+    //           selected={selectedDates}
+    //           multiMonth
+    //           allowRange
+    //         />
+    //       </BlockStack>
+    //     </Modal.Section>
+    //   </Modal>
 
-    </Page>
+    // </Page>
 
   );
 }
