@@ -3,7 +3,7 @@
 client_id = "e708894b40138257983227c922e97135"
 name = "subscription"
 handle = "subscription-155"
-application_url = "https://arise-chairs-combinations-nor.trycloudflare.com"
+application_url = "https://newcastle-proof-gamma-hans.trycloudflare.com"
 embedded = true
 
 [access_scopes]
@@ -12,16 +12,16 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://arise-chairs-combinations-nor.trycloudflare.com/auth/callback",
-  "https://arise-chairs-combinations-nor.trycloudflare.com/auth/shopify/callback",
-  "https://arise-chairs-combinations-nor.trycloudflare.com/api/auth/callback"
+  "https://newcastle-proof-gamma-hans.trycloudflare.com/auth/callback",
+  "https://newcastle-proof-gamma-hans.trycloudflare.com/auth/shopify/callback",
+  "https://newcastle-proof-gamma-hans.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2025-04"
 
 [app_proxy]
-url = "https://arise-chairs-combinations-nor.trycloudflare.com/api/subscription"
+url = "https://newcastle-proof-gamma-hans.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

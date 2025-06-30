@@ -81,160 +81,161 @@ export const action = async ({ request }) => {
 };
 export default function Index() {
 
-  const [selectedProduct, setSelectedProduct] = useState("all");
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const { salesData, stats, totalRevenue, totalSubscribers } = useLoaderData();
-  console.log("salesData ===>", salesData);
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
-  const [{ month, year }, setDate] = useState({
-    month: currentMonth == 0 ? 11 : currentMonth - 1,
-    year: currentMonth == 0 ? currentYear - 1 : currentYear,
-  });
-  const resetToMidnight = (date) => {
-    const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
-    return newDate;
-  };
-  const [selectedDates, setSelectedDates] = useState({
-
-    start: resetToMidnight(
-      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
-    ), // Ten days before, reset to midnight
-    end: resetToMidnight(new Date()), // Today, reset to midnight
-  });
-
-  const filteredData = salesData?.filter((item) => {
-    const itemDate = new Date(item.date); // assuming item.date = "2025-06-10"
-    itemDate.setHours(0, 0, 0, 0);
-    const start = new Date(selectedDates.start);
-    const end = new Date(selectedDates.end);
-    return itemDate >= start && itemDate <= end;
-  });
-
-  const handleMonthChange = (month, year) => {
-    setDate({ month, year });
-  };
-
-  console.log("selectedDataes==>", selectedDates)
-
-  const handleResourcePicker = async () => {
-    const productPickerData = await shopify.resourcePicker({
-      type: "product",
-      filter: {
-        draft: false,
-        variants: false,
-      },
-    });
-    let sendData = [];
-    if (productPickerData !== undefined) {
-      productPickerData?.map((item) => {
-        let p_id = item.id;
-        sendData.push(p_id);
-      });
-      setProducts(sendData);
-      setShowDatePicker(true);
-    }
-  };
-  const formatDate = (date) =>
-    date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  const selectedDateLabel = `${formatDate(selectedDates.start)} - ${formatDate(selectedDates.end)}`;
-
-  const calculateChange = (curr, prev) => {
-    if (!prev || prev === 0) return "-";
-    const change = ((curr - prev) / prev) * 100;
-    return `${change.toFixed(1)}%`;
-  };
-  const rows = [
-    [
-      'Total Subscribers',
-      totalSubscribers.current?.toString(),
-      totalSubscribers.previous?.toString(),
-      totalSubscribers.change === "-" ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
-        </span>
-      ),
-    ],
-    ['New Subscribers', totalSubscribers.newSubscribers.toString(), '-', '-'],
-    [
-      "Canceled Subscribers",
-      totalSubscribers.cancelledSubscribers.current.toString(),
-      totalSubscribers.cancelledSubscribers.previous.toString(),
-      totalSubscribers.change === "-" ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
-        </span>
-      ),
-    ],
-    [
-  'Net Subscriber Growth',
-  totalSubscribers.netSubscriberGrowth.new.toString(),
-  totalSubscribers.netSubscriberGrowth.churned.toString(),
-  (
-    <span style={{
-      color: parseInt(totalSubscribers.netSubscriberGrowth.net) > 0 ? "green" : (parseInt(totalSubscribers.netSubscriberGrowth.net) < 0 ? "red" : "black"),
-      fontWeight: "bold"
-    }}>
-      {parseInt(totalSubscribers.netSubscriberGrowth.net) > 0
-        ? `↑ ${totalSubscribers.netSubscriberGrowth.net}`
-        : (parseInt(totalSubscribers.netSubscriberGrowth.net) < 0
-          ? `↓ ${totalSubscribers.netSubscriberGrowth.net}`
-          : totalSubscribers.netSubscriberGrowth.net.toString())}
-    </span>
-  )
-],
-
-   [
-    'Monthly Recurring Revenue (MRR)',
-    `$${totalSubscribers.mrr.current.toFixed(2)}`,
-    `$${totalSubscribers.mrr.previous.toFixed(2)}`,
-    totalSubscribers.mrr.change === "-" ? "-" : (
-      <span style={{
-        color: parseFloat(totalSubscribers.mrr.change) > 0 ? "green" : "red",
-        fontWeight: "bold"
-      }}>
-        {parseFloat(totalSubscribers.mrr.change) > 0 ? "↑" : "↓"} {totalSubscribers.mrr.change}
-      </span>
-    )
-  ],
-    ['Annual Recurring Revenue (ARR)', '-', '-', '-'],
-    // ['ARPU', '$26.67', '-', '-'],
-    // ['Customer Acquisition Cost (CAC)', '$12', '-', '-'],
-    // ['Lifetime Value (LTV)', '$320', '-', '-'],
-    // ['Gross Margin', '80%', '-', '-'],
-    // ['Churn Rate', '50', '10', '200%'],
-    [
-      'Churn Rate',
-      totalSubscribers.churnMeta.cancelled.toString(),
-      totalSubscribers.churnMeta.base.toString(),
-      totalSubscribers.churnRate === 0 ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.churnRate) > 0 ? "red" : "green",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.churnRate) > 0 ? "↑" : "↓"} {totalSubscribers.churnRate}%
-        </span>
-      )
-    ],
-
-    // ['Retention Rate', '95.8%', '93.3%', '2.5%'],
-  ];
-  const navigate = useNavigate()
+    const navigate = useNavigate()
   useEffect(()=>{
-    navigate('/app/plans')
+     navigate("/app/plans");
   },[])
+  // const [selectedProduct, setSelectedProduct] = useState("all");
+  // const [showDatePicker, setShowDatePicker] = useState(false);
+  // const { salesData, stats, totalRevenue, totalSubscribers } = useLoaderData();
+  // console.log("salesData ===>", salesData);
+  // const currentDate = new Date();
+  // const currentMonth = currentDate.getMonth();
+  // const currentYear = currentDate.getFullYear();
+  // const [{ month, year }, setDate] = useState({
+  //   month: currentMonth == 0 ? 11 : currentMonth - 1,
+  //   year: currentMonth == 0 ? currentYear - 1 : currentYear,
+  // });
+  // const resetToMidnight = (date) => {
+  //   const newDate = new Date(date);
+  //   newDate.setHours(0, 0, 0, 0);
+  //   return newDate;
+  // };
+  // const [selectedDates, setSelectedDates] = useState({
+
+  //   start: resetToMidnight(
+  //     new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
+  //   ), 
+  //   end: resetToMidnight(new Date()), 
+  // });
+
+  // const filteredData = salesData?.filter((item) => {
+  //   const itemDate = new Date(item.date); // assuming item.date = "2025-06-10"
+  //   itemDate.setHours(0, 0, 0, 0);
+  //   const start = new Date(selectedDates.start);
+  //   const end = new Date(selectedDates.end);
+  //   return itemDate >= start && itemDate <= end;
+  // });
+
+//   const handleMonthChange = (month, year) => {
+//     setDate({ month, year });
+//   };
+
+//   console.log("selectedDataes==>", selectedDates)
+
+//   const handleResourcePicker = async () => {
+//     const productPickerData = await shopify.resourcePicker({
+//       type: "product",
+//       filter: {
+//         draft: false,
+//         variants: false,
+//       },
+//     });
+//     let sendData = [];
+//     if (productPickerData !== undefined) {
+//       productPickerData?.map((item) => {
+//         let p_id = item.id;
+//         sendData.push(p_id);
+//       });
+//       setProducts(sendData);
+//       setShowDatePicker(true);
+//     }
+//   };
+//   const formatDate = (date) =>
+//     date.toLocaleDateString("en-GB", {
+//       day: "2-digit",
+//       month: "short",
+//       year: "numeric",
+//     });
+//   const selectedDateLabel = `${formatDate(selectedDates.start)} - ${formatDate(selectedDates.end)}`;
+
+//   const calculateChange = (curr, prev) => {
+//     if (!prev || prev === 0) return "-";
+//     const change = ((curr - prev) / prev) * 100;
+//     return `${change.toFixed(1)}%`;
+//   };
+//   const rows = [
+//     [
+//       'Total Subscribers',
+//       totalSubscribers.current?.toString(),
+//       totalSubscribers.previous?.toString(),
+//       totalSubscribers.change === "-" ? "-" : (
+//         <span style={{
+//           color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
+//           fontWeight: "bold"
+//         }}>
+//           {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
+//         </span>
+//       ),
+//     ],
+//     ['New Subscribers', totalSubscribers.newSubscribers.toString(), '-', '-'],
+//     [
+//       "Canceled Subscribers",
+//       totalSubscribers.cancelledSubscribers.current.toString(),
+//       totalSubscribers.cancelledSubscribers.previous.toString(),
+//       totalSubscribers.change === "-" ? "-" : (
+//         <span style={{
+//           color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
+//           fontWeight: "bold"
+//         }}>
+//           {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
+//         </span>
+//       ),
+//     ],
+//     [
+//   'Net Subscriber Growth',
+//   totalSubscribers.netSubscriberGrowth.new.toString(),
+//   totalSubscribers.netSubscriberGrowth.churned.toString(),
+//   (
+//     <span style={{
+//       color: parseInt(totalSubscribers.netSubscriberGrowth.net) > 0 ? "green" : (parseInt(totalSubscribers.netSubscriberGrowth.net) < 0 ? "red" : "black"),
+//       fontWeight: "bold"
+//     }}>
+//       {parseInt(totalSubscribers.netSubscriberGrowth.net) > 0
+//         ? `↑ ${totalSubscribers.netSubscriberGrowth.net}`
+//         : (parseInt(totalSubscribers.netSubscriberGrowth.net) < 0
+//           ? `↓ ${totalSubscribers.netSubscriberGrowth.net}`
+//           : totalSubscribers.netSubscriberGrowth.net.toString())}
+//     </span>
+//   )
+// ],
+
+//    [
+//     'Monthly Recurring Revenue (MRR)',
+//     `$${totalSubscribers.mrr.current.toFixed(2)}`,
+//     `$${totalSubscribers.mrr.previous.toFixed(2)}`,
+//     totalSubscribers.mrr.change === "-" ? "-" : (
+//       <span style={{
+//         color: parseFloat(totalSubscribers.mrr.change) > 0 ? "green" : "red",
+//         fontWeight: "bold"
+//       }}>
+//         {parseFloat(totalSubscribers.mrr.change) > 0 ? "↑" : "↓"} {totalSubscribers.mrr.change}
+//       </span>
+//     )
+//   ],
+//     ['Annual Recurring Revenue (ARR)', '-', '-', '-'],
+//     // ['ARPU', '$26.67', '-', '-'],
+//     // ['Customer Acquisition Cost (CAC)', '$12', '-', '-'],
+//     // ['Lifetime Value (LTV)', '$320', '-', '-'],
+//     // ['Gross Margin', '80%', '-', '-'],
+//     // ['Churn Rate', '50', '10', '200%'],
+//     [
+//       'Churn Rate',
+//       totalSubscribers.churnMeta.cancelled.toString(),
+//       totalSubscribers.churnMeta.base.toString(),
+//       totalSubscribers.churnRate === 0 ? "-" : (
+//         <span style={{
+//           color: parseFloat(totalSubscribers.churnRate) > 0 ? "red" : "green",
+//           fontWeight: "bold"
+//         }}>
+//           {parseFloat(totalSubscribers.churnRate) > 0 ? "↑" : "↓"} {totalSubscribers.churnRate}%
+//         </span>
+//       )
+//     ],
+
+//     // ['Retention Rate', '95.8%', '93.3%', '2.5%'],
+//   ];
+
   return (
     <></>
     // <Page   fullWidth>

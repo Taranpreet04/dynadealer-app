@@ -9,14 +9,13 @@ import {
 import React, { useState, useEffect } from "react";
 import { authenticate } from "../shopify.server";
 import { EditIcon, DeleteIcon } from "@shopify/polaris-icons"
-import { getAllPlans, deletePlanById, updateDb } from "../controllers/planController";
+import { getAllPlans, deletePlanById } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  // await updateDb(admin)
   const planDetails = await getAllPlans(admin);
   return json(planDetails)
 }
@@ -41,6 +40,7 @@ export default function PlanData() {
   useEffect(() => {
     shopify.loading(true)
     setTableSkel(true)
+    console.log("loaderData==", loaderData)
     loaderData?.planDetails ? setData(loaderData?.planDetails) : ''
     let table = loaderData?.planDetails?.slice(skip, limit)
     if (loaderData?.planDetails?.length > 0 && table?.length <= 0) {
