@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("my js file for customer porta")
     let serverPath = "https://dynadealersapp.com";
-    // let serverPath = "https://john-soft-buyers-arena.trycloudflare.com";
+    // let serverPath = "https://translation-memo-lion-tan.trycloudflare.com";
     const url = new URL(window.location.href);
     const customerId = url.searchParams.get("cid");
     let shop = Shopify.shop;
@@ -291,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const applyTickets = async () => {
         try {
-            data = {
+          let data = {
                 ...selectedSubscription,
                 ticketDetails: {
                     ...selectedSubscription?.ticketDetails,

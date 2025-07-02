@@ -273,7 +273,7 @@ export async function sendSMS(to, message) {
         });
         return result;
     } catch (error) {
-        console.err("SMS failed", error);
-        throw error
+        console.log("SMS failed", error);
+        // throw error
     }
 }
