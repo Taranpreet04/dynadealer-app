@@ -30,6 +30,7 @@ export default function App() {
           <Link to="/app/memberships" prefetch="viewport">Memberships</Link>
           <Link to="/app/contracts" prefetch="viewport">Subscribers</Link>
           <Link to="/app/emailCustomizer" prefetch="viewport">Email Customizer</Link>
+          <Link to="/app/analytics" prefetch="viewport">Analytics</Link>
         </ui-nav-menu>
        <Outlet />
     </AppProvider>
