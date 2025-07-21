@@ -1,5 +1,6 @@
 import { useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
+import { redirect } from "@remix-run/react";
 // import { ResourcePicker } from "@shopify/app-bridge-react";
 import { getSalesOverTime, getSubscriptionStats, getTotalRevenue, getSubscribersStats } from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
@@ -58,8 +59,10 @@ import { Knob } from "../components/knob";
 
 
 export const loader = async ({ request }) => {
+  
   const { session } = await authenticate.admin(request);
   console.log("shop in loader ===>", session.shop);
+  //  return redirect("/app/plans");
   const today = new Date();
   const tenDaysAgo = new Date();
   tenDaysAgo.setDate(today.getDate() - 30);
@@ -231,10 +234,12 @@ export default function Index() {
 
     // ['Retention Rate', '95.8%', '93.3%', '2.5%'],
   ];
-  const navigate = useNavigate()
-  useEffect(()=>{
-    navigate('/app/plans')
-  },[])
+  // const navigate = useNavigate()
+
+  // useEffect(()=>{
+  //   navigate('/app/plans')
+  // },[])
+
   return (
     
     <Page   fullWidth>
@@ -259,13 +264,7 @@ export default function Index() {
             // disabled={tableData?.length <= 0}
             onClick={() => setShowDatePicker(true)}>{selectedDateLabel}
           </Button>
-          <Button
-            variant="primary"
-
-            onClick={() => handleResourcePicker()}
-          >
-            Add products
-          </Button>
+          
         </InlineStack>
         </BlockStack>
 

@@ -1456,11 +1456,28 @@ console.log("Count result:", currentCount);
 
 
     // NEW SUBSCRIBERS
-    const newCustomerIds = currentCustomerIds.filter(
-  (id) => !previousCustomerIds.includes(id)
+   const newCustomerIds = currentCustomerIds.filter(
+  id => !previousCustomerIds.includes(id)
 );
-
 const newSubscribers = newCustomerIds.length;
+
+ 
+const beforePreviousMonthCustomerIds = await subscriptionContractModel.distinct("customerId", {
+  shop,
+  createdAt: { $lt: previousMonthStart }          
+});
+
+const prevMonthNewCustomerIds = previousCustomerIds.filter(
+  id => !beforePreviousMonthCustomerIds.includes(id)
+);
+const previousNewSubscribers = prevMonthNewCustomerIds.length;
+
+const newSubsChange =
+  previousNewSubscribers === 0
+    ? "-"                     
+    : (
+        ((newSubscribers - previousNewSubscribers) / previousNewSubscribers) * 100
+      ).toFixed(2); 
 
     //CANCELLED SUBS
 const cancelledCurrentMonth = await subscriptionContractModel.countDocuments({
@@ -1541,11 +1558,13 @@ console.log("🧾 MRR Previous:", previousMRR);
 console.log("📈 MRR Change  :", mrrChange);
 
   
-  
+   
   return {
     current: currentCount,
     previous: previousCount,
     newSubscribers,
+     previousNewSubscribers,
+      newSubsChange,
     change: change !== null ? `${change}%` : "-",
     cancelledSubscribers: {
       current: cancelledCurrentMonth,

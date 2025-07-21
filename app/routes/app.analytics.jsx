@@ -118,24 +118,25 @@ export default function Analytics() {
 
   console.log("selectedDataes==>", selectedDates)
 
-  const handleResourcePicker = async () => {
-    const productPickerData = await shopify.resourcePicker({
-      type: "product",
-      filter: {
-        draft: false,
-        variants: false,
-      },
-    });
-    let sendData = [];
-    if (productPickerData !== undefined) {
-      productPickerData?.map((item) => {
-        let p_id = item.id;
-        sendData.push(p_id);
-      });
-      setProducts(sendData);
-      setShowDatePicker(true);
-    }
-  };
+  // const handleResourcePicker = async () => {
+  //   const productPickerData = await shopify.resourcePicker({
+  //     type: "product",
+  //     filter: {
+  //       draft: false,
+  //       variants: false,
+  //     },
+  //   });
+  //   let sendData = [];
+  //   if (productPickerData !== undefined) {
+  //     productPickerData?.map((item) => {
+  //       let p_id = item.id;
+  //       sendData.push(p_id);
+  //     });
+  //     setProducts(sendData);
+  //     setShowDatePicker(true);
+  //   }
+  // };
+
   const formatDate = (date) =>
     date.toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -163,20 +164,35 @@ export default function Analytics() {
         </span>
       ),     
     ],
-    ['New Subscribers', totalSubscribers.newSubscribers.toString(), '-', '-'],
     [
-      "Canceled Subscribers",
-      totalSubscribers.cancelledSubscribers.current.toString(),
-      totalSubscribers.cancelledSubscribers.previous.toString(),
-      totalSubscribers.change === "-" ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
-        </span>
-      ),
-    ],
+  'New Subscribers',
+  totalSubscribers.newSubscribers.toString(),
+  totalSubscribers.previousNewSubscribers.toString(),
+  totalSubscribers.newSubsChange === "-" ? "-" : (
+    <span style={{
+      color: parseFloat(totalSubscribers.newSubsChange) > 0 ? "green" : "red",
+      fontWeight: "bold"
+    }}>
+      {parseFloat(totalSubscribers.newSubsChange) > 0 ? "↑" : "↓"} {totalSubscribers.newSubsChange}%
+    </span>
+  )
+],
+
+
+    [
+  "Cancelled Subscribers",
+  totalSubscribers.cancelledSubscribers.current.toString(),
+  totalSubscribers.cancelledSubscribers.previous.toString(),
+  totalSubscribers.cancelledSubscribers.change === "-" ? "-" : (
+    <span style={{
+      color: parseFloat(totalSubscribers.cancelledSubscribers.change) > 0 ? "green" : "red",
+      fontWeight: "bold"
+    }}>
+      {parseFloat(totalSubscribers.cancelledSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.cancelledSubscribers.change}
+    </span>
+  ),
+],
+
     [
   'Net Subscriber Growth',
   totalSubscribers.netSubscriberGrowth.new.toString(),
@@ -255,13 +271,7 @@ export default function Analytics() {
             // disabled={tableData?.length <= 0}
             onClick={() => setShowDatePicker(true)}>{selectedDateLabel}
           </Button>
-          <Button
-            variant="primary"
-
-            onClick={() => handleResourcePicker()}
-          >
-            Add products
-          </Button>
+        
         </InlineStack>
         </BlockStack>
 
@@ -275,7 +285,7 @@ export default function Analytics() {
                   <Text variant="headingMd" fontWeight="bold">
                     Subscription Details
                   </Text>
-                  <InlineGrid gap={200} columns={5}>          
+                  <InlineGrid gap={200} columns={5}>                          
                     <Card>
                       <InlineStack align="center" gap={1600}>
                         <BlockStack gap={200}>
@@ -324,7 +334,7 @@ export default function Analytics() {
                     <Card>
                       <InlineStack align="center" gap={800}>
                         <BlockStack gap={200}>
-                          <Text variant="headingMd">Total Revenue</Text>
+                          <Text variant="headingMd">Total Subscription Revenue</Text>
                           <Text variant="headingMd" fontWeight="bold">
                             ${totalRevenue?.toFixed(2)}
                           </Text>

@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
-application_url = "https://playback-laugh-consequently-avenue.trycloudflare.com"
+application_url = "https://fuji-carmen-dim-creation.trycloudflare.com"
 embedded = true
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
@@ -9,6 +9,7 @@ handle = "subscription-app-virender"
 [build]
 automatically_update_urls_on_dev = true
 include_config_on_deploy = true
+dev_store_url = "virender-test.myshopify.com"
 
 [webhooks]
 api_version = "2024-10"
@@ -23,13 +24,13 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://playback-laugh-consequently-avenue.trycloudflare.com/auth/callback",
-  "https://playback-laugh-consequently-avenue.trycloudflare.com/auth/shopify/callback",
-  "https://playback-laugh-consequently-avenue.trycloudflare.com/api/auth/callback"
+  "https://fuji-carmen-dim-creation.trycloudflare.com/auth/callback",
+  "https://fuji-carmen-dim-creation.trycloudflare.com/auth/shopify/callback",
+  "https://fuji-carmen-dim-creation.trycloudflare.com/api/auth/callback"
 ]
 
 [app_proxy]
-url = "https://playback-laugh-consequently-avenue.trycloudflare.com/api/subscription"
+url = "https://fuji-carmen-dim-creation.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 
