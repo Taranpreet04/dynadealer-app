@@ -1,68 +1,65 @@
-
 //live
 
-const sweatShirt='46962651922646'
-const tshirt='46962641109206'
-const hat='46962642845910'
-let serverPath = "https://dynadealersapp.com";
-const data = [
-    {
-      name: 'Silver',
-      variants: [
-        { id: '46952891252950', also_added: hat } // silver main product
-      ]
-    },
-    {
-      name: 'Gold',
-      variants: [
-        { id: '46952894202070', also_added: hat },
-        { id: '46952894202070', also_added: tshirt } // same main product, different gifts
-      ]
-    },
-    {
-      name: 'Platinum',
-      variants: [
-        { id: '46952896299222', also_added: hat },
-        { id: '46952896299222', also_added: tshirt },
-        { id: '46952896299222', also_added: sweatShirt }
-      ]
-    }
-  ];
-
-
-//local
-// const hat = "42830762999910"
-// const tshirt = '42830791082086'
-// const sweatShirt = '42830884700262'
-// let serverPath = "https://flashing-then-that-balloon.trycloudflare.com";
+// const sweatShirt='46962651922646'
+// const tshirt='46962641109206'
+// const hat='46962642845910'
+// let serverPath = "https://dynadealersapp.com";
 // const data = [
-//   {
-//     name: 'Silver',
-//     variants: [
-//       { id: '42813523394662', also_added: hat } // silver main product
-//     ]
-//   },
-//   {
-//     name: 'Gold',
-//     variants: [
-//       { id: '42813523427430', also_added: hat },
-//       { id: '42813523427430', also_added: tshirt } // same main product, different gifts
-//     ]
-//   },
-//   {
-//     name: 'Platinum',
-//     variants: [
-//       { id: '42813523460198', also_added: hat },
-//       { id: '42813523460198', also_added: tshirt },
-//       { id: '42813523460198', also_added: sweatShirt }
-//     ]
-//   }
-// ];
+//     {
+//       name: 'Silver',
+//       variants: [
+//         { id: '46952891252950', also_added: hat } // silver main product
+//       ]
+//     },
+//     {
+//       name: 'Gold',
+//       variants: [
+//         { id: '46952894202070', also_added: hat },
+//         { id: '46952894202070', also_added: tshirt } // same main product, different gifts
+//       ]
+//     },
+//     {
+//       name: 'Platinum',
+//       variants: [
+//         { id: '46952896299222', also_added: hat },
+//         { id: '46952896299222', also_added: tshirt },
+//         { id: '46952896299222', also_added: sweatShirt }
+//       ]
+//     }
+//   ];
 
+// local
+const hat = "42830762999910";
+const tshirt = "42830791082086";
+const sweatShirt = "42830884700262";
+let serverPath = "https://considered-paste-adrian-worldwide.trycloudflare.com";
+const data = [
+  {
+    name: "Silver",
+    variants: [
+      { id: "42813523394662", also_added: hat }, // silver main product
+    ],
+  },
+  {
+    name: "Gold",
+    variants: [
+      { id: "42813523427430", also_added: hat },
+      { id: "42813523427430", also_added: tshirt }, // same main product, different gifts
+    ],
+  },
+  {
+    name: "Platinum",
+    variants: [
+      { id: "42813523460198", also_added: hat },
+      { id: "42813523460198", also_added: tshirt },
+      { id: "42813523460198", also_added: sweatShirt },
+    ],
+  },
+];
 
 console.log("js--________", window.location.pathname);
 const locationPath = window.location.pathname;
-
+let multiplier = 1;
 let allProductId = [];
 let allOffers = [];
 let activeCurrency = Shopify?.currency?.active;
@@ -85,7 +82,7 @@ let showMemebershipLevels = false;
 let goldMembershipOffer = false;
 let offerDuration = {};
 let commanData;
-let oneTimeMembership = false
+let oneTimeMembership = false;
 let options = [
   { name: "Weekly", value: "week", class: "timePeriodList" },
   { name: "Monthly", value: "month", class: "timePeriodList" },
@@ -94,47 +91,126 @@ let options = [
 let selectedTimePlans = [];
 let selectedPlan;
 
-const silverYearlyGift = [hat]
-const goldYearlyGift = [hat, tshirt]
-const platinumYearlyGift = [hat, tshirt, sweatShirt]
-let freeProductList = []
+const silverYearlyGift = [hat];
+const goldYearlyGift = [hat, tshirt];
+const platinumYearlyGift = [hat, tshirt, sweatShirt];
+let freeProductList = [];
 
 const getcartItems = async () => {
-  fetch('/cart.js')
-    .then(res => res.json())
-    .then(cart => {
-      let items = []
+  fetch("/cart.js")
+    .then((res) => res.json())
+    .then((cart) => {
+      let items = [];
       list?.forEach((gift) => {
         items?.push({
           id: gift,
           quantity: 1,
           properties: {
             // _free: true
-          }
-        })
-      })
+          },
+        });
+      });
       // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
       // if (!alreadyInCart) {
-      fetch('/cart/add.js', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          items: items
-        })
+      fetch("/cart/add.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: items }),
       })
-        .then(res => res.json())
-        .then(data => {
-          console.log('Free product added:', data);
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Free product added:", data);
         })
-        .catch(err => console.error('Error adding free product:', err));
+        .catch((err) => console.error("Error adding free product:", err));
       // }
-    })
-}
-if (locationPath === '/cart') {
-  (function () {
+    });
+};
+async function getMultiplierData(productId) {
+  try {
+    const res = await fetch(`${serverPath}/getDataOnStorefront?shop=${shop}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    console.log("res in getMultiplierData:", res.status);
+    const data = await res.json();
+    console.log("Multiplier data fetched:", data);
+    console.log(productId, "productId in getMultiplierData");
 
+    if (res?.status == 200 && data) {
+      const config = data;
+
+      const isManualEnabled =
+        config.isManualEnabled === "true" || config.isManualEnabled === true;
+      const isAllEnabled =
+        config.isAllEnabled === "true" || config.isAllEnabled === true;
+      console.log(
+        "isManualEnabled:",
+        isManualEnabled,
+        "isAllEnabled:",
+        isAllEnabled,
+      );
+      // Priority 1: Manual product multiplier
+      if (isManualEnabled && Array.isArray(config.products)) {
+        const product = config.products.find(
+          (p) =>
+            p.product_id === productId ||
+            p.product_id === `gid://shopify/Product/${productId}`,
+        );
+
+        if (product && product.multiplier) {
+          console.log("Manual multiplier found for product:");
+          multiplier = parseFloat(product.multiplier) || 1;
+        }
+
+        // Priority 2: All product multiplier
+        else if (isAllEnabled && config.allProductMultiplier) {
+          console.log("all multiplier found for product:");
+          multiplier = parseFloat(config.allProductMultiplier) || 1;
+        }
+      }
+
+      // Manual not enabled, check All
+      else if (isAllEnabled && config.allProductMultiplier) {
+        console.log("Manual not enabled, check :");
+        multiplier = parseFloat(config.allProductMultiplier) || 1;
+      }
+    }
+
+    console.log("Final multiplier to apply:", multiplier);
+    return multiplier;
+  } catch (err) {
+    console.error("Error fetching multiplier data:", err);
+    return 1;
+  }
+}
+function addBonusMultiplierBadge(multiplierValue) {
+  const priceContainer = document.getElementsByClassName("price__container")[0].parentElement;
+  if (!priceContainer) return;
+
+  // Check if badge already exists to avoid duplicates
+  if (document.getElementById("bonus-multiplier-badge")) return;
+
+  // Create badge element
+  const badge = document.createElement("span");
+  badge.id = "bonus-multiplier-badge";
+  badge.textContent = `${multiplierValue}x Bonus Multiplier`;
+  
+  // Styling the badge (customize as needed)
+  badge.style.display = "inline-block";
+  badge.style.marginTop = "8px";
+  badge.style.padding = "4px 8px";
+  badge.style.backgroundColor = "#e0f0ff";
+  badge.style.color = "#005fa3";
+  badge.style.borderRadius = "6px";
+  badge.style.fontWeight = "600";
+  badge.style.fontSize = "0.9rem";
+
+  // Insert after the price container
+  priceContainer.parentNode.insertBefore(badge, priceContainer.nextSibling);
+}
+
+if (locationPath === "/cart") {
+  (function () {
     let refreshTriggered = false;
 
     // Replace this with your actual mapping
@@ -144,13 +220,15 @@ if (locationPath === '/cart') {
     }
 
     function buildExpectedCartState(cartItems) {
-      const cartVariantIds = cartItems.map(item => item.variant_id.toString());
+      const cartVariantIds = cartItems.map((item) =>
+        item.variant_id.toString(),
+      );
       let expected = {};
       let alsoAddedMap = {};
       let oneTimeNeeded = false;
 
-      data.forEach(product => {
-        product.variants.forEach(variant => {
+      data.forEach((product) => {
+        product.variants.forEach((variant) => {
           const isMainInCart = cartVariantIds.includes(variant.id);
           const alsoAddedId = variant.also_added;
 
@@ -172,12 +250,14 @@ if (locationPath === '/cart') {
     }
 
     function getCurrentRelevantItems(cartItems) {
-      const allAlsoAdded = data.flatMap(p => p.variants.map(v => v.also_added));
-      const allTracked = [...allAlsoAdded]
+      const allAlsoAdded = data.flatMap((p) =>
+        p.variants.map((v) => v.also_added),
+      );
+      const allTracked = [...allAlsoAdded];
       // , one_time_activation_variant];
       let current = {};
 
-      cartItems.forEach(item => {
+      cartItems.forEach((item) => {
         const id = item.variant_id.toString();
         if (allTracked.includes(id)) {
           current[id] = item.quantity;
@@ -201,14 +281,11 @@ if (locationPath === '/cart') {
 
       if (!hasRealChange) return;
 
-      fetch('/cart/update.js', {
-        method: 'POST',
-        body: formData
-      })
-        .then(res => res.json())
-        .then(() => fetch('/cart.json'))
-        .then(res => res.json())
-        .then(updatedCart => {
+      fetch("/cart/update.js", { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then(() => fetch("/cart.json"))
+        .then((res) => res.json())
+        .then((updatedCart) => {
           const verified = getCurrentRelevantItems(updatedCart.items);
           const rebuiltExpected = buildExpectedCartState(updatedCart.items);
 
@@ -221,22 +298,27 @@ if (locationPath === '/cart') {
             updateCartQuantities(rebuiltExpected, verified);
           }
         })
-        .catch(err => console.error("❌ Failed to update cart", err));
+        .catch((err) => console.error("❌ Failed to update cart", err));
     }
 
     function removeUnlinkedGifts(cartItems) {
-      const allAlsoAdded = data.flatMap(p => p.variants.map(v => v.also_added));
-      const mainIds = data.flatMap(p => p.variants.map(v => v.id));
+      const allAlsoAdded = data.flatMap((p) =>
+        p.variants.map((v) => v.also_added),
+      );
+      const mainIds = data.flatMap((p) => p.variants.map((v) => v.id));
 
-      const cartVariantIds = cartItems.map(item => item.variant_id.toString());
+      const cartVariantIds = cartItems.map((item) =>
+        item.variant_id.toString(),
+      );
       const unlinkedGiftIds = [];
 
-      allAlsoAdded.forEach(giftId => {
-        const relatedMainExists = data.some(group =>
-          group.variants.some(variant =>
-            cartVariantIds.includes(variant.id) &&
-            variant.also_added === giftId
-          )
+      allAlsoAdded.forEach((giftId) => {
+        const relatedMainExists = data.some((group) =>
+          group.variants.some(
+            (variant) =>
+              cartVariantIds.includes(variant.id) &&
+              variant.also_added === giftId,
+          ),
         );
 
         const giftInCart = cartVariantIds.includes(giftId);
@@ -248,26 +330,25 @@ if (locationPath === '/cart') {
       if (unlinkedGiftIds.length === 0) return;
 
       const formData = new FormData();
-      unlinkedGiftIds.forEach(id => {
+      unlinkedGiftIds.forEach((id) => {
         formData.append(`updates[${id}]`, 0);
       });
 
-      fetch('/cart/update.js', {
-        method: 'POST',
-        body: formData
-      })
-        .then(res => res.json())
-        .then(data => {
+      fetch("/cart/update.js", { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
           console.log("🧹 Removed unlinked gifts:", unlinkedGiftIds);
           location.reload();
         })
-        .catch(err => console.error("❌ Failed to remove unlinked gifts", err));
+        .catch((err) =>
+          console.error("❌ Failed to remove unlinked gifts", err),
+        );
     }
 
     function checkCartAndUpdate() {
-      fetch('/cart.json')
-        .then(res => res.json())
-        .then(cart => {
+      fetch("/cart.json")
+        .then((res) => res.json())
+        .then((cart) => {
           const current = getCurrentRelevantItems(cart.items);
           const expected = buildExpectedCartState(cart.items);
 
@@ -278,7 +359,7 @@ if (locationPath === '/cart') {
           // 🧼 Remove unlinked gifts
           removeUnlinkedGifts(cart.items);
         })
-        .catch(err => console.error("❌ Failed to fetch cart", err));
+        .catch((err) => console.error("❌ Failed to fetch cart", err));
     }
 
     function startCartWatcher() {
@@ -290,7 +371,6 @@ if (locationPath === '/cart') {
     startCartWatcher();
   })();
 }
-
 
 if (currentUrl.includes("account")) {
   let targetElement = document.querySelector(".customer__title");
@@ -314,6 +394,13 @@ if (currentUrl.includes("account")) {
 }
 document.getElementsByTagName("product-subscriptions")[0]?.remove();
 if (subscription_page_type == "product") {
+    (async function () {
+
+      await getMultiplierData(productJson?.id);
+      
+      if (multiplier > 1) { 
+        addBonusMultiplierBadge(multiplier);
+      }
   if (filtered_selling_plan_groups?.length > 0) {
     filtered_selling_plan_groups?.forEach((item) => {
       allSellingPlans?.push(...item?.selling_plans);
@@ -324,19 +411,21 @@ if (subscription_page_type == "product") {
   }
   const sendOnetimeDataToCart = (entry) => {
     let productForms = document.querySelectorAll('form[action="/cart/add"]');
-
+    let totalEntries = parseFloat(entry) * parseFloat(multiplier);
+console.log(totalEntries,entry,multiplier,"djfkashjkdhfjh")
     productForms.forEach((form) => {
       if (!form) return;
-
       // Check if the 'entries' input already exists, else create and append it
-      let entriesInput = form.querySelector('input[name="properties[entries]"]');
+      let entriesInput = form.querySelector(
+        'input[name="properties[entries]"]',
+      );
       if (!entriesInput) {
         entriesInput = document.createElement("input");
         entriesInput.type = "hidden";
         entriesInput.name = "properties[entries]";
         form.appendChild(entriesInput);
       }
-      entriesInput.value = entry;
+      entriesInput.value = totalEntries;
 
       // Check if the 'plan-type' input already exists, else create and append it
       let typeInput = form.querySelector('input[name="properties[plan-type]"]');
@@ -349,7 +438,9 @@ if (subscription_page_type == "product") {
       typeInput.value = "onetime";
 
       if (oneTimeMembership) {
-        let memInput = form.querySelector('input[name="properties[membership]"]');
+        let memInput = form.querySelector(
+          'input[name="properties[membership]"]',
+        );
         if (!memInput) {
           memInput = document.createElement("input");
           memInput.type = "hidden";
@@ -366,76 +457,73 @@ if (subscription_page_type == "product") {
 
     productForms.forEach((form) => {
       // Check if 'entries' input exists and remove it
-      const entriesInput = form.querySelector('input[name="properties[entries]"]');
+      const entriesInput = form.querySelector(
+        'input[name="properties[entries]"]',
+      );
       if (entriesInput) {
         entriesInput.remove();
       }
 
       // Check if 'plan-type' input exists and remove it
-      const typeInput = form.querySelector('input[name="properties[plan-type]"]');
+      const typeInput = form.querySelector(
+        'input[name="properties[plan-type]"]',
+      );
       if (typeInput) {
         typeInput.remove();
       }
     });
   };
 
-
   function addFreeProduct(list) {
-    fetch('/cart.js')
-      .then(res => res.json())
-      .then(cart => {
-        let items = []
+    fetch("/cart.js")
+      .then((res) => res.json())
+      .then((cart) => {
+        let items = [];
         list?.forEach((gift) => {
           items?.push({
             id: gift,
             quantity: 1,
             properties: {
               // _free: true
-            }
-          })
-        })
+            },
+          });
+        });
         // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
         // if (!alreadyInCart) {
-        fetch('/cart/add.js', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            items: items
-          })
+        fetch("/cart/add.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: items }),
         })
-          .then(res => res.json())
-          .then(data => {
-            console.log('Free product added:', data);
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Free product added:", data);
           })
-          .catch(err => console.error('Error adding free product:', err));
+          .catch((err) => console.error("Error adding free product:", err));
         // }
-      })
-
+      });
   }
 
   // Hook onto any cart add button (adapt this to your theme)
-  document.querySelectorAll('form[action*="/cart/add"]').forEach(form => {
-    form.addEventListener('submit', () => {
+  document.querySelectorAll('form[action*="/cart/add"]').forEach((form) => {
+    form.addEventListener("submit", () => {
       setTimeout(addFreeProduct(freeProductList), 1000); // Delay to ensure first product is added
     });
   });
   const checkFreeProduct = (plan) => {
-
     let planName = plan?.name?.toLowerCase();
-    let cycle = plan?.options[0]?.value.split(' ')[0]
-    if (planName?.includes('silver') && cycle == "year") {
+    let cycle = plan?.options[0]?.value.split(" ")[0];
+    if (planName?.includes("silver") && cycle == "year") {
       console.log("silverYearlyGift==", silverYearlyGift);
-      freeProductList = silverYearlyGift
-    } else if (planName?.includes('gold') && cycle == "year") {
+      freeProductList = silverYearlyGift;
+    } else if (planName?.includes("gold") && cycle == "year") {
       console.log("goldYearlyGift==", goldYearlyGift);
-      freeProductList = goldYearlyGift
-    } else if (planName?.includes('platinum') && cycle == "year") {
+      freeProductList = goldYearlyGift;
+    } else if (planName?.includes("platinum") && cycle == "year") {
       console.log("platinumYearlyGift==", platinumYearlyGift);
-      freeProductList = platinumYearlyGift
+      freeProductList = platinumYearlyGift;
     }
-  }
+  };
   const sendPlanDataToCart = (plan) => {
     console.log("sendPlanDataToCart==", plan);
     if (!plan || !plan.id) {
@@ -455,17 +543,17 @@ if (subscription_page_type == "product") {
       if (!form) return;
 
       // Select existing selling plan inputs
-      var sellingPlanInputs = form.querySelectorAll('input[name="selling_plan"]');
+      var sellingPlanInputs = form.querySelectorAll(
+        'input[name="selling_plan"]',
+      );
 
       if (sellingPlanInputs.length === 0) {
-
         var newHiddenInput = document.createElement("input");
         newHiddenInput.type = "hidden";
         newHiddenInput.name = "selling_plan";
         newHiddenInput.value = plan.id;
         form.appendChild(newHiddenInput);
       } else {
-
         sellingPlanInputs.forEach((input) => {
           if (input) {
             input.value = plan.id;
@@ -474,10 +562,8 @@ if (subscription_page_type == "product") {
       }
     });
 
-    checkFreeProduct(plan)
+    checkFreeProduct(plan);
   };
-
-
 
   const cartClear = () => {
     var form = document.querySelectorAll('form[action*="/cart/add"]');
@@ -490,7 +576,7 @@ if (subscription_page_type == "product") {
       if (sellingPlanInputs.length > 0) {
         sellingPlanInputs.forEach(function (input) {
           // input.value = "";
-          input.remove()
+          input.remove();
         });
       }
     });
@@ -526,11 +612,11 @@ if (subscription_page_type == "product") {
     //   )[0];
     // }
     // oneTimePrice = oneTimeSelectedPlan?.price_adjustments[0]?.value / 100;
-    subscriptionPrice =
-      plan?.price_adjustments[0]?.value / 100;
+    subscriptionPrice = plan?.price_adjustments[0]?.value / 100;
     // let oneTimePriceDiv =
     //   document.getElementsByClassName("oneTimePrice")[0];
-    let subscriptionPriceDiv = document.getElementsByClassName("subscriptionPrice");
+    let subscriptionPriceDiv =
+      document.getElementsByClassName("subscriptionPrice");
 
     // Convert HTMLCollection to an array and loop over it
     Array.from(subscriptionPriceDiv).forEach((div) => {
@@ -538,25 +624,23 @@ if (subscription_page_type == "product") {
         ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
         : "";
     });
-
-
   };
   const handleOnetimePlan = (variant) => {
-    selectedPlan = ''
+    selectedPlan = "";
     cartClear();
-    selectedEntries = variant
-    sendOnetimeDataToCart(variant)
+    selectedEntries = variant;
+    sendOnetimeDataToCart(variant);
     let plan = otherPlans?.filter((itm) =>
       itm?.name?.includes(`-entries-${selectedEntries}`),
     )[0];
     if (plan) {
-      setPriceAndEntries(plan)
+      setPriceAndEntries(plan);
     }
   };
 
   if (allSellingPlans?.length == 1) {
     if (allSellingPlans) {
-      purchaseOption = "subscription-purchase"
+      purchaseOption = "subscription-purchase";
       sendPlanDataToCart(allSellingPlans[0]);
     }
   }
@@ -567,42 +651,54 @@ if (subscription_page_type == "product") {
   //     purchaseOption = "oneTime-purchase"
   //     handleOnetimePlan(variant)
   //   }
-  // } 
-  else if (productJson?.options?.includes('Entries') && allSellingPlans?.length == 0) {
+  // }
+  else if (
+    productJson?.options?.includes("Entries") &&
+    allSellingPlans?.length == 0
+  ) {
     // productJson?.variants?.map(vairant=>{
-    if (productJson?.type.toLowerCase() == "bronze" || productJson?.type.toLowerCase() == "silver" || productJson?.type.toLowerCase() == "gold" || productJson?.type.toLowerCase() == "platinum") {
-      oneTimeMembership = true
+    if (
+      productJson?.type.toLowerCase() == "bronze" ||
+      productJson?.type.toLowerCase() == "silver" ||
+      productJson?.type.toLowerCase() == "gold" ||
+      productJson?.type.toLowerCase() == "platinum"
+    ) {
+      oneTimeMembership = true;
     }
-    let data = productJson?.variants[0]
-    let variant
-    if (data?.option1?.toLowerCase()?.includes('entry') || data?.option1?.toLowerCase()?.includes('entries')) {
-
-      variant = data?.option1?.split(' ')[0]
-    } else if (data?.option2?.toLowerCase()?.includes('entry') || data?.option2?.toLowerCase()?.includes('entries')) {
-
-      variant = data?.option2?.split(' ')[0]
-    } else if (data?.option3?.toLowerCase()?.includes('entry') || data?.option3?.toLowerCase()?.includes('entries')) {
-
-      variant = data?.option3?.split(' ')[0]
+    let data = productJson?.variants[0];
+    let variant;
+    if (
+      data?.option1?.toLowerCase()?.includes("entry") ||
+      data?.option1?.toLowerCase()?.includes("entries")
+    ) {
+      variant = data?.option1?.split(" ")[0];
+    } else if (
+      data?.option2?.toLowerCase()?.includes("entry") ||
+      data?.option2?.toLowerCase()?.includes("entries")
+    ) {
+      variant = data?.option2?.split(" ")[0];
+    } else if (
+      data?.option3?.toLowerCase()?.includes("entry") ||
+      data?.option3?.toLowerCase()?.includes("entries")
+    ) {
+      variant = data?.option3?.split(" ")[0];
     }
 
     if (Number(variant) > 0) {
-      purchaseOption = "oneTime-purchase"
-      handleOnetimePlan(variant)
+      purchaseOption = "oneTime-purchase";
+      handleOnetimePlan(variant);
     }
     // })
   } else {
     if (allSellingPlans?.length > 1) {
-
       commanData = JSON.parse(allSellingPlans[0]?.description);
-
 
       const setCartProperties = () => {
         subscriptionSelectedPlan = otherPlans?.filter((itm) =>
           itm?.name?.includes(`-entries-${selectedEntries}`),
         )[0];
         if (purchaseOption == "oneTime-purchase") {
-          handleOnetimePlan(selectedEntries)
+          handleOnetimePlan(selectedEntries);
         } else {
           if (subscriptionSelectedPlan) {
             handlePlanChange(subscriptionSelectedPlan);
@@ -613,14 +709,14 @@ if (subscription_page_type == "product") {
       function handlePurchaseType(event) {
         purchaseOption = event.target.value;
 
-        let div = document.getElementsByClassName('additional-detail')[0]
+        let div = document.getElementsByClassName("additional-detail")[0];
         if (div) {
           if (event.target.value == "oneTime-purchase") {
-            cartClear()
-            div.style.display = 'none';
+            cartClear();
+            div.style.display = "none";
           } else {
-            div.style.display = 'block';
-            clearOnetimeProperties()
+            div.style.display = "block";
+            clearOnetimeProperties();
           }
         }
         setCartProperties();
@@ -682,25 +778,25 @@ if (subscription_page_type == "product") {
           const urlParams = new URLSearchParams(window.location.search);
           const variant = urlParams.get("variant");
           if (variant) {
-            productJson?.variants?.map(item => {
+            productJson?.variants?.map((item) => {
               if (item?.id == variant) {
-                selectedEntries = item?.option1.split(' ')[0]
+                selectedEntries = item?.option1.split(" ")[0];
               }
-            })
+            });
 
             setCartProperties();
           } else {
-            selectedEntries = productJson?.variants[0]?.title?.split(' ')[0]
+            selectedEntries = productJson?.variants[0]?.title?.split(" ")[0];
             setCartProperties();
           }
         }
       };
       const updateEntries = () => {
-        let span = document.getElementById('entry')
+        let span = document.getElementById("entry");
         if (span) {
-          span.innerText = `${selectedEntries} ${Number(selectedEntries) > 1 ? "entries" : "entry"}`
+          span.innerText = `${selectedEntries} ${Number(selectedEntries) > 1 ? "entries" : "entry"}`;
         }
-      }
+      };
       const handlePlanChange = (newPlan) => {
         if (newPlan) {
           selectedPlan = newPlan;
@@ -709,7 +805,7 @@ if (subscription_page_type == "product") {
 
           sendPlanDataToCart(selectedPlan);
           setPriceAndEntries(selectedPlan);
-          updateEntries()
+          updateEntries();
         } else {
           let hasActive = document.getElementsByClassName("active");
           Array.from(hasActive).forEach((itm) => {
@@ -774,7 +870,6 @@ if (subscription_page_type == "product") {
             const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
             const seconds = Math.floor((timeDifference / 1000) % 60);
 
-
             content = `<div class="countdown">
                         <div class='show-timer-div'>
                             <div class='time'>
@@ -816,11 +911,13 @@ if (subscription_page_type == "product") {
       };
 
       document.addEventListener("DOMContentLoaded", () => {
-        const ticketRadios = document.querySelectorAll('input[type="radio"][name="Entries"]');
-        ticketRadios.forEach(radio => {
+        const ticketRadios = document.querySelectorAll(
+          'input[type="radio"][name="Entries"]',
+        );
+        ticketRadios.forEach((radio) => {
           radio.addEventListener("click", () => {
-            selectedEntries = radio?.value?.split(' ')[0]
-            setCartProperties()
+            selectedEntries = radio?.value?.split(" ")[0];
+            setCartProperties();
           });
         });
       });
@@ -832,10 +929,7 @@ if (subscription_page_type == "product") {
         let endIST = toIST(date.end);
         endIST.setHours(23, 59, 59, 999);
 
-        let dateRange = {
-          start: startIST,
-          end: endIST,
-        };
+        let dateRange = { start: startIST, end: endIST };
 
         offerDuration = dateRange;
         const now = new Date();
@@ -845,9 +939,10 @@ if (subscription_page_type == "product") {
           showCountDown();
         }
       } else {
-        console.log("no counter")
+        console.log("no counter");
       }
     }
   }
 
-}
+    })();
+    }

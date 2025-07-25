@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import { type } from "os";
 
 const planDetailsSchema = new mongoose.Schema(
   {
@@ -13,9 +14,9 @@ const planDetailsSchema = new mongoose.Schema(
     showOnPortal: Boolean,
     products: Object,
     plan_group_id: String,
-    offerValidity: Object
+    offerValidity: Object,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 const templateSchema = new mongoose.Schema(
   {
@@ -23,55 +24,58 @@ const templateSchema = new mongoose.Schema(
     orderTemplate: Object,
     appliedTemplate: Object,
     winningTemplate: Object,
-    announcementTemplate: Object
+    announcementTemplate: Object,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Credentials Schema
 
-const credentialSchema = new mongoose.Schema({
-  shop: { type: String, required: true },
-  accessToken: { type: String, required: true },
-}, {
-  timestamps: true
-})
+const credentialSchema = new mongoose.Schema(
+  {
+    shop: { type: String, required: true },
+    accessToken: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
-const subscriptionContract = new mongoose.Schema({
-  shop: String,
-  orderId: String,
-  totalPrice: Number,
-  orderHashId: String,
-  contractId: String,
-  customerId: String,
-  customerName: String,
-  customerEmail: String,
-  customerPhone: String,
-  planUpdateDetail: Object,
-  sellingPlanId: String,
-  sellingPlanName: String,
-  billing_policy: Object,
-  products: Object,
-  entries: String,
-  drawIds: Object,
-  status: String,
-  nextBillingDate: Date,
-  ticketDetails: Object
-}, {
-  timestamps: true
-});
-const membershipSchema = new mongoose.Schema({
-  shop: String,
-  orderId: String,
-  contractId: String,
-  customerId: String,
-  membershipLevel: String,
-  membershipType: String,
-  sellingPlanId: String,
-  sellingPlanName: String,
-}, {
-  timestamps: true
-});
+const subscriptionContract = new mongoose.Schema(
+  {
+    shop: String,
+    orderId: String,
+    totalPrice: Number,
+    orderHashId: String,
+    contractId: String,
+    customerId: String,
+    customerName: String,
+    customerEmail: String,
+    customerPhone: String,
+    planUpdateDetail: Object,
+    sellingPlanId: String,
+    sellingPlanName: String,
+    billing_policy: Object,
+    products: Object,
+    entries: String,
+    drawIds: Object,
+    status: String,
+    nextBillingDate: Date,
+    ticketDetails: Object,
+  },
+  { timestamps: true },
+);
+const membershipSchema = new mongoose.Schema(
+  {
+    shop: String,
+    orderId: String,
+    contractId: String,
+    customerId: String,
+    membershipLevel: String,
+    membershipType: String,
+    sellingPlanId: String,
+    sellingPlanName: String,
+  },
+  { timestamps: true },
+);
 // const raffleProductSchema = new mongoose.Schema({
 //   shop: String,
 //   productId: String,
@@ -90,29 +94,52 @@ const membershipSchema = new mongoose.Schema({
 //   timestamps: true
 // });
 
+const billingSchema = new mongoose.Schema(
+  {
+    shop: String,
+    orderId: String,
+    customerId: String,
+    customerName: String,
+    customerEmail: String,
+    contractId: String,
+    planUpdateDetail: Object,
+    products: Object,
+    billing_policy: Object,
+    entries: String,
+    drawIds: Object,
+    status: String,
+    applied: Boolean,
+    appliedFor: Object,
+    billing_attempt_date: Date,
+    renewal_date: Date,
+    billing_attempt_id: String,
+    idempotencyKey: String,
+  },
+  { timestamps: true },
+);
 
-const billingSchema = new mongoose.Schema({
-  shop: String,
-  orderId: String,
-  customerId: String,
-  customerName: String,
-  customerEmail: String,
-  contractId: String,
-  planUpdateDetail: Object,
-  products: Object,
-  billing_policy: Object,
-  entries: String,
-  drawIds: Object,
-  status: String,
-  applied: Boolean,
-  appliedFor: Object,
-  billing_attempt_date: Date,
-  renewal_date: Date,
-  billing_attempt_id: String,
-  idempotencyKey: String,
-}, {
-  timestamps: true
-});
+const ProductSchema = new mongoose.Schema(
+  {
+    product_id: String,
+    handle: String,
+    product_name: String,
+    product_image: String,
+    hasOnlyDefaultVariant: Boolean,
+    subscription_type: String,
+    multiplier: String,
+  },
+  { _id: false },
+);
+const BonusMultiplierSchema = new mongoose.Schema(
+  {
+    shop: { type: String, required: true, index: true },
+    isAllProductMultiplierEnabled: { type: String, default: "false" },
+    allProductMultiplier: { type: String, default: "" },
+    isManualMultiplierEnabled: { type: String, default: "false" },
+    products: { type: [ProductSchema], default: [] }, // Array of objects with product_id, handle, product_name, product_image, multiplier
+  },
+  { timestamps: true },
+);
 
 planDetailsSchema.index({ shop: 1 });
 credentialSchema.index({ shop: 1 });
@@ -121,11 +148,33 @@ membershipSchema.index({ shop: 1 });
 // raffleProductSchema.index({ shop: 1 });
 billingSchema.index({ shop: 1 });
 
-const planDetailsModel = mongoose.models?.planDetails || mongoose.model("planDetails", planDetailsSchema);
-const credentialModel = mongoose.models?.credential || mongoose.model("credential", credentialSchema);
-const templateModel = mongoose.models?.template || mongoose.model("template", templateSchema);
-const subscriptionContractModel = mongoose.models?.contractDetails || mongoose.model("contractDetails", subscriptionContract);
-const membershipsModel = mongoose.models?.memberships || mongoose.model("memberships", membershipSchema);
+const planDetailsModel =
+  mongoose.models?.planDetails ||
+  mongoose.model("planDetails", planDetailsSchema);
+const credentialModel =
+  mongoose.models?.credential || mongoose.model("credential", credentialSchema);
+const templateModel =
+  mongoose.models?.template || mongoose.model("template", templateSchema);
+const subscriptionContractModel =
+  mongoose.models?.contractDetails ||
+  mongoose.model("contractDetails", subscriptionContract);
+const membershipsModel =
+  mongoose.models?.memberships ||
+  mongoose.model("memberships", membershipSchema);
 // const raffleProductsModel = mongoose.models?.raffleProducts || mongoose.model("raffleProducts", raffleProductSchema);
-const billingModel = mongoose.models?.billingDetails || mongoose.model("billingDetails", billingSchema);
-export { planDetailsModel, credentialModel, templateModel, subscriptionContractModel, membershipsModel, billingModel };
+const billingModel =
+  mongoose.models?.billingDetails ||
+  mongoose.model("billingDetails", billingSchema);
+const BonusMultiplierModel =
+  mongoose.models?.BonusMultiplier ||
+  mongoose.model("BonusMultiplier", BonusMultiplierSchema);
+
+export {
+  planDetailsModel,
+  credentialModel,
+  templateModel,
+  subscriptionContractModel,
+  membershipsModel,
+  billingModel,
+  BonusMultiplierModel,
+};

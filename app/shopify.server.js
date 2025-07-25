@@ -13,7 +13,7 @@ import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { recurringOrderCron } from './controllers/cron.js'
 import { setDefaultTemplate } from "./controllers/planController.js";
-dotenv.config()
+dotenv.config();
 
 
 dbConnect();
@@ -21,7 +21,7 @@ dbConnect();
 let scheduledJobs = cron.getTasks();
 scheduledJobs.forEach((job) => job.stop());
 
-const cronTimeEvery1hr = "0 * * * *" //'*/10 * * * *'
+const cronTimeEvery1hr = "0 * * * *"; //'*/10 * * * *'
 var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
   scheduled: false
 });
