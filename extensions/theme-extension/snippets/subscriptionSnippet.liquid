@@ -1,12 +1,12 @@
 <script id="subscription-helper">
 
- let subscription_page_type = "{{ request.page_type }}"
-  let shop_currency = "{{ shop.currency.active }} ";
-  let shopCurrencySymbol = "{{ shop.money_format }}";
-  let subscription_selectedProduct='{{ product.id }}';
+ var subscription_page_type = "{{ request.page_type }}"
+  var shop_currency = "{{ shop.currency.active }} ";
+  var shopCurrencySymbol = "{{ shop.money_format }}";
+  var subscription_selectedProduct='{{ product.id }}';
   var subscription_customer_id = '{{ customer.id }}';
-  var selectedVariant= {{product.selected_or_first_available_variant.id}};
-  var selectedVariantPrice={{ product.selected_or_first_available_variant.price }}
+  var selectedVariant= '{{product.selected_or_first_available_variant.id}}';
+  var selectedVariantPrice='{{ product.selected_or_first_available_variant.price }}'
      let productJson = {{ product | json }};
       console.log("oKKKk-snippet", productJson);
               let Revlytic =  {};

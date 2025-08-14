@@ -132,7 +132,7 @@ export default function ContractDetails() {
             content: "",
             url: "../contracts",
             onAction: () => {
-              shopify.loading(true), setLoading(true);
+              (shopify.loading(true), setLoading(true));
             },
           }}
           primaryAction={

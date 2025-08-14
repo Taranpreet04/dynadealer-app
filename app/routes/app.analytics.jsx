@@ -1,7 +1,17 @@
-import { useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+} from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 // import { ResourcePicker } from "@shopify/app-bridge-react";
-import { getSalesOverTime, getSubscriptionStats, getTotalRevenue, getSubscribersStats } from "../controllers/planController";
+import {
+  getSalesOverTime,
+  getSubscriptionStats,
+  getTotalRevenue,
+  getSubscribersStats,
+} from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import {
   Button,
@@ -40,12 +50,17 @@ import {
 } from "recharts";
 
 import { useEffect, useState } from "react";
-import { DeleteIcon, ChartHistogramGrowthIcon, XCircleIcon, StatusActiveIcon, MoneyIcon } from "@shopify/polaris-icons";
+import {
+  DeleteIcon,
+  ChartHistogramGrowthIcon,
+  XCircleIcon,
+  StatusActiveIcon,
+  MoneyIcon,
+} from "@shopify/polaris-icons";
 
 import React from "react";
 
 import { Knob } from "../components/knob";
-
 
 // const data = Array.from({ length: 30 }, (_, i) => {
 //   const date = new Date(2025, 5, i + 1); // June = month 5
@@ -54,8 +69,6 @@ import { Knob } from "../components/knob";
 //     sales: Math.floor(Math.random() * 200) + 50, // random sales between 50-250
 //   };
 // });
-
-
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -77,12 +90,14 @@ export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const body = await request.formData();
 
-  return null
+  return null;
 };
 export default function Analytics() {
   const [selectedProduct, setSelectedProduct] = useState("all");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { salesData, stats, totalRevenue, totalSubscribers } = useLoaderData();
+  console.log(stats, "stats------");
+
   console.log("salesData ===>", salesData);
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -97,7 +112,6 @@ export default function Analytics() {
     return newDate;
   };
   const [selectedDates, setSelectedDates] = useState({
-
     start: resetToMidnight(
       new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
     ), // Ten days before, reset to midnight
@@ -116,7 +130,7 @@ export default function Analytics() {
     setDate({ month, year });
   };
 
-  console.log("selectedDataes==>", selectedDates)
+  console.log("selectedDataes==>", selectedDates);
 
   const handleResourcePicker = async () => {
     const productPickerData = await shopify.resourcePicker({
@@ -148,175 +162,200 @@ export default function Analytics() {
     if (!prev || prev === 0) return "-";
     const change = ((curr - prev) / prev) * 100;
     return `${change.toFixed(1)}%`;
-  }; 
+  };
   const rows = [
     [
-      'Total Subscribers',
+      "Total Subscribers",
       totalSubscribers.current?.toString(),
       totalSubscribers.previous?.toString(),
-      totalSubscribers.change === "-" ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
+      totalSubscribers.change === "-" ? (
+        "-"
+      ) : (
+        <span
+          style={{
+            color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"}{" "}
+          {totalSubscribers.change}
         </span>
-      ),     
+      ),
     ],
-    ['New Subscribers', totalSubscribers.newSubscribers.toString(), '-', '-'],
+    ["New Subscribers", totalSubscribers.newSubscribers.toString(), "-", "-"],
     [
       "Canceled Subscribers",
       totalSubscribers.cancelledSubscribers.current.toString(),
       totalSubscribers.cancelledSubscribers.previous.toString(),
-      totalSubscribers.change === "-" ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"} {totalSubscribers.change}
+      totalSubscribers.change === "-" ? (
+        "-"
+      ) : (
+        <span
+          style={{
+            color: parseFloat(totalSubscribers.change) > 0 ? "green" : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {parseFloat(totalSubscribers.change) > 0 ? "↑" : "↓"}{" "}
+          {totalSubscribers.change}
         </span>
       ),
     ],
     [
-  'Net Subscriber Growth',
-  totalSubscribers.netSubscriberGrowth.new.toString(),
-  totalSubscribers.netSubscriberGrowth.churned.toString(),
-  (
-    <span style={{
-      color: parseInt(totalSubscribers.netSubscriberGrowth.net) > 0 ? "green" : (parseInt(totalSubscribers.netSubscriberGrowth.net) < 0 ? "red" : "black"),
-      fontWeight: "bold"
-    }}>
-      {parseInt(totalSubscribers.netSubscriberGrowth.net) > 0
-        ? `↑ ${totalSubscribers.netSubscriberGrowth.net}`
-        : (parseInt(totalSubscribers.netSubscriberGrowth.net) < 0
-          ? `↓ ${totalSubscribers.netSubscriberGrowth.net}`
-          : totalSubscribers.netSubscriberGrowth.net.toString())}
-    </span>
-  )
-],
+      "Net Subscriber Growth",
+      totalSubscribers.netSubscriberGrowth.new.toString(),
+      totalSubscribers.netSubscriberGrowth.churned.toString(),
+      <span
+        style={{
+          color:
+            parseInt(totalSubscribers.netSubscriberGrowth.net) > 0
+              ? "green"
+              : parseInt(totalSubscribers.netSubscriberGrowth.net) < 0
+                ? "red"
+                : "black",
+          fontWeight: "bold",
+        }}
+      >
+        {parseInt(totalSubscribers.netSubscriberGrowth.net) > 0
+          ? `↑ ${totalSubscribers.netSubscriberGrowth.net}`
+          : parseInt(totalSubscribers.netSubscriberGrowth.net) < 0
+            ? `↓ ${totalSubscribers.netSubscriberGrowth.net}`
+            : totalSubscribers.netSubscriberGrowth.net.toString()}
+      </span>,
+    ],
 
-   [
-    'Monthly Recurring Revenue (MRR)',
-    `$${totalSubscribers.mrr.current.toFixed(2)}`,
-    `$${totalSubscribers.mrr.previous.toFixed(2)}`,
-    totalSubscribers.mrr.change === "-" ? "-" : (
-      <span style={{
-        color: parseFloat(totalSubscribers.mrr.change) > 0 ? "green" : "red",
-        fontWeight: "bold"
-      }}>
-        {parseFloat(totalSubscribers.mrr.change) > 0 ? "↑" : "↓"} {totalSubscribers.mrr.change}
-      </span>
-    )
-  ],
-    ['Annual Recurring Revenue (ARR)', '-', '-', '-'],
+    [
+      "Monthly Recurring Revenue (MRR)",
+      `$${totalSubscribers.mrr.current.toFixed(2)}`,
+      `$${totalSubscribers.mrr.previous.toFixed(2)}`,
+      totalSubscribers.mrr.change === "-" ? (
+        "-"
+      ) : (
+        <span
+          style={{
+            color:
+              parseFloat(totalSubscribers.mrr.change) > 0 ? "green" : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {parseFloat(totalSubscribers.mrr.change) > 0 ? "↑" : "↓"}{" "}
+          {totalSubscribers.mrr.change}
+        </span>
+      ),
+    ],
+    ["Annual Recurring Revenue (ARR)", "-", "-", "-"],
     // ['ARPU', '$26.67', '-', '-'],
     // ['Customer Acquisition Cost (CAC)', '$12', '-', '-'],
     // ['Lifetime Value (LTV)', '$320', '-', '-'],
     // ['Gross Margin', '80%', '-', '-'],
     // ['Churn Rate', '50', '10', '200%'],
     [
-      'Churn Rate',
+      "Churn Rate",
       totalSubscribers.churnMeta.cancelled.toString(),
       totalSubscribers.churnMeta.base.toString(),
-      totalSubscribers.churnRate === 0 ? "-" : (
-        <span style={{
-          color: parseFloat(totalSubscribers.churnRate) > 0 ? "red" : "green",
-          fontWeight: "bold"
-        }}>
-          {parseFloat(totalSubscribers.churnRate) > 0 ? "↑" : "↓"} {totalSubscribers.churnRate}%
+      totalSubscribers.churnRate === 0 ? (
+        "-"
+      ) : (
+        <span
+          style={{
+            color: parseFloat(totalSubscribers.churnRate) > 0 ? "red" : "green",
+            fontWeight: "bold",
+          }}
+        >
+          {parseFloat(totalSubscribers.churnRate) > 0 ? "↑" : "↓"}{" "}
+          {totalSubscribers.churnRate}%
         </span>
-      )
+      ),
     ],
 
     // ['Retention Rate', '95.8%', '93.3%', '2.5%'],
   ];
 
   return (
-    
-    <Page   fullWidth>
+    <Page fullWidth>
       <BlockStack gap={800}>
-          <Card>
-        <Box padding="4">
-          <Text variant="headingMd" as="h2">📊 Key Performance Indicators</Text>
-          <Box paddingBlockStart="4">
-            <DataTable
-              columnContentTypes={['text', 'numeric', 'numeric', 'numeric']}
-              headings={['KPI', 'Current Period', 'Previous Period', 'Change (%)']}
-              rows={rows}
-            />
+        <Card>
+          <Box padding="4">
+            <Text variant="headingMd" as="h2">
+              📊 Key Performance Indicators
+            </Text>
+            <Box paddingBlockStart="4">
+              <DataTable
+                columnContentTypes={["text", "numeric", "numeric", "numeric"]}
+                headings={[
+                  "KPI",
+                  "Current Period",
+                  "Previous Period",
+                  "Change (%)",
+                ]}
+                rows={rows}
+              />
+            </Box>
           </Box>
-        </Box>
-      </Card>
-      <BlockStack gap={400}>
-        <InlineStack gap={400} align="end" >
-
-          <Button
-            variant="primary"
-            // disabled={tableData?.length <= 0}
-            onClick={() => setShowDatePicker(true)}>{selectedDateLabel}
-          </Button>
-          <Button
-            variant="primary"
-
-            onClick={() => handleResourcePicker()}
-          >
-            Add products
-          </Button>
-        </InlineStack>
+        </Card>
+        <BlockStack gap={400}>
+          <InlineStack gap={400} align="end">
+            <Button
+              variant="primary"
+              // disabled={tableData?.length <= 0}
+              onClick={() => setShowDatePicker(true)}
+            >
+              {selectedDateLabel}
+            </Button>
+            <Button variant="primary" onClick={() => handleResourcePicker()}>
+              Add products
+            </Button>
+          </InlineStack>
         </BlockStack>
 
         <BlockStack gap={400}>
-
           <Grid>
             <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 12, xl: 12 }}>
-          
               <Box>
                 <BlockStack gap={300}>
                   <Text variant="headingMd" fontWeight="bold">
                     Subscription Details
                   </Text>
-                  <InlineGrid gap={200} columns={5}>          
+                  <InlineGrid gap={200} columns={4}>
                     <Card>
                       <InlineStack align="center" gap={1600}>
                         <BlockStack gap={200}>
                           <Text variant="headingSm">Total</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.total}</Text>
+                          <Text variant="headingLg" fontWeight="bold">
+                            {stats.total}
+                          </Text>
                         </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={ChartHistogramGrowthIcon} tone="base  " />
+                        <div style={{ fontSize: "28px" }}>
+                          <Icon
+                            source={ChartHistogramGrowthIcon}
+                            tone="base  "
+                          />
                         </div>
                       </InlineStack>
-
                     </Card>
                     <Card>
                       <InlineStack align="center" gap={1600}>
                         <BlockStack gap={200}>
                           <Text variant="headingSm">Cancelled</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.cancelled}</Text>
+                          <Text variant="headingLg" fontWeight="bold">
+                            {stats.cancelled}
+                          </Text>
                         </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
+                        <div style={{ fontSize: "28px" }}>
                           <Icon source={XCircleIcon} tone="base" />
                         </div>
                       </InlineStack>
                     </Card>
-                    <Card>
-                      <InlineStack align="center" gap={1600}>
-                        <BlockStack gap={200}>
-                          <Text variant="headingSm">One-Time</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.oneTime}</Text>
-                        </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
-                          <Icon source={ChartHistogramGrowthIcon} tone="base  " />
-                        </div>
-                      </InlineStack>
-                    </Card>
+
                     <Card>
                       <InlineStack align="center" gap={1600}>
                         <BlockStack gap={200}>
                           <Text variant="headingSm">Active</Text>
-                          <Text variant="headingLg" fontWeight="bold">{stats.active}</Text>
+                          <Text variant="headingLg" fontWeight="bold">
+                            {stats.active}
+                          </Text>
                         </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
+                        <div style={{ fontSize: "28px" }}>
                           <Icon source={StatusActiveIcon} tone="base  " />
                         </div>
                       </InlineStack>
@@ -329,7 +368,7 @@ export default function Analytics() {
                             ${totalRevenue?.toFixed(2)}
                           </Text>
                         </BlockStack>
-                        <div style={{ fontSize: '28px' }}>
+                        <div style={{ fontSize: "28px" }}>
                           <Icon source={MoneyIcon} tone="base" />
                         </div>
                       </InlineStack>
@@ -337,11 +376,8 @@ export default function Analytics() {
                   </InlineGrid>
                 </BlockStack>
               </Box>
-
             </Grid.Cell>
-
           </Grid>
-
         </BlockStack>
         <Card>
           <Box padding="4">
@@ -349,7 +385,6 @@ export default function Analytics() {
             <Box style={{ height: 300, marginTop: 16 }}>
               {/* {console.log("Chart data ===>", filteredData)} */}
               <ResponsiveContainer width="100%" height="100%">
-
                 <LineChart data={filteredData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
@@ -385,7 +420,6 @@ export default function Analytics() {
           content: "filter",
           onAction: () => {
             setShowDatePicker(false);
-
           },
         }}
         secondaryActions={[
@@ -411,14 +445,6 @@ export default function Analytics() {
           </BlockStack>
         </Modal.Section>
       </Modal>
-
     </Page>
-
   );
 }
-
-
-
-
-
-

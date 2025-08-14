@@ -13,7 +13,7 @@ import {
   Text,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
-import { useSubmit, useLoaderData } from "@remix-run/react";
+import { useSubmit, useLoaderData, useNavigation } from "@remix-run/react";
 import {
   getMultiplierData,
   saveMultiplierData,
@@ -44,14 +44,14 @@ export const loader = async ({ request }) => {
   };
 };
 export const action = async ({ request }) => {
-  const {  session } = await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
   const body = await request.formData();
   let isManualEnabled = body.get("isManualEnabled");
   let isAllEnabled = body.get("isAllEnabled");
   let allProductMultiplier = body.get("allProductMultiplier");
   let products = body.get("products");
-    let arr = JSON.parse(products);
-    console.log("arr in action:", isAllEnabled, isManualEnabled);
+  let arr = JSON.parse(products);
+  console.log("arr in action:", isAllEnabled, isManualEnabled);
   let saveData = await saveMultiplierData(session.shop, {
     isManualEnabled,
     isAllEnabled,
@@ -64,45 +64,48 @@ export const action = async ({ request }) => {
 export default function BonusMultiplier() {
   let submit = useSubmit();
   const loaderData = useLoaderData();
+  const navigation = useNavigation();
+
   const [allProductMultiplier, setAllProductMultiplier] = useState(
     loaderData.allProductMultiplier || "",
   );
   const [planDetail, setPlanDetail] = useState({
     products: loaderData.products || [],
   });
-
   const [isAllEnabled, setIsAllEnabled] = useState(loaderData.isAllEnabled);
   const [isManualEnabled, setIsManualEnabled] = useState(
     loaderData.isManualEnabled,
   );
-const handleResourcePicker = async () => {
-  let ids = planDetail?.products?.map(item => ({ id: item.product_id }));
 
-  const productPickerData = await shopify.resourcePicker({
-    type: "product",
-    multiple: true,
-    selectionIds: ids,
-    filter: { draft: false, variants: false },
-  });
+  const handleResourcePicker = async () => {
+    let ids = planDetail?.products?.map((item) => ({ id: item.product_id }));
 
-  if (!productPickerData) return;
+    const productPickerData = await shopify.resourcePicker({
+      type: "product",
+      multiple: true,
+      selectionIds: ids,
+      filter: { draft: false, variants: false },
+    });
 
-  let sendData = productPickerData.map((item) => {
-    const existing = planDetail.products.find(p => p.product_id === item.id);
-    return {
-      product_id: item.id,
-      handle: item.handle,
-      product_name: item.title,
-      product_image: item?.images?.[0]?.originalSrc ?? "",
-      hasOnlyDefaultVariant: item.hasOnlyDefaultVariant,
-      subscription_type: "inactive",
-      multiplier: existing?.multiplier || "", // ⬅ Preserve previous multiplier
-    };
-  });
+    if (!productPickerData) return;
 
-  setPlanDetail({ ...planDetail, products: sendData });
-};
+    let sendData = productPickerData.map((item) => {
+      const existing = planDetail.products.find(
+        (p) => p.product_id === item.id,
+      );
+      return {
+        product_id: item.id,
+        handle: item.handle,
+        product_name: item.title,
+        product_image: item?.images?.[0]?.originalSrc ?? "",
+        hasOnlyDefaultVariant: item.hasOnlyDefaultVariant,
+        subscription_type: "inactive",
+        multiplier: existing?.multiplier || "",
+      };
+    });
 
+    setPlanDetail({ ...planDetail, products: sendData });
+  };
 
   const updateProductMultiplier = (productId, value) => {
     const updatedProducts = planDetail.products.map((product) =>
@@ -112,58 +115,61 @@ const handleResourcePicker = async () => {
     );
     setPlanDetail({ ...planDetail, products: updatedProducts });
   };
+
   const removeProduct = (productId) => {
     const updatedProducts = planDetail.products.filter(
       (product) => product.product_id !== productId,
     );
     setPlanDetail({ ...planDetail, products: updatedProducts });
   };
+
   return (
-      <Page
-          fullWidth
+    <Page
+      fullWidth
       title="Bonus Product Multiplier"
       primaryAction={{
         content: "Save",
+        loading: navigation.state === "submitting", // <-- Loader here
         onAction: () => {
-          console.log("click");
           const formData = new FormData();
           formData.append("isManualEnabled", isManualEnabled);
           formData.append("isAllEnabled", isAllEnabled);
           formData.append("allProductMultiplier", allProductMultiplier);
-          formData.append("products", JSON.stringify(planDetail)); // ← safely stringify
+          formData.append("products", JSON.stringify(planDetail));
 
           submit(formData, { method: "post" });
         },
       }}
     >
-          {/* All Products Section */}
-          <InlineStack align="start" blockAlign="center">
-  <Text as="span" variant="bodySm" tone="subdued">
-    Note: If both manual and all-product multipliers are enabled, <b>manual multipliers will take priority</b> for matching products.
-  </Text>
-</InlineStack>
+      <InlineStack align="start" blockAlign="center">
+        <Text as="span" variant="bodySm" tone="subdued">
+          Note: If both manual and all-product multipliers are enabled,{" "}
+          <b>manual multipliers will take priority</b> for matching products.
+        </Text>
+      </InlineStack>
       <Layout.Section>
-        <Card title="All Products" actions={[{ content: "" }]}>
+        <Card title="All Products">
           <Checkbox
             label="Enable All Products Multiplier"
             checked={isAllEnabled}
-            onChange={setIsAllEnabled}
+            onChange={() => {
+              setIsAllEnabled(!isAllEnabled);
+              setAllProductMultiplier("");
+            }}
           />
           {isAllEnabled && (
-            <div style={{ marginTop: "1rem",width: "300px" }}>
+            <div style={{ marginTop: "1rem", width: "300px" }}>
               <TextField
                 label="Multiplier for all products"
                 type="number"
-                value={allProductMultiplier}
-                              onChange={setAllProductMultiplier}
-                              
+                value={isAllEnabled ? allProductMultiplier : ""}
+                onChange={setAllProductMultiplier}
               />
             </div>
           )}
         </Card>
       </Layout.Section>
 
-      {/* Manual Products Section */}
       <Layout.Section>
         <Card title="Manual Product ">
           <Checkbox
@@ -171,7 +177,6 @@ const handleResourcePicker = async () => {
             checked={isManualEnabled}
             onChange={setIsManualEnabled}
           />
-
           {isManualEnabled && (
             <>
               <div style={{ marginTop: "1rem" }}>

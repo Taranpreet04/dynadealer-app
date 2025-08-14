@@ -17,11 +17,16 @@ import {
   Card,
   Link,
   EmptyState,
+  Select,
 } from "@shopify/polaris";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
-import { getSubscriptions, getExportData , } from "../controllers/planController";
+import {
+  getSubscriptions,
+  getExportData,
+  getmanualData,
+} from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx";
@@ -29,13 +34,16 @@ import xlsx from "json-as-xlsx";
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const url = new URL(request.url);
+  const Data = await getmanualData();
+  console.log(Data, "Data----->");
+
   const search = url.searchParams.get("search") || "";
   const page = url.searchParams.get("page") || 1;
   const planDetails = await getSubscriptions(admin, page, search);
   if (planDetails?.status == 200) {
-    return json({ planDetails: planDetails });
+    return json({ planDetails: planDetails, data: Data });
   }
-  return json({ planDetails: planDetails });
+  return json({ planDetails: planDetails, data: Data });
 };
 
 export default function ContractData() {
@@ -52,6 +60,7 @@ export default function ContractData() {
   const [contentSkel, setContentSkel] = useState(false);
   const [products, setProducts] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("ACTIVE");
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -59,6 +68,8 @@ export default function ContractData() {
     month: currentMonth == 0 ? 11 : currentMonth - 1,
     year: currentMonth == 0 ? currentYear - 1 : currentYear,
   });
+  console.log(loaderData, "losderDatat---->");
+
   const resetToMidnight = (date) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
@@ -75,7 +86,7 @@ export default function ContractData() {
     setDate({ month, year });
   };
   useEffect(() => {
-    let limit=50
+    let limit = 50;
     shopify.loading(true);
     setTableSkel(true);
     loaderData?.planDetails
@@ -105,11 +116,10 @@ export default function ContractData() {
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data;
-
       let dataToExport = [];
 
-      detail.map((detail) => {
-        detail?.appliedForDetail[0]?.appliedList.map((data) => {
+      detail.forEach((detail) => {
+        detail?.appliedForDetail[0]?.appliedList.forEach((data) => {
           dataToExport.push({
             drawId: data,
             customerId: detail?.customerId,
@@ -121,7 +131,13 @@ export default function ContractData() {
           });
         });
       });
-      if (dataToExport?.length > 0) {
+      console.log(dataToExport, loaderData?.data, "data----->");
+
+      // combine previous loader data with fresh data
+      const finalExportData = [...dataToExport, ...loaderData?.data?.data];
+      console.log(finalExportData, "fduhf");
+
+      if (finalExportData.length > 0) {
         let data = [
           {
             sheet: "tickets",
@@ -133,7 +149,7 @@ export default function ContractData() {
               { label: "Phone", value: "customerPhone" },
               { label: "Draw ID", value: "drawId" },
             ],
-            content: dataToExport,
+            content: finalExportData,
           },
         ];
         let settings = {
@@ -148,9 +164,11 @@ export default function ContractData() {
         shopify.toast.show("No data found", { duration: 5000 });
       }
     }
+
     shopify.loading(false);
     setTableSkel(false);
   }, [actionData]);
+
   const toIST = (dateString) => {
     const date = new Date(dateString);
     const offsetInMinutes = 330;
@@ -160,7 +178,12 @@ export default function ContractData() {
     const date = new Date(isoDate);
     return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
   }
-  const rows = tableData?.map((itm, index) => [
+  const filteredData = tableData?.filter((item) => {
+    if (statusFilter === "All") return true;
+    return item?.status?.toLowerCase() === statusFilter.toLowerCase();
+  });
+
+  const rows = filteredData?.map((itm, index) => [
     <Text>{itm?.orderId}</Text>,
     <Text alignment="center"> {itm?.customerName}</Text>,
     <Text alignment="center"> {itm?.ticketDetails?.total}</Text>,
@@ -171,13 +194,17 @@ export default function ContractData() {
         {itm?.status}
       </Badge>
     </Text>,
+    <Text alignment="center">
+      {" "}
+      {itm?.sellingPlanName ? itm?.sellingPlanName : "----"}
+    </Text>,
     <Text alignment="center"> {formatISOToDate(toIST(itm?.createdAt))}</Text>,
     <Text as="p" alignment="center">
       <Link
         url={`/app/contract/${itm?._id}`}
         prefetch="viewport"
         onClick={() => {
-          shopify.loading(true), setContentSkel(true);
+          (shopify.loading(true), setContentSkel(true));
         }}
       >
         <svg
@@ -267,8 +294,19 @@ export default function ContractData() {
             </Button>
           }
         >
+          <Select
+            label=""
+            labelInline
+            options={[
+              { label: "Active", value: "ACTIVE" },
+              { label: "One Time", value: "ONETIME" },
+              { label: "All", value: "All" },
+            ]}
+            value={statusFilter}
+            onChange={(value) => setStatusFilter(value)}
+          />
           <Card>
-            {tableData.length > 0 ? (
+            {filteredData.length > 0 ? (
               <Card>
                 <DataTable
                   hasZebraStripingOnData
@@ -301,6 +339,10 @@ export default function ContractData() {
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
                       {" "}
+                      Plan
+                    </Text>,
+                    <Text variant="headingSm" as="h6" alignment="center">
+                      {" "}
                       Created At
                     </Text>,
                     <Text variant="headingSm" alignment="center" as="h6">
@@ -310,7 +352,7 @@ export default function ContractData() {
                   ]}
                   rows={rows}
                   verticalAlign="middle"
-                  footerContent={`page = ${page} | Showing ${rows.length} of ${totalRows} results`}
+                  footerContent={`page = ${page} | Showing ${filteredData.length} of ${totalRows} results`}
                   pagination={{
                     hasNext: totaldocs <= page ? false : true,
                     hasPrevious: page == 1 ? false : true,
@@ -326,7 +368,7 @@ export default function ContractData() {
             ) : (
               <Card>
                 <EmptyState
-                  heading="Let's create your first subscription plan."
+                  heading="No plan data available."
                   image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 ></EmptyState>
               </Card>

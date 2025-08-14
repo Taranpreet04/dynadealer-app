@@ -5,16 +5,15 @@ import {
   DeliveryMethod,
   shopifyApp,
 } from "@shopify/shopify-app-remix/server";
-import { MongoDBSessionStorage } from "@shopify/shopify-app-session-storage-mongodb"
+import { MongoDBSessionStorage } from "@shopify/shopify-app-session-storage-mongodb";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 import dbConnect from "./db.server";
 import { credentialModel } from "./schema";
-import dotenv from 'dotenv';
-import cron from 'node-cron';
-import { recurringOrderCron } from './controllers/cron.js'
+import dotenv from "dotenv";
+import cron from "node-cron";
+import { recurringOrderCron } from "./controllers/cron.js";
 import { setDefaultTemplate } from "./controllers/planController.js";
 dotenv.config();
-
 
 dbConnect();
 
@@ -23,7 +22,7 @@ scheduledJobs.forEach((job) => job.stop());
 
 const cronTimeEvery1hr = "0 * * * *"; //'*/10 * * * *'
 var task = cron.schedule(cronTimeEvery1hr, recurringOrderCron, {
-  scheduled: false
+  scheduled: false,
 });
 task.start();
 const shopify = shopifyApp({
@@ -33,7 +32,9 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "https://dynadealersapp.com",
   authPathPrefix: "/auth",
-  sessionStorage: new MongoDBSessionStorage("mongodb://localhost:27017/subscription"),
+  sessionStorage: new MongoDBSessionStorage(
+    "mongodb://localhost:27017/subscription",
+  ),
   distribution: AppDistribution.AppStore,
   restResources,
   webhooks: {
@@ -63,16 +64,16 @@ const shopify = shopifyApp({
       try {
         const res = shopify.registerWebhooks({ session });
         const { shop, accessToken, scope } = session;
-       
+
         const credentials = await credentialModel.findOneAndUpdate(
           { shop },
           { accessToken },
-          { upsert: true, new: true }
+          { upsert: true, new: true },
         );
-        await setDefaultTemplate(shop)
+        await setDefaultTemplate(shop);
         await Promise.all([credentials]);
       } catch (error) {
-        console.log("Error in Installing", error)
+        console.log("Error in Installing", error);
         throw error;
       }
     },
@@ -96,4 +97,3 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
-

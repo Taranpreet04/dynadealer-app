@@ -3,6 +3,7 @@ import { cancelContractMail, sendOrderEmail } from "../db.mailcontroller";
 import {
   billingModel,
   BonusMultiplierModel,
+  manualDataModel,
   planDetailsModel,
   subscriptionContractModel,
   templateModel,
@@ -543,14 +544,14 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
       if (doc) {
         return { success: true, result: "Successfully update plan" };
       } else {
-        return { success: false, error: "Failed to update plan details." };
+        return { success: false, error: "Failed to update plan details1." };
       }
     } else {
-      return { success: false, error: "Failed to update plan details." };
+      return { success: false, error: "Failed to update plan details2." };
     }
   } catch (error) {
     console.error("Error:", error);
-    return { success: false, error: "Failed to update plan details." };
+    return { success: false, error: "Failed to update plan details3." };
   }
 };
 
@@ -1580,31 +1581,35 @@ export const updateDb = async (admin) => {
     return { message: "Error processing request", status: 500 };
   }
 };
-export const saveMultiplierData = async (shop,body) => {
+export const saveMultiplierData = async (shop, body) => {
   try {
     const { isManualEnabled, isAllEnabled, allProductMultiplier, arr } = body;
 
-    console.log("shop in saveMultiplierData:", shop, isManualEnabled,isAllEnabled);
-    let products = arr.products
+    console.log(
+      "shop in saveMultiplierData:",
+      shop,
+      isManualEnabled,
+      isAllEnabled,
+    );
+    let products = arr.products;
 
     let saveData = await BonusMultiplierModel.findOneAndUpdate(
       { shop },
       {
         $set: {
           isManualMultiplierEnabled: isManualEnabled,
-          isAllProductMultiplierEnabled: isAllEnabled, 
+          isAllProductMultiplierEnabled: isAllEnabled,
           allProductMultiplier: allProductMultiplier,
           products: products,
         },
       },
       { upsert: true, new: true },
     );
-    
-    return { message: "success",status:200 };
+
+    return { message: "success", status: 200 };
   } catch (error) {
     console.error("Error processing POST request:", error);
-        return { message: error.message,status:500 };
-
+    return { message: error.message, status: 500 };
   }
 };
 export const getMultiplierData = async (shop) => {
@@ -1612,7 +1617,7 @@ export const getMultiplierData = async (shop) => {
     const data = await BonusMultiplierModel.findOne({ shop });
 
     if (!data) {
-      return { message: "No data found", status: 404 };
+      return { message: "No data found", status: 400 };
     }
 
     return {
@@ -1630,7 +1635,24 @@ export const getMultiplierData = async (shop) => {
     return { message: error.message, status: 500 };
   }
 };
+export const getmanualData = async () => {
+  try {
+    const data = await manualDataModel.find();
 
+    if (!data) {
+      return { message: "No data found", status: 404 };
+    }
+
+    return {
+      message: "success",
+      status: 200,
+      data: data,
+    };
+  } catch (error) {
+    console.error("Error fetching multiplier data:", error);
+    return { message: error.message, status: 500 };
+  }
+};
 // export const updateDocument = async (admin) => {
 //   try {
 //     const { shop } = admin.rest.session;
@@ -1935,3 +1957,42 @@ export const getMultiplierData = async (shop) => {
 //     }
 //   }
 // }`;
+
+export const getProductEntries = async (admin, id) => {
+  const query = `
+    query getProduct($id: ID!) {
+      product(id: $id) {
+        options {
+          name
+        }
+        variants(first: 10) {
+          edges {
+            node {
+              selectedOptions {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await admin.graphql(query, {
+      variables: { id },
+    });
+
+    const result = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL Errors:", result.errors);
+      return null;
+    }
+
+    return result.data?.product;
+  } catch (err) {
+    console.error("Error fetching product entries:", err);
+    return null;
+  }
+};

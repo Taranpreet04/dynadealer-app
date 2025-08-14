@@ -45,7 +45,7 @@ export const action = async ({ request }) => {
         let billing_policy = payload?.billing_policy;
         let ticketDetails;
         let cusRes = await getCustomerDataByContractId(admin, contractId);
-        
+
         let addressLength = cusRes?.data?.customer?.addresses?.length;
         const actualAddress =
           cusRes?.data?.customer?.addresses[addressLength - 1];
@@ -92,7 +92,9 @@ export const action = async ({ request }) => {
             contractId: contractId || "",
             membershipLevel: planName?.split("-")[0]?.toLowerCase() || "",
             membershipType:
-              payload?.billing_policy?.interval == "day" ? "ONETIME" : `${payload?.billing_policy?.interval}ly`,
+              payload?.billing_policy?.interval == "day"
+                ? "ONETIME"
+                : `${payload?.billing_policy?.interval}ly`,
             sellingPlanName: planName,
             sellingPlanId: planId,
           });
@@ -235,9 +237,11 @@ export const action = async ({ request }) => {
         return new Response("Error processing webhook", { status: 200 });
       }
     case "ORDERS_CREATE":
+      console.log("Inside", payload);
+
       try {
         let entries;
-       
+
         for (const product of payload?.line_items || []) {
           let oneTimeProductExist = product?.properties?.find(
             (property) =>
@@ -301,7 +305,8 @@ export const action = async ({ request }) => {
                 totalPrice: Number(payload?.total_price),
                 contractId: "",
                 customerName: `${payload?.customer?.first_name || ""} ${
-                  payload?.customer?.last_name || ""}`.trim(),
+                  payload?.customer?.last_name || ""
+                }`.trim(),
                 customerEmail: payload?.customer?.email,
                 customerPhone:
                   payload?.customer?.phone ||

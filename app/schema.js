@@ -140,7 +140,15 @@ const BonusMultiplierSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
+const manualDataSchema = new mongoose.Schema({
+  CustomerID: String,
+  CustomerName: String,
+  Address: String,
+  Email: String,
+  Phone: String,
+  OrderID: String,
+  DrawID: String,
+});
 planDetailsSchema.index({ shop: 1 });
 credentialSchema.index({ shop: 1 });
 subscriptionContract.index({ shop: 1 });
@@ -168,6 +176,8 @@ const billingModel =
 const BonusMultiplierModel =
   mongoose.models?.BonusMultiplier ||
   mongoose.model("BonusMultiplier", BonusMultiplierSchema);
+const manualDataModel =
+  mongoose.models?.manualData || mongoose.model("manualData", manualDataSchema);
 
 export {
   planDetailsModel,
@@ -177,4 +187,5 @@ export {
   membershipsModel,
   billingModel,
   BonusMultiplierModel,
+  manualDataModel,
 };
