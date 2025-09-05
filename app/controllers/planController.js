@@ -465,6 +465,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     let planIds =
       resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans
         ?.edges;
+    console.log(planIds, "pl;anidss-------");
+
     if (planIds) {
       let plansWids = [];
       if (newPlanDetails?.plans && planIds) {
@@ -905,6 +907,8 @@ export const getCustomerDataByContractId = async (admin, id) => {
 };
 
 export const getExportData = async (admin, data, date) => {
+  console.log(admin, data, date, "data fgrom acionssssssss");
+
   try {
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
@@ -940,6 +944,8 @@ export const getExportData = async (admin, data, date) => {
         },
       },
     ]);
+
+    console.log(matchingDocuments, "documentss----");
 
     return { success: true, data: matchingDocuments };
   } catch (error) {
@@ -1996,3 +2002,43 @@ export const getProductEntries = async (admin, id) => {
     return null;
   }
 };
+export function getProductMultiplier(config, productId) {
+  try {
+    let multiplier = 1; // default
+    const id = `gid://shopify/Product/${productId}`;
+
+    // ✅ normalize flags (handle string "true"/"false")
+    const isManualEnabled =
+      config.isManualEnabled === "true" || config.isManualEnabled === true;
+    const isAllEnabled =
+      config.isAllEnabled === "true" || config.isAllEnabled === true;
+
+    // ✅ Priority 1: Manual product multiplier
+    if (isManualEnabled && Array.isArray(config.products)) {
+      const product = config.products.find((p) => p.product_id === id);
+
+      if (product && product.multiplier) {
+        console.log("Manual multiplier found for product:", productId);
+        multiplier = parseFloat(product.multiplier) || 1;
+      }
+
+      // ✅ Priority 2: All product multiplier
+      else if (isAllEnabled && config.allProductMultiplier) {
+        console.log("All multiplier found for product:", productId);
+        multiplier = parseFloat(config.allProductMultiplier) || 1;
+      }
+    }
+
+    // ✅ Manual not enabled → check All
+    else if (isAllEnabled && config.allProductMultiplier) {
+      console.log("Manual not enabled, using All multiplier for:", productId);
+      multiplier = parseFloat(config.allProductMultiplier) || 1;
+    }
+
+    console.log("Final multiplier to apply:", multiplier);
+    return multiplier;
+  } catch (err) {
+    console.error("Error fetching multiplier data:", err);
+    return 1;
+  }
+}

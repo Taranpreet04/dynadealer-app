@@ -35,7 +35,7 @@ export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const url = new URL(request.url);
   const Data = await getmanualData();
-  console.log(Data, "Data----->");
+  // console.log(Data, "Data----->");
 
   const search = url.searchParams.get("search") || "";
   const page = url.searchParams.get("page") || 1;
@@ -68,7 +68,7 @@ export default function ContractData() {
     month: currentMonth == 0 ? 11 : currentMonth - 1,
     year: currentMonth == 0 ? currentYear - 1 : currentYear,
   });
-  console.log(loaderData, "losderDatat---->");
+  // console.log(loaderData,actionData, "losderDatat---->");
 
   const resetToMidnight = (date) => {
     const newDate = new Date(date);
@@ -77,7 +77,7 @@ export default function ContractData() {
   };
   const [selectedDates, setSelectedDates] = useState({
     start: resetToMidnight(
-      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
+      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000)
     ), // Ten days before, reset to midnight
     end: resetToMidnight(new Date()), // Today, reset to midnight
   });
@@ -105,7 +105,7 @@ export default function ContractData() {
 
   useEffect(() => {
     const url = new URL(
-      window.location.origin + location.pathname + location.search,
+      window.location.origin + location.pathname + location.search
     );
     const search = url.searchParams.get("search") || "";
     const page = url.searchParams.get("page") || 1;
@@ -131,11 +131,11 @@ export default function ContractData() {
           });
         });
       });
-      console.log(dataToExport, loaderData?.data, "data----->");
+      // console.log(dataToExport, loaderData?.data, "data----->");
 
       // combine previous loader data with fresh data
       const finalExportData = [...dataToExport, ...loaderData?.data?.data];
-      console.log(finalExportData, "fduhf");
+      // console.log(finalExportData, "fduhf");
 
       if (finalExportData.length > 0) {
         let data = [
@@ -204,7 +204,7 @@ export default function ContractData() {
         url={`/app/contract/${itm?._id}`}
         prefetch="viewport"
         onClick={() => {
-          (shopify.loading(true), setContentSkel(true));
+          shopify.loading(true), setContentSkel(true);
         }}
       >
         <svg

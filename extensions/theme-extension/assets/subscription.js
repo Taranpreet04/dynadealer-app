@@ -1,39 +1,39 @@
 //live
 
-// const sweatShirt='46962651922646'
-// const tshirt='46962641109206'
-// const hat='46962642845910'
+// const sweatShirt = "46962651922646";
+// const tshirt = "46962641109206";
+// const hat = "46962642845910";
 // let serverPath = "https://dynadealersapp.com";
 // const data = [
-//     {
-//       name: 'Silver',
-//       variants: [
-//         { id: '46952891252950', also_added: hat } // silver main product
-//       ]
-//     },
-//     {
-//       name: 'Gold',
-//       variants: [
-//         { id: '46952894202070', also_added: hat },
-//         { id: '46952894202070', also_added: tshirt } // same main product, different gifts
-//       ]
-//     },
-//     {
-//       name: 'Platinum',
-//       variants: [
-//         { id: '46952896299222', also_added: hat },
-//         { id: '46952896299222', also_added: tshirt },
-//         { id: '46952896299222', also_added: sweatShirt }
-//       ]
-//     }
-//   ];
+//   {
+//     name: "Silver",
+//     variants: [
+//       { id: "46952891252950", also_added: hat }, // silver main product
+//     ],
+//   },
+//   {
+//     name: "Gold",
+//     variants: [
+//       { id: "46952894202070", also_added: hat },
+//       { id: "46952894202070", also_added: tshirt }, // same main product, different gifts
+//     ],
+//   },
+//   {
+//     name: "Platinum",
+//     variants: [
+//       { id: "46952896299222", also_added: hat },
+//       { id: "46952896299222", also_added: tshirt },
+//       { id: "46952896299222", also_added: sweatShirt },
+//     ],
+//   },
+// ];
 
 // // local
 
 const hat = "42830762999910";
 const tshirt = "42830791082086";
 const sweatShirt = "42830884700262";
-let serverPath = "https://has-convicted-the-cameron.trycloudflare.com";
+let serverPath = "https://carmen-script-the-sie.trycloudflare.com";
 // console.log("serverPath");
 const page = subscription_page_type;
 // console.log(page, "page_type");
@@ -60,7 +60,7 @@ const data = [
     ],
   },
 ];
-//
+
 // console.log("js--________", window.location.pathname);
 const locationPath = window.location.pathname;
 let multiplier = 1;
@@ -79,7 +79,7 @@ let allSellingPlans = [];
 let oneTimePlans = [];
 let otherPlans = [];
 let oneTimeSelectedPlan;
-let subscriptionSelectedPlan;
+let subscriptionSelectedPlan = null;
 let giveawayProduct = false;
 let inventory = 0;
 let showMemebershipLevels = false;
@@ -88,7 +88,7 @@ let offerDuration = {};
 let commanData;
 let oneTimeMembership = false;
 let modalData = [];
-
+let cartEntries = "";
 let options = [
   { name: "Weekly", value: "week", class: "timePeriodList" },
   { name: "Monthly", value: "month", class: "timePeriodList" },
@@ -132,16 +132,16 @@ const getcartItems = async () => {
     });
 };
 async function getMultiplierData(productId) {
-  // console.log(productId, "productId------");
+  // console.log(productId, "productId=-======>");
 
   try {
     const res = await fetch(`${serverPath}/getDataOnStorefront?shop=${shop}`, {
       method: "GET",
+      // credentials: "include",
     });
-
     const data = await res.json();
 
-    if (res?.status === 200 && data) {
+    if (res?.status == 200 && data) {
       const config = data;
 
       const isManualEnabled =
@@ -149,7 +149,7 @@ async function getMultiplierData(productId) {
       const isAllEnabled =
         config.isAllEnabled === "true" || config.isAllEnabled === true;
 
-      // If manual mode ON → check only the given product
+      // Priority 1: Manual product multiplier
       if (isManualEnabled && Array.isArray(config.products)) {
         const product = config.products.find(
           (p) =>
@@ -158,18 +158,25 @@ async function getMultiplierData(productId) {
         );
 
         if (product && product.multiplier) {
+          // console.log("Manual multiplier found for product:");
           multiplier = parseFloat(product.multiplier) || 1;
-        } else {
-          // Product not found → return 1 immediately
-          return 1;
+        }
+
+        // Priority 2: All product multiplier
+        else if (isAllEnabled && config.allProductMultiplier) {
+          // console.log("all multiplier found for product:");
+          multiplier = parseFloat(config.allProductMultiplier) || 1;
         }
       }
-      // If manual OFF but all products multiplier is enabled
+
+      // Manual not enabled, check All
       else if (isAllEnabled && config.allProductMultiplier) {
+        // console.log("Manual not enabled, check :");
         multiplier = parseFloat(config.allProductMultiplier) || 1;
       }
     }
 
+    // console.log("Final multiplier to apply:", multiplier);
     return multiplier;
   } catch (err) {
     console.error("Error fetching multiplier data:", err);
@@ -177,39 +184,17 @@ async function getMultiplierData(productId) {
   }
 }
 function addBonusMultiplierBadge(multiplierValue) {
-  const entriesInputs = document.getElementsByName("Entries");
+  const entriesInputs = document.querySelectorAll('input[name="Entries"]');
   if (!entriesInputs.length) return;
 
-  Array.from(entriesInputs).forEach((entriesInput) => {
-    const parent = entriesInput.parentElement;
-    const label = parent.querySelector("label");
+  entriesInputs.forEach((input) => {
+    const label = document.querySelector(`label[for="${input.id}"]`);
+    if (!label) return;
 
-    // Get the base entry count
-    let baseEntries = null;
-
-    // Method 1: From label text (case-insensitive)
-    if (label && label.textContent) {
-      const match = label.textContent.match(/(\d+)\s*Entr(y|ies)/i);
-      if (match) {
-        baseEntries = parseInt(match[1], 10);
-      }
-    }
-
-    // Method 2: From data attribute
-    if (baseEntries == null && entriesInput.dataset.entries) {
-      baseEntries = parseInt(entriesInput.dataset.entries, 10);
-    }
-
-    // Method 3: From value string
-    if (baseEntries == null && entriesInput.value) {
-      const matchValue = entriesInput.value.match(/(\d+)/);
-      if (matchValue) {
-        baseEntries = parseInt(matchValue[1], 10);
-      }
-    }
-
-    // Fallback to 1
-    if (baseEntries == null) baseEntries = 1;
+    // Extract base number from input value ("1 Entry", "4 Entries", etc.)
+    const match = input.value.match(/(\d+)/);
+    if (!match) return;
+    const baseEntries = parseInt(match[1], 10);
 
     // Calculate multiplied value
     let finalEntries = baseEntries;
@@ -221,11 +206,11 @@ function addBonusMultiplierBadge(multiplierValue) {
       finalEntries = baseEntries * parseFloat(multiplierValue);
     }
 
-    // Remove existing badge
-    const oldBadge = parent.querySelector(".bonus-badge");
+    // Remove old badge if exists
+    const oldBadge = label.querySelector(".bonus-badge");
     if (oldBadge) oldBadge.remove();
 
-    // Style label
+    // Only show fancy badge if multiplier > 1
     if (label) {
       label.classList.add("bonus-badge-label");
       label.style.display = "inline-block";
@@ -249,8 +234,8 @@ function addBonusMultiplierBadge(multiplierValue) {
     const leftDiv = document.createElement("div");
     leftDiv.className = "bonus-badge-left";
     leftDiv.innerText = `${finalEntries} ENTRIES`;
-    leftDiv.style.background = "#000";
-    leftDiv.style.color = "#fff";
+    leftDiv.style.background = "#fff";
+    leftDiv.style.color = "#000";
     leftDiv.style.padding = "15px 22px";
     leftDiv.style.borderTopRightRadius = "50px";
     leftDiv.style.borderBottomRightRadius = "50px";
@@ -479,11 +464,11 @@ if (currentUrl.includes("account")) {
     let cusDiv = document.createElement("div");
     cusDiv.className = "mange-sub-container";
     cusDiv.innerHTML = `<div class='subscription-manage'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"  viewBox="0 0 24 24" fill="transparent">
-                  <path d="M16 17H21M18.5 14.5V19.5M12 19H6.2C5.0799 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2C3 7.0799 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H17.8C18.9201 5 19.4802 5 19.908 5.21799C20.2843 5.40973 20.5903 5.71569 20.782 6.09202C21 6.51984 21 7.0799 21 8.2V11M20.6067 8.26229L15.5499 11.6335C14.2669 12.4888 13.6254 12.9165 12.932 13.0827C12.3192 13.2295 11.6804 13.2295 11.0677 13.0827C10.3743 12.9165 9.73279 12.4888 8.44975 11.6335L3.14746 8.09863" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                <h3>Manage Memberships</h3>
-                </div>`;
+                  <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"  viewBox="0 0 24 24" fill="transparent">
+                    <path d="M16 17H21M18.5 14.5V19.5M12 19H6.2C5.0799 19 4.51984 19 4.09202 18.782C3.71569 18.5903 3.40973 18.2843 3.21799 17.908C3 17.4802 3 16.9201 3 15.8V8.2C3 7.0799 3 6.51984 3.21799 6.09202C3.40973 5.71569 3.71569 5.40973 4.09202 5.21799C4.51984 5 5.0799 5 6.2 5H17.8C18.9201 5 19.4802 5 19.908 5.21799C20.2843 5.40973 20.5903 5.71569 20.782 6.09202C21 6.51984 21 7.0799 21 8.2V11M20.6067 8.26229L15.5499 11.6335C14.2669 12.4888 13.6254 12.9165 12.932 13.0827C12.3192 13.2295 11.6804 13.2295 11.0677 13.0827C10.3743 12.9165 9.73279 12.4888 8.44975 11.6335L3.14746 8.09863" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  <h3>Manage Memberships</h3>
+                  </div>`;
 
     cusDiv.addEventListener("click", function () {
       const targetUrl = `https://${shop}/apps/subscription?cid=${customerId}`;
@@ -500,555 +485,776 @@ if (
   subscription_page_type == "collection" ||
   subscription_page_type == "page"
 ) {
-  const multiplierData = getMultiplierData(productJson?.id);
-  // console.log(multiplierData, "multiplierdataaaaaa");
+  getMultiplierData(productJson?.id).then(() => {
+    // console.log(multiplierData, "multiplierdataaaaaa");
 
-  if (multiplier > 1) {
-    addBonusMultiplierBadge(multiplier);
-  }
-
-  function capitalize(str) {
-    return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
-  }
-
-  const sendOnetimeDataToCart = (entry) => {
-    let productForms = document.querySelectorAll('form[action="/cart/add"]');
-    let totalEntries = parseFloat(entry) * parseFloat(multiplier);
-
-    productForms.forEach((form) => {
-      if (!form) return;
-      // Check if the 'entries' input already exists, else create and append it
-      let entriesInput = form.querySelector(
-        'input[name="properties[entries]"]',
-      );
-      if (!entriesInput) {
-        entriesInput = document.createElement("input");
-        entriesInput.type = "hidden";
-        entriesInput.name = "properties[entries]";
-        form.appendChild(entriesInput);
-      }
-      entriesInput.value = totalEntries;
-
-      // Check if the 'plan-type' input already exists, else create and append it
-      let typeInput = form.querySelector('input[name="properties[plan-type]"]');
-      if (!typeInput) {
-        typeInput = document.createElement("input");
-        typeInput.type = "hidden";
-        typeInput.name = "properties[plan-type]";
-        form.appendChild(typeInput);
-      }
-      typeInput.value = "onetime";
-
-      if (oneTimeMembership) {
-        let memInput = form.querySelector(
-          'input[name="properties[membership]"]',
-        );
-        if (!memInput) {
-          memInput = document.createElement("input");
-          memInput.type = "hidden";
-          memInput.name = "properties[membership]";
-          form.appendChild(memInput);
-        }
-        memInput.value = productJson?.type;
-      }
-    });
-  };
-
-  const clearOnetimeProperties = () => {
-    const productForms = document.querySelectorAll('form[action="/cart/add"]');
-
-    productForms.forEach((form) => {
-      // Check if 'entries' input exists and remove it
-      const entriesInput = form.querySelector(
-        'input[name="properties[entries]"]',
-      );
-      if (entriesInput) {
-        entriesInput.remove();
-      }
-
-      // Check if 'plan-type' input exists and remove it
-      const typeInput = form.querySelector(
-        'input[name="properties[plan-type]"]',
-      );
-      if (typeInput) {
-        typeInput.remove();
-      }
-    });
-  };
-
-  function addFreeProduct(list) {
-    fetch("/cart.js")
-      .then((res) => res.json())
-      .then((cart) => {
-        let items = [];
-        list?.forEach((gift) => {
-          items?.push({
-            id: gift,
-            quantity: 1,
-            properties: {
-              // _free: true
-            },
-          });
-        });
-        // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
-        // if (!alreadyInCart) {
-        fetch("/cart/add.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items: items }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            // console.log("Free product added:", data);
-          })
-          .catch((err) => console.error("Error adding free product:", err));
-        // }
+    if (multiplier > 1) {
+      addBonusMultiplierBadge(multiplier);
+    }
+    if (
+      subscription_page_type === "product" &&
+      filtered_selling_plan_groups?.length > 0
+    ) {
+      filtered_selling_plan_groups?.forEach((item) => {
+        allSellingPlans?.push(...item?.selling_plans);
       });
-  }
-
-  // Hook onto any cart add button (adapt this to your theme)
-  document.querySelectorAll('form[action*="/cart/add"]').forEach((form) => {
-    form.addEventListener("submit", () => {
-      setTimeout(addFreeProduct(freeProductList), 1000); // Delay to ensure first product is added
-    });
-  });
-
-  const checkFreeProduct = (plan) => {
-    let planName = plan?.name?.toLowerCase();
-    let cycle = plan?.options[0]?.value.split(" ")[0];
-    if (planName?.includes("silver") && cycle == "year") {
-      // console.log("silverYearlyGift==", silverYearlyGift);
-      freeProductList = silverYearlyGift;
-    } else if (planName?.includes("gold") && cycle == "year") {
-      // console.log("goldYearlyGift==", goldYearlyGift);
-      freeProductList = goldYearlyGift;
-    } else if (planName?.includes("platinum") && cycle == "year") {
-      // console.log("platinumYearlyGift==", platinumYearlyGift);
-      freeProductList = platinumYearlyGift;
     }
-  };
-
-  const sendPlanDataToCart = (plan) => {
-    // console.log("sendPlanDataToCart==", plan);
-    if (!plan || !plan.id) {
-      console.warn("Invalid plan data provided");
-      return;
+    function capitalize(str) {
+      return str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
     }
+    const sendOnetimeDataToCart = (entry) => {
+      let productForms = document.querySelectorAll('form[action="/cart/add"]');
+      let totalEntries = parseFloat(entry) * parseFloat(multiplier);
 
-    // Select all forms with /cart/add action
-    var forms = document.querySelectorAll('form[action*="/cart/add"]');
+      productForms.forEach((form) => {
+        if (!form) return;
 
-    if (forms.length === 0) {
-      console.warn("No cart/add forms found on the page.");
-      return;
-    }
+        // ---- entries ----
+        let entriesInput = form.querySelector(
+          'input[name="properties[entries]"]',
+        );
+        if (!entriesInput) {
+          entriesInput = document.createElement("input");
+          entriesInput.type = "hidden";
+          entriesInput.name = "properties[entries]";
+          form.appendChild(entriesInput);
+        }
+        entriesInput.value = totalEntries;
 
-    forms.forEach((form) => {
-      if (!form) return;
+        // ---- plan-type ----
+        let typeInput = form.querySelector(
+          'input[name="properties[plan-type]"]',
+        );
+        if (!typeInput) {
+          typeInput = document.createElement("input");
+          typeInput.type = "hidden";
+          typeInput.name = "properties[plan-type]";
+          form.appendChild(typeInput);
+        }
+        typeInput.value = "onetime";
 
-      // Select existing selling plan inputs
-      var sellingPlanInputs = form.querySelectorAll(
-        'input[name="selling_plan"]',
+        // ---- membership ----
+        if (oneTimeMembership) {
+          let memInput = form.querySelector(
+            'input[name="properties[membership]"]',
+          );
+          if (!memInput) {
+            memInput = document.createElement("input");
+            memInput.type = "hidden";
+            memInput.name = "properties[membership]";
+            form.appendChild(memInput);
+          }
+          memInput.value = productJson?.type;
+        }
+
+        // ---- multiplier (NEW) ----
+      });
+    };
+    // console.log(selectedEntries, "sesedekdkk");
+    const clearOnetimeProperties = () => {
+      const productForms = document.querySelectorAll(
+        'form[action="/cart/add"]',
       );
 
-      if (sellingPlanInputs.length === 0) {
-        var newHiddenInput = document.createElement("input");
+      productForms.forEach((form) => {
+        // Check if 'entries' input exists and remove it
+        const entriesInput = form.querySelector(
+          'input[name="properties[entries]"]',
+        );
+        if (entriesInput) {
+          entriesInput.remove();
+        }
+
+        // Check if 'plan-type' input exists and remove it
+        const typeInput = form.querySelector(
+          'input[name="properties[plan-type]"]',
+        );
+        if (typeInput) {
+          typeInput.remove();
+        }
+      });
+    };
+
+    function addFreeProduct(list) {
+      fetch("/cart.js")
+        .then((res) => res.json())
+        .then((cart) => {
+          let items = [];
+          list?.forEach((gift) => {
+            items?.push({
+              id: gift,
+              quantity: 1,
+              properties: {
+                // _free: true
+              },
+            });
+          });
+          // const alreadyInCart = cart.items.some(item => item.variant_id === gift);
+          // if (!alreadyInCart) {
+          fetch("/cart/add.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: items }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              // console.log("Free product added:", data);
+            })
+            .catch((err) => console.error("Error adding free product:", err));
+          // }
+        });
+    }
+
+    // Hook onto any cart add button (adapt this to your theme)
+    document.querySelectorAll('form[action*="/cart/add"]').forEach((form) => {
+      form.addEventListener("submit", () => {
+        setTimeout(addFreeProduct(freeProductList), 1000); // Delay to ensure first product is added
+      });
+    });
+    const checkFreeProduct = (plan) => {
+      let planName = plan?.name?.toLowerCase();
+      let cycle = plan?.options[0]?.value.split(" ")[0];
+      if (planName?.includes("silver") && cycle == "year") {
+        // console.log("silverYearlyGift==", silverYearlyGift);
+        freeProductList = silverYearlyGift;
+      } else if (planName?.includes("gold") && cycle == "year") {
+        // console.log("goldYearlyGift==", goldYearlyGift);
+        freeProductList = goldYearlyGift;
+      } else if (planName?.includes("platinum") && cycle == "year") {
+        // console.log("platinumYearlyGift==", platinumYearlyGift);
+        freeProductList = platinumYearlyGift;
+      }
+    };
+    const sendPlanDataToCart = (plan, entry) => {
+      // console.log(plan, "hellloooooo");
+
+      if (!plan || !plan.id) {
+        console.warn("Invalid plan data provided");
+        return;
+      }
+
+      var forms = document.querySelectorAll('form[action*="/cart/add"]');
+
+      if (forms.length === 0) {
+        console.warn("No cart/add forms found on the page.");
+        return;
+      }
+
+      forms.forEach((form) => {
+        if (!form) return;
+
+        // ---- selling_plan (required by Shopify) ----
+        form
+          .querySelectorAll('input[name="selling_plan"]')
+          .forEach((input) => input.remove());
+        const newHiddenInput = document.createElement("input");
         newHiddenInput.type = "hidden";
         newHiddenInput.name = "selling_plan";
         newHiddenInput.value = plan.id;
         form.appendChild(newHiddenInput);
-      } else {
-        sellingPlanInputs.forEach((input) => {
-          if (input) {
-            input.value = plan.id;
-          }
-        });
-      }
-    });
 
-    checkFreeProduct(plan);
-  };
-
-  const cartClear = () => {
-    var form = document.querySelectorAll('form[action*="/cart/add"]');
-
-    form.forEach((item) => {
-      var sellingPlanInputs = item.querySelectorAll(
-        'input[name="selling_plan"]',
-      );
-
-      if (sellingPlanInputs.length > 0) {
-        sellingPlanInputs.forEach(function (input) {
-          // input.value = "";
-          input.remove();
-        });
-      }
-    });
-  };
-
-  const toIST = (dateString) => {
-    const date = new Date(dateString);
-    const offsetInMinutes = 330;
-    return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
-  };
-
-  const getEntries = (str) => {
-    let data = JSON.parse(str);
-    return data.entries;
-  };
-
-  const getCurrencySymbol = (currency) => {
-    const symbol = new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-    })
-      .formatToParts()
-      .find((x) => x.type === "currency");
-    return symbol && symbol.value;
-  };
-
-  const setPriceAndEntries = (plan) => {
-    subscriptionPrice = plan?.price_adjustments[0]?.value / 100;
-    let subscriptionPriceDiv =
-      document.getElementsByClassName("subscriptionPrice");
-
-    // Convert HTMLCollection to an array and loop over it
-    Array.from(subscriptionPriceDiv).forEach((div) => {
-      div.innerText = subscriptionPrice
-        ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
-        : "";
-    });
-  };
-
-  const handleOnetimePlan = (variant) => {
-    selectedPlan = "";
-    cartClear();
-    sendOnetimeDataToCart(variant);
-    selectedEntries = variant;
-    let plan = otherPlans?.filter((itm) =>
-      itm?.name?.includes(`-entries-${selectedEntries}`),
-    )[0];
-    if (plan) {
-      setPriceAndEntries(plan);
-    }
-  };
-
-  // Define setCartProperties before using it
-  const setCartProperties = () => {
-    subscriptionSelectedPlan = otherPlans?.filter((itm) =>
-      itm?.name?.includes(`-entries-${selectedEntries}`),
-    )[0];
-    if (purchaseOption == "oneTime-purchase") {
-      handleOnetimePlan(selectedEntries);
-    } else {
-      if (subscriptionSelectedPlan) {
-        handlePlanChange(subscriptionSelectedPlan);
-      }
-    }
-  };
-
-  // FIXED: Define handlePurchaseType as a global function
-  window.handlePurchaseType = function (event) {
-    purchaseOption = event.target.value;
-
-    let div = document.getElementsByClassName("additional-detail")[0];
-    console.log(div, "dive-------");
-    if (div) {
-      if (event.target.value == "oneTime-purchase") {
-        cartClear();
-        div.style.display = "none";
-      } else {
-        div.style.display = "block";
-        clearOnetimeProperties();
-      }
-    }
-    setCartProperties();
-  };
-
-  if (allSellingPlans?.length == 1) {
-    if (allSellingPlans) {
-      purchaseOption = "subscription-purchase";
-      sendPlanDataToCart(allSellingPlans[0]);
-    }
-  } else if (
-    productJson?.options?.includes("Entries") &&
-    allSellingPlans?.length == 0
-  ) {
-    if (
-      productJson?.type.toLowerCase() == "bronze" ||
-      productJson?.type.toLowerCase() == "silver" ||
-      productJson?.type.toLowerCase() == "gold" ||
-      productJson?.type.toLowerCase() == "platinum"
-    ) {
-      oneTimeMembership = true;
-    }
-    let data = productJson?.variants[0];
-    let variant;
-    if (
-      data?.option1?.toLowerCase()?.includes("entry") ||
-      data?.option1?.toLowerCase()?.includes("entries")
-    ) {
-      variant = data?.option1?.split(" ")[0];
-    } else if (
-      data?.option2?.toLowerCase()?.includes("entry") ||
-      data?.option2?.toLowerCase()?.includes("entries")
-    ) {
-      variant = data?.option2?.split(" ")[0];
-    } else if (
-      data?.option3?.toLowerCase()?.includes("entry") ||
-      data?.option3?.toLowerCase()?.includes("entries")
-    ) {
-      variant = data?.option3?.split(" ")[0];
-    }
-
-    if (Number(variant) > 0) {
-      purchaseOption = "oneTime-purchase";
-      handleOnetimePlan(variant);
-    }
-  } else {
-    if (allSellingPlans?.length > 1) {
-      commanData = JSON.parse(allSellingPlans[0]?.description);
-
-      const showVariantPlans = () => {
-        if (
-          subscription_page_type == "product" &&
-          (otherPlans?.length > 0 || oneTimePlans?.length > 0)
-        ) {
-          let mainWidget = `
-                    <div id="oneTime" class="oneTime purchase-optn-main">
-                <div class='other-options'>
-                <h5>Purchase options</h5>
-                        <div id="options" class="options">
-                         <div class='onetime-purchase'>
-                            <input type="radio" id="onetime-purchase" value='oneTime-purchase' name="purchase-option" />
-                            <label for="onetime-purchase">
-                            <div class='label'>One-time Purchase <span class='oneTimePrice'></span></div>
-                            </label>
-                        </div>
-                        <div class='subscription-purchase'>
-                            <input type="radio" id="subscription-purchase"  value='subscription-purchase' name="purchase-option" />
-                            <label for="subscription-purchase">
-                            <div  class='label'>Subscribe and Save Purchase <span class='subscriptionPrice'></span></div></label>
-                            </div>
-                            <div class='additional-detail'>
-                              <ul class='inner-detail'>
-                                <li><span id='entry'></span> into every giveaway.</li>
-                                <li>Secure your name into every giveaway.</li>
-                                <li>Never miss your opportunity.</li>
-                                <li>Cheapest and most effective way to win.</li>
-                                <li>Change pause and cancel any time.</li>
-                              </ul>
-                              <div class="delivery-freq">
-                              <h5>Dilevery Frequency</h5>
-                              <div class="delivery-freq-inner">
-                              <p>Every 1 month</p>
-                              <span class='subscriptionPrice'></span></div>
-                              </div>
-                              </div>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            `;
-
-          let subscriptionBlock = document.getElementById(
-            "subscription-app-block",
-          );
-          subscriptionBlock.innerHTML = mainWidget;
-
-          // FIXED: Use event delegation instead of inline handlers
-          const onetimeRadio = document.getElementById("onetime-purchase");
-          const subscriptionRadio = document.getElementById(
-            "subscription-purchase",
-          );
-
-          if (onetimeRadio) {
-            onetimeRadio.addEventListener("change", window.handlePurchaseType);
-            onetimeRadio.checked = true; // Set default selection
-          }
-
-          if (subscriptionRadio) {
-            subscriptionRadio.addEventListener(
-              "change",
-              window.handlePurchaseType,
-            );
-          }
-
-          const urlParams = new URLSearchParams(window.location.search);
-          const variant = urlParams.get("variant");
-          if (variant) {
-            productJson?.variants?.map((item) => {
-              if (item?.id == variant) {
-                selectedEntries = item?.option1.split(" ")[0];
-              }
-            });
-
-            setCartProperties();
-          } else {
-            selectedEntries = productJson?.variants[0]?.title?.split(" ")[0];
-            setCartProperties();
-          }
+        // ---- single custom property: entries ----
+        let entriesInput = form.querySelector(
+          'input[name="properties[entries]"]',
+        );
+        if (!entriesInput) {
+          entriesInput = document.createElement("input");
+          entriesInput.type = "hidden";
+          entriesInput.name = "properties[entries]";
+          form.appendChild(entriesInput);
         }
-      };
+        entriesInput.value = entry;
+      });
 
-      const updateEntries = () => {
-        let span = document.getElementById("entry");
-        if (span) {
-          span.innerText = `${selectedEntries} ${
-            Number(selectedEntries) > 1 ? "entries" : "entry"
-          }`;
-        }
-      };
+      checkFreeProduct(plan);
+    };
 
-      async function getCartData() {
-        try {
-          let cartApi = await fetch("/cart.json");
-          let arr = await cartApi.json();
-          return arr;
-        } catch (error) {
-          return [];
-        }
-      }
+    const cartClear = () => {
+      var form = document.querySelectorAll('form[action*="/cart/add"]');
 
-      const handlePlanChange = (newPlan) => {
-        if (newPlan) {
-          selectedPlan = newPlan;
-          selectedEntries = getEntries(selectedPlan?.description);
-          sendPlanDataToCart(selectedPlan);
-          setPriceAndEntries(selectedPlan);
-          updateEntries();
-        } else {
-          let hasActive = document.getElementsByClassName("active");
-          Array.from(hasActive).forEach((itm) => {
-            itm.classList.remove("active");
+      form.forEach((item) => {
+        var sellingPlanInputs = item.querySelectorAll(
+          'input[name="selling_plan"]',
+        );
+
+        if (sellingPlanInputs.length > 0) {
+          sellingPlanInputs.forEach(function (input) {
+            // input.value = "";
+            input.remove();
           });
-          cartClear();
         }
-      };
+      });
+    };
 
-      const showWidget = () => {
-        allSellingPlans?.map((item) => {
-          let interval = item?.options[0]?.value?.split(" ")?.[0];
-          if (interval == "day") {
-            oneTimePlans?.push(item);
+    const toIST = (dateString) => {
+      const date = new Date(dateString);
+      const offsetInMinutes = 330;
+      return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
+    };
+    const getEntries = (str, entry) => {
+      let data = JSON.parse(str);
+      return entry;
+    };
+    const getCurrencySymbol = (currency) => {
+      const symbol = new Intl.NumberFormat("en", {
+        style: "currency",
+        currency,
+      })
+        .formatToParts()
+        .find((x) => x.type === "currency");
+      return symbol && symbol.value;
+    };
+    const setPriceAndEntries = (plan) => {
+      // console.log(plan, "helllooooo");
+
+      // console.log(subscriptionPrice, "gsgsgsg");
+
+      subscriptionPrice = plan?.price_adjustments[0]?.value / 100;
+      // let oneTimePriceDiv =
+      //   document.getElementsByClassName("oneTimePrice")[0];
+      let subscriptionPriceDiv =
+        document.getElementsByClassName("subscriptionPrice");
+
+      // Convert HTMLCollection to an array and loop over it
+      Array.from(subscriptionPriceDiv).forEach((div) => {
+        div.innerText = subscriptionPrice
+          ? `${getCurrencySymbol(activeCurrency)}${subscriptionPrice}`
+          : "";
+      });
+    };
+    const handleOnetimePlan = (variant) => {
+      // console.log(variant, "vartiant------");
+
+      selectedPlan = "";
+      cartClear();
+      sendOnetimeDataToCart(variant);
+      selectedEntries = variant;
+      let plan = otherPlans?.filter((itm) =>
+        itm?.name?.includes(`-entries-${selectedEntries}`),
+      )[0];
+      if (plan) {
+        setPriceAndEntries(plan);
+      }
+    };
+
+    if (allSellingPlans?.length == 1) {
+      if (allSellingPlans) {
+        // console.log("diksha00ooooo");
+        purchaseOption = "subscription-purchase";
+        sendPlanDataToCart(allSellingPlans[0]);
+      }
+    } else if (
+      productJson?.options?.includes("Entries") &&
+      allSellingPlans?.length == 0
+    ) {
+      // productJson?.variants?.map(vairant=>{
+      if (
+        productJson?.type.toLowerCase() == "bronze" ||
+        productJson?.type.toLowerCase() == "silver" ||
+        productJson?.type.toLowerCase() == "gold" ||
+        productJson?.type.toLowerCase() == "platinum"
+      ) {
+        oneTimeMembership = true;
+      }
+      let data = productJson?.variants[0];
+      let variant;
+      if (
+        data?.option1?.toLowerCase()?.includes("entry") ||
+        data?.option1?.toLowerCase()?.includes("entries")
+      ) {
+        variant = data?.option1?.split(" ")[0];
+      } else if (
+        data?.option2?.toLowerCase()?.includes("entry") ||
+        data?.option2?.toLowerCase()?.includes("entries")
+      ) {
+        variant = data?.option2?.split(" ")[0];
+      } else if (
+        data?.option3?.toLowerCase()?.includes("entry") ||
+        data?.option3?.toLowerCase()?.includes("entries")
+      ) {
+        variant = data?.option3?.split(" ")[0];
+      }
+
+      if (Number(variant) > 0) {
+        purchaseOption = "oneTime-purchase";
+        handleOnetimePlan(variant);
+      }
+      // })
+    } else {
+      if (allSellingPlans?.length > 1) {
+        commanData = JSON.parse(allSellingPlans[0]?.description);
+        console.log(commanData, "commandarataa");
+
+        function setCartProperties(finalEntries) {
+          // Keep original selection for plan match
+          let originalEntries = selectedEntries;
+          // console.log(finalEntries, selectedEntries, "entruuuuu");
+
+          // Check if multiplier exists and is greater than 1
+          let entriesForCart = finalEntries;
+          if (multiplier && multiplier > 1) {
+            entriesForCart = parseFloat(finalEntries) * parseFloat(multiplier);
+            selectedEntries = entriesForCart; // Update selectedEntries with multiplied value
+            // console.log(
+            //   "Entries multiplied by",
+            //   multiplier,
+            //   ":",
+            //   entriesForCart,
+            // );
+          }
+
+          subscriptionSelectedPlan = otherPlans?.find(
+            (itm) => itm?.name?.includes(`-entries-${originalEntries}`), // Use original entries for plan matching
+          );
+
+          if (purchaseOption === "oneTime-purchase") {
+            handleOnetimePlan(finalEntries);
           } else {
-            otherPlans?.push(item);
+            if (subscriptionSelectedPlan) {
+              handlePlanChange(subscriptionSelectedPlan, entriesForCart);
+            }
+          }
+        }
+        // ✅ Purchase type handler
+        function handlePurchaseType(event) {
+          purchaseOption = event.target.value;
+
+          let div = document.getElementsByClassName("additional-detail")[0];
+          if (div) {
+            if (purchaseOption === "oneTime-purchase") {
+              cartClear();
+              div.style.display = "none";
+            } else {
+              div.style.display = "block";
+              clearOnetimeProperties();
+            }
+          }
+          setCartProperties();
+        }
+
+        // ✅ Plan change
+
+        const handlePlanChange = (newPlan, entries) => {
+          if (newPlan) {
+            selectedPlan = newPlan;
+            selectedEntries = getEntries(selectedPlan?.description, entries);
+            // setTimeout(() => sendPlanDataToCart(selectedPlan), 1000);
+
+            sendPlanDataToCart(selectedPlan, entries);
+
+            setPriceAndEntries(selectedPlan);
+
+            updateEntries();
+          } else {
+            let hasActive = document.getElementsByClassName("active");
+            Array.from(hasActive).forEach((itm) => {
+              itm.classList.remove("active");
+            });
+            cartClear();
+          }
+        };
+        // console.log(allSellingPlans, "allplam");
+
+        // ✅ Update entries text in UI
+        const updateEntries = () => {
+          let span = document.getElementById("entry");
+
+          if (span) {
+            let finalEntries = Number(selectedEntries) || 0;
+
+            // Apply multiplier if available
+
+            span.innerText = `${finalEntries} ${
+              finalEntries > 1 ? "entries" : "entry"
+            }`;
+          }
+        };
+
+        // ✅ Listen for radio changes (works even if radios are loaded later)
+        document.addEventListener("change", (e) => {
+          if (e.target.matches('input[type="radio"][name="Entries"]')) {
+            selectedEntries = e.target.value.split(" ")[0];
+            // console.log("Entries changed:", selectedEntries);
+
+            setCartProperties(selectedEntries);
           }
         });
-        oneTimePlans?.length > 0
-          ? (selectedPlan = oneTimePlans[0])
-          : (selectedPlan = otherPlans[0]);
-        if (otherPlans?.length > 0 || oneTimePlans?.length > 0) {
-          showVariantPlans();
-        } else {
-          let subscriptionBlock = document.getElementById(
-            "subscription-app-block",
-          );
-          subscriptionBlock.innerHTML = "";
+        // ✅ Build widget
+        function showVariantPlans() {
+          if (
+            subscription_page_type === "product" &&
+            (otherPlans?.length > 0 || oneTimePlans?.length > 0)
+          ) {
+            let mainWidget = `
+        <div id="oneTime" class="oneTime purchase-optn-main">
+          <div class='other-options'>
+            <h5>Purchase options</h5>
+            <div id="options" class="options">
+              <div class='onetime-purchase'>
+                <input type="radio" id="onetime-purchase" value='oneTime-purchase' name="purchase-option" />
+                <label for="onetime-purchase">
+                  <div class='label'>One-time Purchase <span class='oneTimePrice'></span></div>
+                </label>
+              </div>
+              <div class='subscription-purchase'>
+                <input type="radio" id="subscription-purchase" value='subscription-purchase' name="purchase-option" />
+                <label for="subscription-purchase">
+                  <div class='label'>Subscribe and Save Purchase <span class='subscriptionPrice'></span></div>
+                </label>
+              </div>
+              <div class='additional-detail'>
+                <ul class='inner-detail'>
+                  <li><span id='entry'></span> into every giveaway.</li>
+                  <li>Secure your name into every giveaway.</li>
+                  <li>Never miss your opportunity.</li>
+                  <li>Cheapest and most effective way to win.</li>
+                  <li>Change pause and cancel any time.</li>
+                </ul>
+                <div class="delivery-freq">
+                  <h5>Delivery Frequency</h5>
+                  <div class="delivery-freq-inner">
+                    <p>Every 1 month</p>
+                    <span class='subscriptionPrice'></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+
+            let subscriptionBlock = document.getElementById(
+              "subscription-app-block",
+            );
+            subscriptionBlock.innerHTML = mainWidget;
+
+            // Event binding
+            const onetimeRadio = document.getElementById("onetime-purchase");
+            const subscriptionRadio = document.getElementById(
+              "subscription-purchase",
+            );
+
+            if (onetimeRadio) {
+              onetimeRadio.addEventListener("change", handlePurchaseType);
+              onetimeRadio.checked = true;
+            }
+            if (subscriptionRadio) {
+              subscriptionRadio.addEventListener("change", handlePurchaseType);
+            }
+
+            // Detect variant from URL or default
+            const urlParams = new URLSearchParams(window.location.search);
+            const variant = urlParams.get("variant");
+
+            if (variant) {
+              productJson?.variants?.forEach((item) => {
+                if (item?.id == variant) {
+                  selectedEntries = item?.option1.split(" ")[0];
+                }
+              });
+            } else {
+              selectedEntries = productJson?.variants[0]?.title?.split(" ")[0];
+            }
+
+            updateEntries();
+            setCartProperties();
+          }
         }
 
-        let quantityDiv = document.querySelectorAll(
-          ".product-form__input.product-form__quantity",
-        )[0];
-        if (quantityDiv) {
-          quantityDiv.style.display = "none";
-        }
-      };
+        // ✅ Show widget on load
+        function showWidget() {
+          allSellingPlans?.forEach((item) => {
+            // console.log(item, "item-------");
 
-      /***code for product page timer */
-      const showCountDown = () => {
-        const mediaGallery = document.querySelector("media-gallery");
+            let interval = item?.options[0]?.value?.split(" ")?.[0];
+            if (interval == "day") {
+              oneTimePlans?.push(item);
+            } else {
+              otherPlans?.push(item);
+            }
+          });
 
-        const today = new Date(new Date().setHours(0, 0, 0, 0));
-        const todayDate = today.getDate();
-        const offerValidity = new Date(offerDuration?.end);
-        const offerValidityDate = offerValidity.getDate();
+          oneTimePlans?.length > 0
+            ? (selectedPlan = oneTimePlans[0])
+            : (selectedPlan = otherPlans[0]);
 
-        const main = document.createElement("div");
-        main.className = "countdown-main-div";
-        // mediaGallery.appendChild(main); //hide counter
-        showWidget();
-
-        function updateCountdown() {
-          const now = new Date();
-          const timeDifference = offerValidity - now;
-          if (timeDifference > 0 || todayDate === offerValidityDate) {
-            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
-            const seconds = Math.floor((timeDifference / 1000) % 60);
-
-            content = `<div class="countdown">
-                        <div class='show-timer-div'>
-                            <div class='time'>
-                                <span>Days</span>
-                                <span>${days}</span>
-                            </div>
-                            <span>:</span>
-                           <div class='time'>
-                                <span>Hrs</span>
-                                <span>${hours}</span>
-                            </div>
-                            <span>:</span>
-                           <div class='time'>
-                                <span>Mins</span>
-                               <span>${minutes}</span>
-                            </div>
-                            <span>:</span>
-                           <div class='time'>
-                              <span>Secs</span>
-                              <span>${seconds}</span>
-                            </div>
-                       </div>
-                    </div>`;
-          } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+          if (otherPlans?.length > 0 || oneTimePlans?.length > 0) {
+            showVariantPlans();
+          } else {
             let subscriptionBlock = document.getElementById(
               "subscription-app-block",
             );
             subscriptionBlock.innerHTML = "";
-            content = `<div class="countdown">
-                                        <p>OFFER EXPIRED</p>
-                                    </div>`;
-            clearInterval(timer);
           }
-          main.innerHTML = content;
-        }
-        const timer = setInterval(updateCountdown, 1000);
-        updateCountdown();
-      };
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const ticketRadios = document.querySelectorAll(
-          'input[type="radio"][name="Entries"]',
-        );
-        ticketRadios.forEach((radio) => {
-          radio.addEventListener("click", () => {
-            selectedEntries = radio?.value?.split(" ")[0];
-            setCartProperties();
+          let quantityDiv = document.querySelector(
+            ".product-form__input.product-form__quantity",
+          );
+          if (quantityDiv) {
+            quantityDiv.style.display = "none";
+          }
+        }
+        // showWidget()
+
+        /***code for product page timer */
+        // const showCountDown = () => {
+        //   // const productImage = document.querySelectorAll('.product__media-wrapper')[0];
+        //   const mediaGallery = document.querySelector("media-gallery");
+        //   // productImage.style.position = 'relative';
+
+        //   const today = new Date(new Date().setHours(0, 0, 0, 0));
+        //   const todayDate = today.getDate();
+        //   const offerValidity = new Date(offerDuration?.end);
+        //   const offerValidityDate = offerValidity.getDate();
+
+        //   const main = document.createElement("div");
+        //   main.className = "countdown-main-div";
+        //   // mediaGallery.appendChild(main); //hide counter
+        //   showWidget();
+
+        //   function updateCountdown() {
+        //     const now = new Date();
+        //     const timeDifference = offerValidity - now;
+        //     if (timeDifference > 0 || todayDate === offerValidityDate) {
+        //       const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        //       const hours = Math.floor(
+        //         (timeDifference / (1000 * 60 * 60)) % 24,
+        //       );
+        //       const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+        //       const seconds = Math.floor((timeDifference / 1000) % 60);
+
+        //       content = `<div class="countdown">
+        //                   <div class='show-timer-div'>
+        //                       <div class='time'>
+        //                           <span>Days</span>
+        //                           <span>${days}</span>
+        //                       </div>
+        //                       <span>:</span>
+        //                     <div class='time'>
+        //                           <span>Hrs</span>
+        //                           <span>${hours}</span>
+        //                       </div>
+        //                       <span>:</span>
+        //                     <div class='time'>
+        //                           <span>Mins</span>
+        //                         <span>${minutes}</span>
+        //                       </div>
+        //                       <span>:</span>
+        //                     <div class='time'>
+        //                         <span>Secs</span>
+        //                         <span>${seconds}</span>
+        //                       </div>
+        //                 </div>
+        //               </div>`;
+        //     } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+        //       let subscriptionBlock = document.getElementById(
+        //         "subscription-app-block",
+        //       );
+        //       subscriptionBlock.innerHTML = "";
+        //       content = `<div class="countdown">
+        //                                   <p>OFFER EXPIRED</p>
+        //                               </div>`;
+        //       clearInterval(timer);
+        //     }
+        //     main.innerHTML = content;
+        //     // clearInterval(timer);
+        //   }
+        //   const timer = setInterval(updateCountdown, 1000);
+        //   updateCountdown();
+        // };
+        function toPST(dateInput) {
+          const date = new Date(dateInput);
+
+          const parts = Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Los_Angeles",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }).formatToParts(date);
+
+          const data = {};
+          parts.forEach((part) => {
+            data[part.type] = part.value;
+          });
+          return new Date(
+            `${data.year}-${data.month}-${data.day}T${data.hour}:${data.minute}:${data.second}`,
+          );
+        }
+
+        function getPSTNow() {
+          const parts = Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Los_Angeles",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }).formatToParts(new Date());
+          const data = {};
+          parts.forEach((part) => {
+            data[part.type] = part.value;
+          });
+          console.log(data, "data------");
+
+          const pstString = `${data.year}-${data.month}-${data.day}T${data.hour}:${data.minute}:${data.second}`;
+          return new Date(pstString);
+        }
+
+        // Utility to get today's California date at midnight
+        function getPSTMidnight() {
+          const pstNow = getPSTNow();
+          pstNow.setHours(0, 0, 0, 0);
+          return pstNow;
+        }
+
+        const showCountDown = () => {
+          // const productImage = document.querySelectorAll('.product__media-wrapper')[0];
+          const mediaGallery = document.querySelector("media-gallery");
+          // productImage.style.position = 'relative';
+
+          // Utility to get current California time as a Date object
+          console.log("heloowww========");
+
+          // function getPSTNow() {
+          //   const parts = Intl.DateTimeFormat("en-US", {
+          //     timeZone: "America/Los_Angeles",
+          //     year: "numeric",
+          //     month: "2-digit",
+          //     day: "2-digit",
+          //     hour: "2-digit",
+          //     minute: "2-digit",
+          //     second: "2-digit",
+          //     hour12: false,
+          //   }).formatToParts(new Date());
+          //   const data = {};
+          //   parts.forEach((part) => {
+          //     data[part.type] = part.value;
+          //   });
+          //   console.log(data, "data------");
+
+          //   const pstString = `${data.year}-${data.month}-${data.day}T${data.hour}:${data.minute}:${data.second}`;
+          //   return new Date(pstString);
+          // }
+
+          // // Utility to get today's California date at midnight
+          // function getPSTMidnight() {
+          //   const pstNow = getPSTNow();
+          //   pstNow.setHours(0, 0, 0, 0);
+          //   return pstNow;
+          // }
+
+          // Make sure offerDuration.end is a UTC ISO string (e.g., '2025-09-05T23:59:59Z')
+          const offerEndUTC = offerDuration?.end;
+          const offerValidity = new Date(offerEndUTC);
+
+          const today = getPSTMidnight();
+
+          const todayDate = today.getDate();
+          const offerValidityDate = offerValidity.getDate();
+
+          const main = document.createElement("div");
+          main.className = "countdown-main-div";
+          mediaGallery.appendChild(main); //hide counter
+          showWidget();
+
+          function updateCountdown() {
+            const now = getPSTNow(); // always California time!
+
+            const timeDifference = offerValidity - now;
+            console.log(timeDifference, "timeDifference--------");
+
+            let content = "";
+
+            if (timeDifference > 0 || todayDate === offerValidityDate) {
+              const totalSeconds = Math.floor(timeDifference / 1000);
+              const days = Math.floor(totalSeconds / (24 * 3600));
+              const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+              const minutes = Math.floor((totalSeconds % 3600) / 60);
+              const seconds = totalSeconds % 60;
+              console.log(days, hours, minutes, seconds, "skwsjwksjwsw");
+
+              content = `<div class="countdown">
+                  <div class='show-timer-div'>
+                      <div class='time'>
+                          <span>Days</span>
+                          <span>${days}</span>
+                      </div>
+                      <span>:</span>
+                    <div class='time'>
+                          <span>Hrs</span>
+                          <span>${hours}</span>
+                      </div>
+                      <span>:</span>
+                    <div class='time'>
+                          <span>Mins</span>
+                        <span>${minutes}</span>
+                      </div>
+                      <span>:</span>
+                    <div class='time'>
+                        <span>Secs</span>
+                        <span>${seconds}</span>
+                      </div>
+                </div>
+              </div>`;
+            } else if (todayDate > offerValidityDate || timeDifference <= 0) {
+              let subscriptionBlock = document.getElementById(
+                "subscription-app-block",
+              );
+              if (subscriptionBlock) subscriptionBlock.innerHTML = "";
+              content = `<div class="countdown">
+                            <p>OFFER EXPIRED</p>
+                        </div>`;
+              clearInterval(timer);
+            }
+            main.innerHTML = content;
+            console.log(content, "contenet---------", main);
+          }
+
+          const timer = setInterval(updateCountdown, 1000);
+          updateCountdown();
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+          const ticketRadios = document.querySelectorAll(
+            'input[type="radio"][name="Entries"]',
+          );
+          ticketRadios.forEach((radio) => {
+            radio.addEventListener("click", () => {
+              selectedEntries = radio?.value?.split(" ")[0];
+              setCartProperties();
+            });
           });
         });
-      });
 
-      if (commanData?.raffleType == "time-limit") {
-        const date = commanData?.dateRange;
-        const startIST = toIST(date.start);
-        let endIST = toIST(date.end);
-        endIST.setHours(23, 59, 59, 999);
+        if (commanData?.raffleType == "time-limit") {
+          const date = commanData?.dateRange;
+          const startPST = toPST(date.start);
+          let endPST = toPST(date.end);
 
-        let dateRange = { start: startIST, end: endIST };
+          // Set end time to 23:59:59.999 in California time
+          endPST.setHours(23, 59, 59, 999);
 
-        offerDuration = dateRange;
-        const now = new Date();
-        const timeDifferenceToStart = new Date(startIST) - now;
+          let dateRange = { start: startPST, end: endPST };
 
-        if (timeDifferenceToStart < 0) {
-          showCountDown();
+          offerDuration = dateRange;
+
+          const now = new Date();
+          const timeDifferenceToStart = startPST - now;
+
+          if (timeDifferenceToStart < 0) {
+            showCountDown();
+          }
+        } else {
+          // console.log("no counter");
         }
-      } else {
-        // console.log("no counter");
       }
     }
-  }
+  });
 }
 
 function getProductIdFromModal() {
@@ -1193,7 +1399,10 @@ if (
   subscription_page_type == "collection" ||
   subscription_page_type == "page"
 ) {
+  // console.log("Welcome----------");
+
   (async function () {
+    // console.log("Welcome111----------");
     // Your existing product page logic
     if (subscription_page_type == "product") {
       await getMultiplierData(productJson?.id);
@@ -1207,13 +1416,15 @@ if (
     }
 
     // NEW: Modal detection and handling for index page
-
+    document.addEventListener("DOMContentLoaded", () => {
+      loadAllProductData();
+    });
     if (
       subscription_page_type == "index" ||
       subscription_page_type == "collection" ||
       subscription_page_type == "page"
     ) {
-      // console.log("helloo======");
+      // console.log("Welcome13333----------");
 
       setupAddToCartListener();
       setupModalDetection();
@@ -1541,7 +1752,6 @@ async function extractProductIdFromModal(modal, clickedElement = null) {
   // console.log("Final extracted product ID:", productId);
   return productId;
 }
-
 const extractEntriesFromProduct = (data) => {
   const variants = data?.variants?.edges || [];
   const options = data?.options || [];
@@ -1549,28 +1759,25 @@ const extractEntriesFromProduct = (data) => {
   const hasEntriesOption = options.some(
     (opt) => opt?.name?.toLowerCase() === "entries",
   );
-  // console.log(hasEntriesOption, "hasEntriesOption----->");
 
   if (!hasEntriesOption || variants.length === 0) return;
 
-  // Look for first variant that includes "Entries"
+  // Look for first variant that includes "entry" or "entries"
   for (const edge of variants) {
     const selectedOptions = edge?.node?.selectedOptions || [];
 
     for (const opt of selectedOptions) {
       const value = opt?.value?.toLowerCase?.();
 
-      if (value?.includes("entries")) {
+      // Match both "entry" and "entries"
+      if ((value && value.includes("entry")) || value.includes("entries")) {
         const match = value.match(/\d+/);
-        // console.log(match, "selectedOptions=====>");
         if (match) {
           const entries = Number(match[0]);
-          // console.log(entries, "entries=======>");
 
+          // ✅ Allow even "1 entry"
           if (entries > 0) {
-            // ✅ Found valid entry value
-
-            return entries; // optionally return
+            return entries;
           }
         }
       }
@@ -1636,8 +1843,8 @@ function addModalMultiplierBadge(modal, multiplier) {
     const leftDiv = document.createElement("div");
     leftDiv.className = "bonus-badge-left";
     leftDiv.innerText = `${val} ENTRIES`;
-    leftDiv.style.background = "#000";
-    leftDiv.style.color = "#fff";
+    leftDiv.style.background = "#fff";
+    leftDiv.style.color = "#000";
     leftDiv.style.padding = "15px 22px";
     leftDiv.style.borderTopRightRadius = "50px";
     leftDiv.style.borderBottomRightRadius = "50px";
@@ -1754,7 +1961,6 @@ function setupAddToCartListener() {
 // Process individual product
 async function processProduct(productId) {
   try {
-    // Get the card element
     const cardElement = document.querySelector(
       `.card__content[data-id="${productId}"]`,
     );
@@ -1763,18 +1969,19 @@ async function processProduct(productId) {
       return;
     }
 
-    // Show loading state
+    // Step 1: Get multiplier data first
+    const multiplierData = await getMultiplierData(productId);
+    // console.log(!multiplierData && multiplierData <= 1);
+    // ✅ Only show loading state now that we know we need it
     showLoadingState(cardElement);
 
-    // Step 1: Get multiplier data
-    const multiplierData = await getMultiplierData(productId);
     // Step 2: Get product data
     const productData = await getProductData(productId);
 
-    // Step 3: Extract entries from product data
+    // Step 3: Extract entries
     const entries = extractEntriesFromProduct(productData);
 
-    // Step 4: Display the information above buttons
+    // Step 4: Display the information
     displayProductInfo(cardElement, multiplierData, entries);
   } catch (error) {
     console.error(`Error processing product ${productId}:`, error);
@@ -1866,10 +2073,11 @@ function displayProductInfo(cardElement, multiplierData, entries) {
 
   // Left side (entries)
   const leftDiv = document.createElement("div");
-  leftDiv.innerText = `${val} ENTRIES`;
-  leftDiv.style.background = "#000";
-  leftDiv.style.color = "#fff";
+  leftDiv.innerText = val === 1 ? `${val} ENTRY` : `${val} ENTRIES`;
+  leftDiv.style.background = "#fff";
+  leftDiv.style.color = "#000000ff";
   leftDiv.style.padding = "10px 32px";
+
   leftDiv.style.borderTopRightRadius = "50px";
   leftDiv.style.borderBottomRightRadius = "50px";
   leftDiv.style.position = "relative";
@@ -1895,18 +2103,58 @@ function displayProductInfo(cardElement, multiplierData, entries) {
     rightDiv.style.borderBottomLeftRadius = "0";
     badge.appendChild(rightDiv);
 
-    // Add flash animation keyframes only once
+    // Add flash animation + mobile styles only once
     if (!document.querySelector("#flash-animation-style")) {
       const style = document.createElement("style");
       style.id = "flash-animation-style";
       style.innerHTML = `
-        @keyframes blink {
-          0% { opacity: .2 }
-          15% { opacity: 1 }
-          85% { opacity: 1 }
-          to { opacity: .2 }
-        }
-      `;
+          @keyframes blink {
+            0% { opacity: .2 }
+            15% { opacity: 1 }
+            85% { opacity: 1 }
+            to { opacity: .2 }
+          }
+
+          /* Mobile-friendly badge styles */
+      @media (max-width: 1280px) {
+  .multiplier-badge-wrapper {
+      margin-bottom: 1.9rem !important;
+  }
+  .multiplier-badge-wrapper div {
+      padding: 0 !important;
+      width: 150px;
+      height: 42.39px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .multiplier-badge-wrapper div:last-child {
+      margin-left: -15px !important;
+      width: 70px;
+      height: 42.39px;
+  }
+  }
+
+  @media (max-width: 550px) {
+
+  .multiplier-badge-wrapper div {
+      padding: 0 !important;
+      width: 115px;
+      height: 42.39px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .multiplier-badge-wrapper div:last-child {
+      margin-left: -15px !important;
+      width: 60px;
+      height: 42.39px;
+  }
+      }
+
+
+
+        `;
       document.head.appendChild(style);
     }
   }
@@ -1927,20 +2175,20 @@ function showGlobalLoader() {
   const loader = document.createElement("div");
   loader.id = "global-loader";
   loader.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    font-size: 18px;
-    color: white;
-    font-weight: bold;
-  `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-size: 18px;
+      color: white;
+      font-weight: bold;
+    `;
   loader.innerHTML = "Loading...";
   document.body.appendChild(loader);
 }
@@ -1952,22 +2200,17 @@ function hideGlobalLoader() {
     loader.remove();
   }
 }
-console.log("fsfs");
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("fdfd");
-  loadAllProductData();
-});
+
 // Load all product data
-function loadAllProductData() {
-  console.log("fdsfddfdf");
+async function loadAllProductData() {
   try {
-    showGlobalLoader();
+    // showGlobalLoader();
 
     const productCards = document.querySelectorAll(".card__content[data-id]");
     const productIds = Array.from(productCards).map((card) => card.dataset.id);
 
     for (const productId of productIds) {
-      processProduct(productId);
+      await processProduct(productId);
     }
   } catch (error) {
     console.error("Error loading product data:", error);

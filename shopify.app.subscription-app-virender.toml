@@ -3,7 +3,7 @@
 client_id = "16e39ea5c00ce8b931f0d050ca32e836"
 name = "subscription-app-virender"
 handle = "subscription-app-virender"
-application_url = "https://has-convicted-the-cameron.trycloudflare.com"
+application_url = "https://equipped-plug-transcription-panels.trycloudflare.com"
 embedded = true
 
 [webhooks]
@@ -19,13 +19,13 @@ scopes = "read_customers,read_orders,read_products,write_orders,write_own_subscr
 
 [auth]
 redirect_urls = [
-  "https://has-convicted-the-cameron.trycloudflare.com/auth/callback",
-  "https://has-convicted-the-cameron.trycloudflare.com/auth/shopify/callback",
-  "https://has-convicted-the-cameron.trycloudflare.com/api/auth/callback"
+  "https://equipped-plug-transcription-panels.trycloudflare.com/auth/callback",
+  "https://equipped-plug-transcription-panels.trycloudflare.com/auth/shopify/callback",
+  "https://equipped-plug-transcription-panels.trycloudflare.com/api/auth/callback"
 ]
 
 [app_proxy]
-url = "https://has-convicted-the-cameron.trycloudflare.com/api/subscription"
+url = "https://equipped-plug-transcription-panels.trycloudflare.com/api/subscription"
 subpath = "subscription"
 prefix = "apps"
 

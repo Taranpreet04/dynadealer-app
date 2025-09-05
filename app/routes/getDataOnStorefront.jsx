@@ -1,6 +1,5 @@
 import { getMultiplierData } from "../controllers/planController";
 
-
 const headers = {
   "Access-Control-Allow-Credentials": "true",
   "Content-Type": "application/json",

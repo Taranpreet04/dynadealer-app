@@ -2,6 +2,8 @@ import { sendOrderEmail } from "../db.mailcontroller";
 import {
   getCustomerDataByContractId,
   getLiveRaffle,
+  getMultiplierData,
+  getProductMultiplier,
 } from "../controllers/planController";
 import {
   credentialModel,
@@ -39,6 +41,8 @@ export const action = async ({ request }) => {
 
     case "SUBSCRIPTION_CONTRACTS_CREATE":
       try {
+        console.log(payload, "payload:========");
+
         const contractId = payload?.id;
         const orderId = payload?.origin_order_id;
         const customerId = payload?.customer_id;
@@ -50,6 +54,7 @@ export const action = async ({ request }) => {
         const actualAddress =
           cusRes?.data?.customer?.addresses[addressLength - 1];
         let products = [];
+
         let planName = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanName;
         let planId = cusRes?.data?.lines?.edges[0]?.node?.sellingPlanId;
 
@@ -63,15 +68,33 @@ export const action = async ({ request }) => {
           };
           products.push(detail);
         });
+        let productId =
+          cusRes?.data?.lines?.edges?.[0]?.node?.productId || null;
+
+        const multiplierData = await getMultiplierData(shop);
+
+        // ✅ Extract base entries from planName
+        let totalEntries = Number(planName.split("-entries-")[1]) || 0;
+
+        if (multiplierData) {
+          const multiplier = await getProductMultiplier(
+            multiplierData.data,
+            productId,
+          );
+
+          totalEntries = totalEntries * multiplier; // ✅ update instead of re-declaring
+        }
+
         let drawIds = [];
-        for (let i = 0; i < Number(planName.split("-entries-")[1]); i++) {
-          // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+
+        for (let i = 0; i < totalEntries; i++) {
           let unique = (
             Date.now().toString(36).substring(0, 4) +
             Math.random().toString(36).substring(2, 5)
           )
             .toUpperCase()
             .substring(0, 7);
+
           drawIds.push(unique);
         }
         let planDetails = await planDetailsModel?.findOne({
@@ -363,6 +386,7 @@ export const action = async ({ request }) => {
                   interval: "onetime",
                   interval_count: 1,
                   min_cycles: 1,
+                  l,
                 },
                 entries: entries,
                 planUpdateDetail: {

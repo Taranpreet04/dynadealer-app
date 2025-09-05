@@ -70,12 +70,10 @@ export async function recurringOrderCron() {
             })
             .sort({ createdAt: -1 });
 
-       
           if (recentDocument[0]?.planUpdateDetail?.sellingPlanUpdate) {
             entries =
               Number(recentDocument[0]?.planUpdateDetail?.futureEntries) * 1;
           }
-       
 
           for (let i = 0; i < entries; i++) {
             // let unique = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -87,7 +85,7 @@ export async function recurringOrderCron() {
               .substring(0, 7);
             drawIds.push(unique);
           }
-      
+
           let saveToBillingAttempt = await billingModel.create({
             shop: data[i].shop,
             status: "PENDING",
@@ -142,8 +140,10 @@ export async function recurringOrderCron() {
                     available:
                       Number(data[i].ticketDetails?.available) +
                       Number(drawIds?.length),
-                    availableTicketsList:
-                      [...data[i].ticketDetails?.availableTicketsList, ...drawIds],
+                    availableTicketsList: [
+                      ...data[i].ticketDetails?.availableTicketsList,
+                      ...drawIds,
+                    ],
                     appliedForDetail: data[i].ticketDetails?.appliedForDetail,
                   },
                   drawIds: allDrawIds,
