@@ -8,11 +8,6 @@ import {
   subscriptionContractModel,
   templateModel,
 } from "../schema";
-<<<<<<< HEAD
-=======
-import fs from "fs";
-import path from "path";
->>>>>>> fce7afbcf62021fefc19d18303a056487c54e40e
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
@@ -657,29 +652,6 @@ export const getSubscriptions = async (
     const { shop } = admin.rest.session;
     let skip = 0;
     let limitN = 50;
-<<<<<<< HEAD
-    page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
-    let total_data = 0;
-    let details = [];
-    if (search == "") {
-      details = await subscriptionContractModel
-        .find({ shop })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limitN);
-      total_data = await subscriptionContractModel
-        .find({ shop })
-        .countDocuments();
-    } else {
-      details = await subscriptionContractModel
-        .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limitN);
-      total_data = await subscriptionContractModel
-        .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
-        .countDocuments();
-=======
     let total_data = 0;
     let details = [];
 
@@ -731,7 +703,6 @@ export const getSubscriptions = async (
           .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
           .countDocuments();
       }
->>>>>>> fce7afbcf62021fefc19d18303a056487c54e40e
     }
 
     return {
