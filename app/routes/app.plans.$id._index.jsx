@@ -35,6 +35,7 @@ import {
   InlineStack,
   Popover,
   ActionList,
+  ButtonGroup,
 } from "@shopify/polaris";
 import planStyles from "../styles/planCreate.css?url";
 import TableSkeleton from "../components/tableSkeleton";
@@ -57,6 +58,7 @@ export const action = async ({ params, request }) => {
   const { admin } = await authenticate.admin(request);
   const { shop } = admin.rest.session;
   const formData = await request.formData();
+
   const updatePlans = JSON.parse(formData.get("updatePlans"));
   const deletePlans = JSON.parse(formData.get("deletePlans"));
   const dbProducts = JSON.parse(formData.get("dbProducts"));
@@ -74,6 +76,7 @@ export const action = async ({ params, request }) => {
     showOnPortal: formData.get("showOnPortal"),
     spots: formData.get("spots") || 1,
     products: JSON.parse(formData.get("products")),
+    subProducts: JSON.parse(formData.get("subProducts")),
     plans: JSON.parse(formData.get("plans")),
     offerValidity: offerValidity,
   };
@@ -102,7 +105,6 @@ export const action = async ({ params, request }) => {
         );
       }
     }
-
     return json(planDetails);
   } catch (error) {
     console.error("Error creating plan details:", error);
@@ -139,6 +141,10 @@ export default function CreateUpdatePlan() {
     price: "",
     exclusiveDraw: false,
   });
+
+  const [selectedMainProductIds, setSelectedMainProductIds] = useState([]);
+  const [selectedSubProductIds, setSelectedSubProductIds] = useState([]);
+
   const today = new Date(new Date().setHours(0, 0, 0, 0));
   const resetToMidnight = (date) => {
     const newDate = new Date(date);
@@ -154,12 +160,14 @@ export default function CreateUpdatePlan() {
     spots: 1,
     plans: [],
     products: [],
+    subProducts: [],
     showOnPortal: false,
   });
   const [originalData, setOriginalData] = useState({
     name: "",
     plans: [],
     products: [],
+    subProducts: [],
   });
 
   useEffect(() => {
@@ -177,6 +185,12 @@ export default function CreateUpdatePlan() {
       setPlanDetail({ ...loaderData, offerValidity: dates });
       setOriginalData({ ...loaderData, offerValidity: dates });
       setDbProducts([...loaderData?.products]);
+
+      setSelectedMainProductIds([{ id: loaderData?.products[0]?.product_id }]);
+
+      setSelectedSubProductIds(
+        loaderData?.subProducts?.map((product) => ({ id: product.id })),
+      );
     } else {
       setPlanDetail({
         ...planDetail,
@@ -192,12 +206,18 @@ export default function CreateUpdatePlan() {
   }, [loaderData]);
 
   const handleSavePlan = () => {
+    console.log("=======handleSavePlan======");
+
+    console.log("planDetail ==>>", planDetail);
+
     let oneTimePlanExist = false;
+
     planDetail?.plans?.map((plan) => {
       if (plan?.purchaseType == "day") {
         oneTimePlanExist = true;
       }
     });
+
     if (planDetail?.name.trim() == "") {
       shopify.toast.show("Name is required.", { duration: 5000 });
     } else if (planDetail?.plans?.length <= 0) {
@@ -216,22 +236,27 @@ export default function CreateUpdatePlan() {
     } else {
       let newPlans = [];
       let updatePlans = [];
+
       planDetail?.plans?.map((item) => {
         item?.plan_id ? updatePlans?.push(item) : newPlans?.push(item);
       });
+
       if (JSON.stringify(originalData) !== JSON.stringify(planDetail)) {
         let formData = {
           ...planDetail,
           plans: JSON.stringify(planDetail?.plans),
           products: JSON.stringify(planDetail?.products),
+          subProducts: JSON.stringify(planDetail?.subProducts),
           newPlans: JSON.stringify(newPlans),
           updatePlans: JSON.stringify(updatePlans),
           deletePlans: JSON.stringify(deletePlans),
           dbProducts: JSON.stringify(dbProducts),
           offerValidity: JSON.stringify(planDetail?.offerValidity),
         };
+
         shopify.loading(true);
         setBtnLoader(true);
+
         submit(formData, {
           method: "post",
         });
@@ -488,6 +513,140 @@ export default function CreateUpdatePlan() {
     navigate("/app/plans");
   };
 
+  const openProductPicker = async (type) => {
+    console.log("selectedSubProductIds", selectedSubProductIds);
+
+    const isMainSelection =
+      type === "mainProduct" || selectedMainProductIds.length === 0;
+
+    const preSelectedIds = isMainSelection
+      ? selectedMainProductIds
+      : selectedSubProductIds;
+
+    const allowMultiple = isMainSelection ? false : 3;
+
+    try {
+      const result = await shopify.resourcePicker({
+        type: "product",
+        filter: {
+          draft: false,
+          variants: false,
+        },
+        multiple: allowMultiple,
+        selectionIds: preSelectedIds,
+      });
+
+      if (!result?.length) return;
+
+      /* =======================
+       🔹 MAIN PRODUCT
+    ======================= */
+      if (isMainSelection) {
+        const product = result[0];
+
+        const variants = product.variants.map((variant) => ({
+          id: variant.id,
+          title: variant.title,
+          image: variant?.image?.originalSrc || "",
+          price: variant.price,
+        }));
+
+        // product_id: p_id,
+        // handle: item.handle,
+        // product_name: item.title,
+        // product_image:
+        //   item?.images.length > 0 ? item.images[0].originalSrc : "",
+        // hasOnlyDefaultVariant: item.hasOnlyDefaultVariant,
+        // variants: variants,
+        // subscription_type: "inactive",
+
+        setPlanDetail((prev) => ({
+          ...prev,
+          products: [
+            {
+              product_id: product.id,
+              handle: product.handle,
+              product_name: product.title,
+              product_image: product.images?.[0]?.originalSrc || "",
+              variants,
+              hasOnlyDefaultVariant: product.hasOnlyDefaultVariant,
+              subscription_type: "inactive",
+            },
+          ],
+        }));
+
+        setSelectedMainProductIds([{ id: product.id }]);
+      } else {
+        /* =======================
+       🔹 SUB PRODUCTS
+    ======================= */
+        const mainProductId = selectedMainProductIds?.[0]?.id;
+
+        // ❌ Remove main product from sub selection
+        const filteredProducts = result.filter(
+          (product) => product.id !== mainProductId,
+        );
+
+        if (filteredProducts.length !== result.length) {
+          shopify.toast.show("Main product cannot be added as a sub product", {
+            duration: 3000,
+            isError: true,
+          });
+        }
+
+        const limitedProducts = filteredProducts.slice(0, 3);
+
+        const subProductsPayload = limitedProducts.map((product) => ({
+          id: product.id,
+          title: product.title,
+          handle: product.handle,
+          image: product.images?.[0]?.originalSrc || "",
+          variants: product.variants.map((variant) => ({
+            id: variant.id,
+            title: variant.title,
+            image: variant?.image?.originalSrc || "",
+            price: variant.price,
+          })),
+        }));
+
+        setPlanDetail((prev) => ({
+          ...prev,
+          subProducts: subProductsPayload,
+        }));
+
+        setSelectedSubProductIds(
+          limitedProducts.map((product) => ({ id: product.id })),
+        );
+      }
+    } catch (error) {
+      console.error("Resource Picker Error:", error);
+    }
+  };
+
+  const handleDeleteMainProduct = () => {
+    setPlanDetail((prev) => ({
+      ...prev,
+      products: [],
+      subProducts: [],
+    }));
+
+    setSelectedMainProductIds([]);
+    setSelectedSubProductIds([]);
+  };
+
+  const handleDeleteSubProduct = (v, id) => {
+    console.log(v, id);
+
+    setPlanDetail((prev) => ({
+      ...prev,
+      subProducts: prev?.subProducts.filter((item) => item.id !== id),
+    }));
+
+    setSelectedSubProductIds((prev) =>
+      prev?.filter((itemId) => itemId?.id !== id),
+    );
+  };
+
   return (
     <>
       {tableSkel ? (
@@ -495,428 +654,483 @@ export default function CreateUpdatePlan() {
       ) : contentSkel ? (
         <ContentSkeleton />
       ) : (
-        <Page
-          backAction={{ content: "", onAction: handleBack }}
-          title={id == "create" ? "Create raffle" : "Update raffle"}
-          primaryAction={
-            <Button loading={btnLoader} onClick={handleSavePlan}>
-              {id == "create" ? "Save raffle" : "Update raffle"}
-            </Button>
-          }
-        >
-          <Grid>
-            <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
-              <BlockStack gap="300">
-                <Card>
-                  <BlockStack gap="200">
-                    <TextField
-                      label="Name"
-                      value={planDetail?.name}
-                      onChange={(value) => handleChange(value, "name")}
-                      autoComplete="off"
-                    />
-
-                    <Checkbox
-                      label="Want to update plan after one month ?"
-                      checked={planDetail?.sellingPlanUpdate}
-                      onChange={(value) =>
-                        handleChange(value, "sellingPlanUpdate")
-                      }
-                    />
-                  </BlockStack>
-                  {planDetail?.sellingPlanUpdate && (
-                    <Box>
-                      <InlineStack align="space-between">
-                        <Select
-                          label="Upgrade to"
-                          options={upgradeOptions}
-                          value={planDetail?.upgradeTo || "bronze"}
-                          onChange={(value) => handleChange(value, "upgradeTo")}
-                        />
-                        <TextField
-                          label="Future entries would be?"
-                          type="number"
-                          value={planDetail?.futureEntries || 5}
-                          onChange={(value) =>
-                            handleChange(value, "futureEntries")
-                          }
-                          autoComplete="off"
-                        />
-                      </InlineStack>
-                    </Box>
-                  )}
-                </Card>
-                <Card>
-                  <Grid>
-                    <Grid.Cell
-                      columnSpan={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}
-                      style={{ display: "flex", alignItems: "flex-end" }}
-                    >
-                      <ChoiceList
-                        title="Is this a capped giveaway or time-limt giveaway ?"
-                        choices={[
-                          { label: "Capped", value: "capped" },
-                          { label: "Time-limit", value: "time-limit" },
-                        ]}
-                        selected={planDetail?.raffleType || "capped"}
-                        onChange={(value) => handleChange(value, "raffleType")}
+        <Box paddingBlockEnd={500}>
+          <Page
+            backAction={{ content: "", onAction: handleBack }}
+            title={id == "create" ? "Create raffle" : "Update raffle"}
+            primaryAction={
+              <Button loading={btnLoader} onClick={handleSavePlan}>
+                {id == "create" ? "Save raffle" : "Update raffle"}
+              </Button>
+            }
+          >
+            <Grid>
+              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
+                <BlockStack gap="300">
+                  <Card>
+                    <BlockStack gap="200">
+                      <TextField
+                        label="Name"
+                        value={planDetail?.name}
+                        onChange={(value) => handleChange(value, "name")}
+                        autoComplete="off"
                       />
-                    </Grid.Cell>
-                    {planDetail?.raffleType == "time-limit" ? (
-                      <>
-                        <Grid.Cell
-                          columnSpan={{ xs: 6, sm: 6, md: 4, lg: 4, xl: 4 }}
-                          style={{ display: "flex", alignItems: "flex-end" }}
-                        >
-                          <Text as="h2" variant="headingSm">
-                            Select Time Period
-                          </Text>
-                        </Grid.Cell>
 
-                        <Grid.Cell
-                          columnSpan={{ xs: 6, sm: 6, md: 8, lg: 8, xl: 8 }}
-                          style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          {planDetail?.offerValidity && (
-                            <DateRangePicker
-                              setPlanDetail={setPlanDetail}
-                              planDetail={planDetail}
+                      <Checkbox
+                        label="Want to update plan after one month ?"
+                        checked={planDetail?.sellingPlanUpdate}
+                        onChange={(value) =>
+                          handleChange(value, "sellingPlanUpdate")
+                        }
+                      />
+                    </BlockStack>
+                    {planDetail?.sellingPlanUpdate && (
+                      <Box>
+                        <InlineStack align="space-between">
+                          <Select
+                            label="Upgrade to"
+                            options={upgradeOptions}
+                            value={planDetail?.upgradeTo || "bronze"}
+                            onChange={(value) =>
+                              handleChange(value, "upgradeTo")
+                            }
+                          />
+                          <TextField
+                            label="Future entries would be?"
+                            type="number"
+                            value={planDetail?.futureEntries || 5}
+                            onChange={(value) =>
+                              handleChange(value, "futureEntries")
+                            }
+                            autoComplete="off"
+                          />
+                        </InlineStack>
+                      </Box>
+                    )}
+                  </Card>
+                  <Card>
+                    <Grid>
+                      <Grid.Cell
+                        columnSpan={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}
+                        style={{ display: "flex", alignItems: "flex-end" }}
+                      >
+                        <ChoiceList
+                          title="Is this a capped giveaway or time-limt giveaway ?"
+                          choices={[
+                            { label: "Capped", value: "capped" },
+                            { label: "Time-limit", value: "time-limit" },
+                          ]}
+                          selected={planDetail?.raffleType || "capped"}
+                          onChange={(value) =>
+                            handleChange(value, "raffleType")
+                          }
+                        />
+                      </Grid.Cell>
+                      {planDetail?.raffleType == "time-limit" ? (
+                        <>
+                          <Grid.Cell
+                            columnSpan={{ xs: 6, sm: 6, md: 4, lg: 4, xl: 4 }}
+                            style={{ display: "flex", alignItems: "flex-end" }}
+                          >
+                            <Text as="h2" variant="headingSm">
+                              Select Time Period
+                            </Text>
+                          </Grid.Cell>
+
+                          <Grid.Cell
+                            columnSpan={{ xs: 6, sm: 6, md: 8, lg: 8, xl: 8 }}
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            {planDetail?.offerValidity && (
+                              <DateRangePicker
+                                setPlanDetail={setPlanDetail}
+                                planDetail={planDetail}
+                              />
+                            )}
+                          </Grid.Cell>
+                        </>
+                      ) : (
+                        <>
+                          {" "}
+                          <Grid.Cell
+                            columnSpan={{ xs: 9, sm: 9, md: 9, lg: 9, xl: 9 }}
+                            style={{ display: "flex", alignItems: "flex-end" }}
+                          >
+                            <Text as="h2" variant="headingSm">
+                              How much spots per person can have?
+                            </Text>
+                          </Grid.Cell>
+                          <Grid.Cell
+                            columnSpan={{ xs: 3, sm: 3, md: 3, lg: 3, xl: 3 }}
+                          >
+                            <TextField
+                              label="How much spots per person can have?"
+                              type="number"
+                              labelHidden
+                              value={planDetail?.spots || 1}
+                              onChange={(value) => handleChange(value, "spots")}
+                              autoComplete="off"
+                              align="right"
                             />
-                          )}
-                        </Grid.Cell>
-                      </>
-                    ) : (
-                      <>
-                        {" "}
-                        <Grid.Cell
-                          columnSpan={{ xs: 9, sm: 9, md: 9, lg: 9, xl: 9 }}
-                          style={{ display: "flex", alignItems: "flex-end" }}
+                          </Grid.Cell>
+                          <Grid.Cell
+                            columnSpan={{
+                              xs: 12,
+                              sm: 12,
+                              md: 12,
+                              lg: 12,
+                              xl: 12,
+                            }}
+                            style={{ display: "flex", alignItems: "flex-end" }}
+                          >
+                            <Text as="h2" variant="headingSm">
+                              Note: Manage your spots through inventory and
+                              update it accordingly. Ignore if already managed.
+                            </Text>
+                          </Grid.Cell>
+                        </>
+                      )}
+                    </Grid>
+                  </Card>
+                  <Card>
+                    <BlockStack gap={400}>
+                      <Box>
+                        <InlineStack
+                          align="space-between"
+                          blockAlign="baseline"
                         >
-                          <Text as="h2" variant="headingSm">
-                            How much spots per person can have?
+                          <Text as="h2" variant="headingMd">
+                            Products
                           </Text>
-                        </Grid.Cell>
+                          {(planDetail?.products?.length === 0 ||
+                            (planDetail?.products?.length > 0 &&
+                              planDetail?.subProducts?.length < 3)) && (
+                            <Button onClick={openProductPicker}>
+                              {planDetail?.products?.length === 0
+                                ? "Add Product"
+                                : "Add Sub Product"}
+                            </Button>
+                          )}
+                        </InlineStack>
+                      </Box>
+
+                      <Box>
+                        {planDetail?.products.map((item) => {
+                          const { product_id, product_name, product_image } =
+                            item;
+                          return (
+                            <>
+                              <Card>
+                                <Box key={product_id} paddingInline={300}>
+                                  <InlineStack
+                                    gap={300}
+                                    align="space-between"
+                                    blockAlign="center"
+                                  >
+                                    <Avatar
+                                      customer
+                                      size="lg"
+                                      name={product_name}
+                                      source={product_image}
+                                    />
+
+                                    <Text
+                                      variant="bodyMd"
+                                      fontWeight="bold"
+                                      as="h3"
+                                    >
+                                      {product_name}
+                                    </Text>
+
+                                    <ButtonGroup>
+                                      <Button
+                                        tone="success"
+                                        icon={EditIcon}
+                                        variant={"primary"}
+                                        onClick={() =>
+                                          openProductPicker("mainProduct")
+                                        }
+                                      />
+                                      <Button
+                                        tone="critical"
+                                        icon={DeleteIcon}
+                                        variant={"primary"}
+                                        onClick={handleDeleteMainProduct}
+                                      />
+                                    </ButtonGroup>
+                                  </InlineStack>
+                                </Box>
+                              </Card>
+                            </>
+                          );
+                        })}
+                      </Box>
+                      <Box>
+                        <Box paddingInline={500}>
+                          <BlockStack gap={300}>
+                            {planDetail?.subProducts.map((item) => {
+                              const { id, title, image } = item;
+                              return (
+                                <>
+                                  <Card>
+                                    <Box key={id}>
+                                      <InlineStack
+                                        gap={300}
+                                        align="space-between"
+                                        blockAlign="center"
+                                      >
+                                        <Avatar
+                                          customer
+                                          size="lg"
+                                          name={title}
+                                          source={image}
+                                        />
+
+                                        <Text
+                                          variant="bodyMd"
+                                          fontWeight="bold"
+                                          as="h3"
+                                        >
+                                          {title}
+                                        </Text>
+
+                                        <ButtonGroup>
+                                          <Button
+                                            tone="success"
+                                            icon={EditIcon}
+                                            variant={"primary"}
+                                            onClick={() =>
+                                              openProductPicker("subProduct")
+                                            }
+                                          />
+                                          <Button
+                                            tone="critical"
+                                            icon={DeleteIcon}
+                                            variant={"primary"}
+                                            onClick={(v) =>
+                                              handleDeleteSubProduct(v, id)
+                                            }
+                                          />
+                                        </ButtonGroup>
+                                      </InlineStack>
+                                    </Box>
+                                  </Card>
+                                </>
+                              );
+                            })}
+                          </BlockStack>
+                        </Box>
+                      </Box>
+                    </BlockStack>
+                  </Card>
+                </BlockStack>
+              </Grid.Cell>
+              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
+                <BlockStack gap="200">
+                  <Card>
+                    <Text>Add Your Tickets</Text>
+                    <BlockStack gap="300">
+                      <Grid>
                         <Grid.Cell
-                          columnSpan={{ xs: 3, sm: 3, md: 3, lg: 3, xl: 3 }}
+                          columnSpan={{ xs: 6, sm: 6, md: 9, lg: 6, xl: 6 }}
                         >
                           <TextField
-                            label="How much spots per person can have?"
-                            type="number"
-                            labelHidden
-                            value={planDetail?.spots || 1}
-                            onChange={(value) => handleChange(value, "spots")}
+                            label="Name"
+                            placeholder="Enter your ticket name"
+                            value={newPlan?.name?.split("-entries-")?.[0]}
+                            onChange={(value) =>
+                              handleModalValChange(value, "name")
+                            }
                             autoComplete="off"
-                            align="right"
                           />
                         </Grid.Cell>
                         <Grid.Cell
-                          columnSpan={{
-                            xs: 12,
-                            sm: 12,
-                            md: 12,
-                            lg: 12,
-                            xl: 12,
-                          }}
-                          style={{ display: "flex", alignItems: "flex-end" }}
+                          columnSpan={{ xs: 6, sm: 6, md: 9, lg: 3, xl: 3 }}
                         >
-                          <Text as="h2" variant="headingSm">
-                            Note: Manage your spots through inventory and update
-                            it accordingly. Ignore if already managed.
-                          </Text>
+                          <TextField
+                            label="Price"
+                            type="number"
+                            value={newPlan?.price}
+                            onChange={(value) =>
+                              handleModalValChange(value, "price")
+                            }
+                            prefix="$"
+                            autoComplete="off"
+                          />
                         </Grid.Cell>
-                      </>
-                    )}
-                  </Grid>
-                </Card>
-                <Card>
-                  <Grid>
-                    <Grid.Cell
-                      columnSpan={{ xs: 6, sm: 6, md: 9, lg: 9, xl: 9 }}
-                    >
-                      <Text as="h2" variant="headingSm">
-                        Products
-                      </Text>
-                    </Grid.Cell>
-                    <Grid.Cell
-                      columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}
-                    >
-                      <Box paddingBlockStart="200">
-                        <Button onClick={handleResourcePicker}>
-                          Add Product
-                        </Button>
-                      </Box>
-                    </Grid.Cell>
-                  </Grid>
-                  <ResourceList
-                    resourceName={{ singular: "prduct", plural: "products" }}
-                    items={planDetail?.products}
-                    renderItem={(item) => {
-                      const { product_id, product_image, product_name } = item;
-                      const media = (
-                        <Avatar
-                          customer
-                          size="md"
-                          name={product_name}
-                          source={product_image}
-                        />
-                      );
-                      const shortcutActions = [
-                        {
-                          content: <Icon source={DeleteIcon} />,
-                          accessibilityLabel: <Icon source={DeleteIcon} />,
-                          onAction: () => handleDeleteProduct(product_id),
-                        },
-                      ];
-                      return (
-                        <ResourceItem
-                          id={product_id}
-                          url={product_image}
-                          media={media}
-                          accessibilityLabel={`View details for ${product_name}`}
-                          shortcutActions={shortcutActions}
-                          persistActions
+                        <Grid.Cell
+                          columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}
                         >
-                          <Text variant="bodyMd" fontWeight="bold" as="h3">
-                            {product_name}
-                          </Text>
-                        </ResourceItem>
-                      );
-                    }}
-                  />
-                </Card>
-              </BlockStack>
-            </Grid.Cell>
-            <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}>
-              <BlockStack gap="200">
-                <Card>
-                  <Text>Add Your Tickets</Text>
-                  <BlockStack gap="300">
-                    <Grid>
-                      <Grid.Cell
-                        columnSpan={{ xs: 6, sm: 6, md: 9, lg: 6, xl: 6 }}
+                          <TextField
+                            label="Entries"
+                            type="number"
+                            value={newPlan?.entries}
+                            onChange={(value) =>
+                              handleModalValChange(value, "entries")
+                            }
+                            autoComplete="off"
+                          />
+                        </Grid.Cell>
+                        <Grid.Cell
+                          columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }}
+                          gap="600"
+                        >
+                          <Select
+                            label="Purchase type"
+                            options={options}
+                            value={newPlan?.purchaseType}
+                            onChange={(value) =>
+                              handleModalValChange(value, "purchaseType")
+                            }
+                          />
+                          {existPlanType && (
+                            <Text tone="critical">Ticket already exists.</Text>
+                          )}
+                        </Grid.Cell>
+                        <Grid.Cell
+                          columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }}
+                          gap="600"
+                        >
+                          <TextField
+                            label="Minimum cycle"
+                            type="number"
+                            disabled={newPlan?.purchaseType == "day"}
+                            value={newPlan?.mincycle}
+                            onChange={(value) =>
+                              handleModalValChange(value, "mincycle")
+                            }
+                            autoComplete="off"
+                            min={1}
+                          />
+                          {minCycleErr && (
+                            <Text tone="critical">
+                              Value should be greater than or equal to 1.
+                            </Text>
+                          )}
+                        </Grid.Cell>
+                      </Grid>
+                      <Button
+                        onClick={
+                          editSellingPlan ? handleUpdatePlan : handleAddPlan
+                        }
                       >
-                        <TextField
-                          label="Name"
-                          placeholder="Enter your ticket name"
-                          value={newPlan?.name?.split("-entries-")?.[0]}
-                          onChange={(value) =>
-                            handleModalValChange(value, "name")
-                          }
-                          autoComplete="off"
-                        />
-                      </Grid.Cell>
-                      <Grid.Cell
-                        columnSpan={{ xs: 6, sm: 6, md: 9, lg: 3, xl: 3 }}
-                      >
-                        <TextField
-                          label="Price"
-                          type="number"
-                          value={newPlan?.price}
-                          onChange={(value) =>
-                            handleModalValChange(value, "price")
-                          }
-                          prefix="$"
-                          autoComplete="off"
-                        />
-                      </Grid.Cell>
-                      <Grid.Cell
-                        columnSpan={{ xs: 6, sm: 6, md: 3, lg: 3, xl: 3 }}
-                      >
-                        <TextField
-                          label="Entries"
-                          type="number"
-                          value={newPlan?.entries}
-                          onChange={(value) =>
-                            handleModalValChange(value, "entries")
-                          }
-                          autoComplete="off"
-                        />
-                      </Grid.Cell>
-                      <Grid.Cell
-                        columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }}
-                        gap="600"
-                      >
-                        <Select
-                          label="Purchase type"
-                          options={options}
-                          value={newPlan?.purchaseType}
-                          onChange={(value) =>
-                            handleModalValChange(value, "purchaseType")
-                          }
-                        />
-                        {existPlanType && (
-                          <Text tone="critical">Ticket already exists.</Text>
-                        )}
-                      </Grid.Cell>
-                      <Grid.Cell
-                        columnSpan={{ xs: 4, sm: 4, md: 4, lg: 4, xl: 4 }}
-                        gap="600"
-                      >
-                        <TextField
-                          label="Minimum cycle"
-                          type="number"
-                          disabled={newPlan?.purchaseType == "day"}
-                          value={newPlan?.mincycle}
-                          onChange={(value) =>
-                            handleModalValChange(value, "mincycle")
-                          }
-                          autoComplete="off"
-                          min={1}
-                        />
-                        {minCycleErr && (
-                          <Text tone="critical">
-                            Value should be greater than or equal to 1.
-                          </Text>
-                        )}
-                      </Grid.Cell>
-                    </Grid>
-                    <Button
-                      onClick={
-                        editSellingPlan ? handleUpdatePlan : handleAddPlan
-                      }
-                    >
-                      {editSellingPlan ? "Update" : "Add"} Ticket
-                    </Button>
-                    <ResourceList
-                      resourceName={{ singular: "plan", plural: "plans" }}
-                      items={planDetail?.plans}
-                      renderItem={(item, index) => {
-                        const { purchaseType, entries, name } = item;
-                        const shortcutActions = [
-                          {
-                            content: <Icon source={EditIcon} />,
-                            accessibilityLabel: <Icon source={EditIcon} />,
-                            onAction: () => {
-                              setEditSellingPlan(true);
-                              setExistPlanType(false);
-                              setPlanNameExist(false);
-                              setMinCycleErr(false);
-                              setNewPlan({ ...item });
-                              setUpdatePlanIndex(index);
+                        {editSellingPlan ? "Update" : "Add"} Ticket
+                      </Button>
+                      <ResourceList
+                        resourceName={{ singular: "plan", plural: "plans" }}
+                        items={planDetail?.plans}
+                        renderItem={(item, index) => {
+                          const { purchaseType, entries, name } = item;
+                          const shortcutActions = [
+                            {
+                              content: <Icon source={EditIcon} />,
+                              accessibilityLabel: <Icon source={EditIcon} />,
+                              onAction: () => {
+                                setEditSellingPlan(true);
+                                setExistPlanType(false);
+                                setPlanNameExist(false);
+                                setMinCycleErr(false);
+                                setNewPlan({ ...item });
+                                setUpdatePlanIndex(index);
+                              },
                             },
-                          },
-                          {
-                            content: <Icon source={DeleteIcon} />,
-                            accessibilityLabel: <Icon source={DeleteIcon} />,
-                            onAction: () => {
-                              setSellingPlanModal(true);
-                              setDeleteSellingPlan(item);
+                            {
+                              content: <Icon source={DeleteIcon} />,
+                              accessibilityLabel: <Icon source={DeleteIcon} />,
+                              onAction: () => {
+                                setSellingPlanModal(true);
+                                setDeleteSellingPlan(item);
+                              },
                             },
-                          },
-                        ];
-                        return (
-                          <ResourceItem
-                            key={index}
-                            accessibilityLabel={`View details for ${name}`}
-                            shortcutActions={shortcutActions}
-                            persistActions
-                          >
-                            <InlineStack gap={400}>
-                              <Text variant="bodyMd" fontWeight="bold" as="p">
-                                {name.split("-entries-")?.[0]}
-                              </Text>
-                              <Text variant="bodyMd" fontWeight="bold" as="p">
-                                {entries} entries
-                              </Text>
-                              <Text variant="bodyMd" fontWeight="bold" as="p">
-                                {purchaseType == "day"
-                                  ? "One-time"
-                                  : `${purchaseType}ly`}
-                              </Text>
-                            </InlineStack>
-                          </ResourceItem>
-                        );
-                      }}
+                          ];
+                          return (
+                            <ResourceItem
+                              key={index}
+                              accessibilityLabel={`View details for ${name}`}
+                              shortcutActions={shortcutActions}
+                              persistActions
+                            >
+                              <InlineStack gap={400}>
+                                <Text variant="bodyMd" fontWeight="bold" as="p">
+                                  {name.split("-entries-")?.[0]}
+                                </Text>
+                                <Text variant="bodyMd" fontWeight="bold" as="p">
+                                  {entries} entries
+                                </Text>
+                                <Text variant="bodyMd" fontWeight="bold" as="p">
+                                  {purchaseType == "day"
+                                    ? "One-time"
+                                    : `${purchaseType}ly`}
+                                </Text>
+                              </InlineStack>
+                            </ResourceItem>
+                          );
+                        }}
+                      />
+                    </BlockStack>
+                  </Card>
+                  <Card>
+                    <Checkbox
+                      label="Visible on customer Portal"
+                      checked={planDetail?.showOnPortal}
+                      onChange={(value) => handleChange(value, "showOnPortal")}
                     />
-                  </BlockStack>
-                </Card>
-                <Card>
-                  <Checkbox
-                    label="Visible on customer Portal"
-                    checked={planDetail?.showOnPortal}
-                    onChange={(value) => handleChange(value, "showOnPortal")}
-                  />
-                </Card>
-              </BlockStack>
-            </Grid.Cell>
-          </Grid>
+                  </Card>
+                </BlockStack>
+              </Grid.Cell>
+            </Grid>
 
-          <div className="sd-ultimate-option-AlertModal">
-            <Modal
-              open={sellingPlanModal}
-              onClose={() => {
-                (setSellingPlanModal(false), setDeleteSellingPlan(""));
-              }}
-              title={"Delete Selling Plan?"}
-              primaryAction={{
-                content: "Delete",
-                onAction: () => {
-                  setSellingPlanModal(false);
-                  if (deleteSellingPlan) {
-                    if (deleteSellingPlan?.plan_id) {
-                      let arr = deletePlans;
-                      arr.push(deleteSellingPlan);
-                      setDeletePlans(arr);
-                    }
-                    if (planDetail?.plans?.length > 0) {
-                      let data = planDetail.plans.filter(
-                        (plan) => plan?.name !== deleteSellingPlan?.name,
-                      );
-                      setPlanDetail({ ...planDetail, plans: data });
-                    }
-                  }
-                },
-              }}
-              secondaryActions={[
-                {
-                  content: "Cancel",
+            <div className="sd-ultimate-option-AlertModal">
+              <Modal
+                open={sellingPlanModal}
+                onClose={() => {
+                  (setSellingPlanModal(false), setDeleteSellingPlan(""));
+                }}
+                title={"Delete Selling Plan?"}
+                primaryAction={{
+                  content: "Delete",
                   onAction: () => {
                     setSellingPlanModal(false);
-                    setDeleteSellingPlan("");
+                    if (deleteSellingPlan) {
+                      if (deleteSellingPlan?.plan_id) {
+                        let arr = deletePlans;
+                        arr.push(deleteSellingPlan);
+                        setDeletePlans(arr);
+                      }
+                      if (planDetail?.plans?.length > 0) {
+                        let data = planDetail.plans.filter(
+                          (plan) => plan?.name !== deleteSellingPlan?.name,
+                        );
+                        setPlanDetail({ ...planDetail, plans: data });
+                      }
+                    }
                   },
-                },
-              ]}
-            >
-              <Modal.Section>
-                <BlockStack gap={5}>
-                  <p>
-                    Are you sure you want to delete this selling plan? This
-                    can't be restored.
-                  </p>
-                </BlockStack>
-              </Modal.Section>
-            </Modal>
-            {/* <div style={{ height: "250px" }}>
-              <Popover
-                active={sellingPlanModal}
-                // activator={activator}
-                autofocusTarget="first-node"
-                onClose={() => {
-                    setSellingPlanModal(false), setDeleteSellingPlan("");
-                  }}
+                }}
+                secondaryActions={[
+                  {
+                    content: "Cancel",
+                    onAction: () => {
+                      setSellingPlanModal(false);
+                      setDeleteSellingPlan("");
+                    },
+                  },
+                ]}
               >
-                <Popover.Pane fixed>
-                  <Popover.Section>
-                    <p>Available sales channels</p>
-                  </Popover.Section>
-                </Popover.Pane>
-                <Popover.Pane>
-                  <ActionList
-                    actionRole="menuitem"
-                    items={[
-                      { content: "Online store" },
-                      { content: "Facebook" },
-                      { content: "Shopify POS" },
-                    ]}
-                  />
-                </Popover.Pane>
-              </Popover>
-            </div> */}
-          </div>
-        </Page>
+                <Modal.Section>
+                  <BlockStack gap={5}>
+                    <p>
+                      Are you sure you want to delete this selling plan? This
+                      can't be restored.
+                    </p>
+                  </BlockStack>
+                </Modal.Section>
+              </Modal>
+            </div>
+          </Page>
+        </Box>
       )}
     </>
   );

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { type } from "os";
 
 const planDetailsSchema = new mongoose.Schema(
   {
@@ -13,6 +12,7 @@ const planDetailsSchema = new mongoose.Schema(
     plans: Object,
     showOnPortal: Boolean,
     products: Object,
+    subProducts:Object,
     plan_group_id: String,
     offerValidity: Object,
   },

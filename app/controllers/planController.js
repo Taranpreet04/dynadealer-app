@@ -1,4 +1,3 @@
-import { AreaChart } from "recharts";
 import { cancelContractMail, sendOrderEmail } from "../db.mailcontroller";
 import {
   billingModel,
@@ -8,8 +7,6 @@ import {
   subscriptionContractModel,
   templateModel,
 } from "../schema";
-import fs from "fs";
-import path from "path";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
