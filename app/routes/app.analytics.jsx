@@ -113,7 +113,7 @@ export default function Analytics() {
   };
   const [selectedDates, setSelectedDates] = useState({
     start: resetToMidnight(
-      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
+      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000)
     ), // Ten days before, reset to midnight
     end: resetToMidnight(new Date()), // Today, reset to midnight
   });
@@ -156,7 +156,9 @@ export default function Analytics() {
       month: "short",
       year: "numeric",
     });
-  const selectedDateLabel = `${formatDate(selectedDates.start)} - ${formatDate(selectedDates.end)}`;
+  const selectedDateLabel = `${formatDate(selectedDates.start)} - ${formatDate(
+    selectedDates.end
+  )}`;
 
   const calculateChange = (curr, prev) => {
     if (!prev || prev === 0) return "-";

@@ -9,7 +9,6 @@ handle = "dynadealer-raffle-app"
 [build]
 automatically_update_urls_on_dev = false
 dev_store_url = "dynadealer-test.myshopify.com"
-include_config_on_deploy = true
 
 [webhooks]
 api_version = "2024-10"

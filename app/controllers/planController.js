@@ -1,3 +1,4 @@
+import { AreaChart } from "recharts";
 import { cancelContractMail, sendOrderEmail } from "../db.mailcontroller";
 import {
   billingModel,
@@ -7,6 +8,11 @@ import {
   subscriptionContractModel,
   templateModel,
 } from "../schema";
+<<<<<<< HEAD
+=======
+import fs from "fs";
+import path from "path";
+>>>>>>> fce7afbcf62021fefc19d18303a056487c54e40e
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
@@ -639,11 +645,19 @@ export const cancelContract = async (admin, data) => {
   }
 };
 
-export const getSubscriptions = async (admin, page, search) => {
+// Modified getSubscriptions function based on your existing code structure
+
+export const getSubscriptions = async (
+  admin,
+  page,
+  search,
+  showAllActive = false,
+) => {
   try {
     const { shop } = admin.rest.session;
     let skip = 0;
     let limitN = 50;
+<<<<<<< HEAD
     page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
     let total_data = 0;
     let details = [];
@@ -665,7 +679,61 @@ export const getSubscriptions = async (admin, page, search) => {
       total_data = await subscriptionContractModel
         .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
         .countDocuments();
+=======
+    let total_data = 0;
+    let details = [];
+
+    if (showAllActive) {
+      // When showing all active data, don't use pagination
+      if (search == "") {
+        details = await subscriptionContractModel
+          .find({ shop, status: "ACTIVE" })
+          .sort({ createdAt: -1 });
+        total_data = await subscriptionContractModel
+          .find({ shop, status: "ACTIVE" })
+          .countDocuments();
+      } else {
+        details = await subscriptionContractModel
+          .find({
+            shop: shop,
+            status: "ACTIVE",
+            customerName: { $regex: search, $options: "i" },
+          })
+          .sort({ createdAt: -1 });
+        total_data = await subscriptionContractModel
+          .find({
+            shop: shop,
+            status: "ACTIVE",
+            customerName: { $regex: search, $options: "i" },
+          })
+          .countDocuments();
+      }
+    } else {
+      // Regular paginated logic
+      page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
+
+      if (search == "") {
+        details = await subscriptionContractModel
+          .find({ shop })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limitN);
+        total_data = await subscriptionContractModel
+          .find({ shop })
+          .countDocuments();
+      } else {
+        details = await subscriptionContractModel
+          .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limitN);
+        total_data = await subscriptionContractModel
+          .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
+          .countDocuments();
+      }
+>>>>>>> fce7afbcf62021fefc19d18303a056487c54e40e
     }
+
     return {
       message: "success",
       details: details,
@@ -677,6 +745,74 @@ export const getSubscriptions = async (admin, page, search) => {
     return { message: "Error processing request", status: 500 };
   }
 };
+
+// Add this modification to your planController.js file
+
+// export const getSubscriptions = async (admin, page = 1, search = "", showAllActive = false) => {
+//   try {
+//     // Your existing logic here...
+
+//     let query = {};
+//     let limit = 50; // Default page size
+//     let skip = 0;
+
+//     // Add search functionality if needed
+//     if (search) {
+//       query = {
+//         $or: [
+//           { customerName: { $regex: search, $options: 'i' } },
+//           { orderId: { $regex: search, $options: 'i' } },
+//           { customerEmail: { $regex: search, $options: 'i' } }
+//         ]
+//       };
+//     }
+
+//     if (showAllActive) {
+//       // When showing all active data, don't limit results
+//       // Only get ACTIVE status records
+//       query.status = "ACTIVE";
+
+//       const allActiveData = await YourSubscriptionModel.find(query)
+//         .sort({ createdAt: -1 }) // Sort by most recent first
+//         .exec();
+
+//       return {
+//         status: 200,
+//         details: allActiveData,
+//         total: allActiveData.length,
+//         showAllActive: true
+//       };
+//     } else {
+//       // Regular paginated logic
+//       if (page > 1) {
+//         skip = (page - 1) * limit;
+//       }
+
+//       const totalCount = await YourSubscriptionModel.countDocuments(query);
+//       const paginatedData = await YourSubscriptionModel.find(query)
+//         .sort({ createdAt: -1 })
+//         .limit(limit)
+//         .skip(skip)
+//         .exec();
+
+//       return {
+//         status: 200,
+//         details: paginatedData,
+//         total: totalCount,
+//         showAllActive: false
+//       };
+//     }
+
+//   } catch (error) {
+//     console.error("Error in getSubscriptions:", error);
+//     return {
+//       status: 500,
+//       details: [],
+//       total: 0,
+//       error: error.message
+//     };
+//   }
+// };
 
 export const getConstractDetailById = async (admin, id) => {
   const { shop } = admin.rest.session;

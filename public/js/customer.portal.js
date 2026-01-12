@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             body: JSON.stringify({ cid: customerId }),
             // mode: 'no-cors',
-          },
+          }
         );
 
         if (!response.ok)
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
               ?.currencyCode;
           currencySymbol = getCurrencySymbol(
             contractDetailShopify?.lines?.edges[0]?.node?.pricingPolicy
-              ?.cycleDiscounts[0]?.adjustmentValue?.currencyCode,
+              ?.cycleDiscounts[0]?.adjustmentValue?.currencyCode
           );
         }
         loaderStop();
@@ -312,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ...selectedSubscription?.ticketDetails?.appliedTicketsList,
             ...selectedSubscription?.ticketDetails?.availableTicketsList.slice(
               0,
-              Number(selectedAppliedFor?.applyTicketsCount),
+              Number(selectedAppliedFor?.applyTicketsCount)
             ),
           ],
           available:
@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Number(selectedAppliedFor?.applyTicketsCount),
           availableTicketsList: [
             ...selectedSubscription?.ticketDetails?.availableTicketsList.slice(
-              Number(selectedAppliedFor?.applyTicketsCount),
+              Number(selectedAppliedFor?.applyTicketsCount)
             ),
           ],
           appliedForDetail: [
@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
               appliedList: [
                 ...selectedSubscription?.ticketDetails?.availableTicketsList.slice(
                   0,
-                  Number(selectedAppliedFor?.applyTicketsCount),
+                  Number(selectedAppliedFor?.applyTicketsCount)
                 ),
               ],
               appliedDate: new Date(),
@@ -409,21 +409,21 @@ document.addEventListener("DOMContentLoaded", () => {
           ? (entriesCell.innerText = result?.details?.ticketDetails?.applied)
           : "";
         let availableEntriesCell = document.getElementById(
-          "product-availableEntriesCell",
+          "product-availableEntriesCell"
         );
         availableEntriesCell
           ? (availableEntriesCell.innerText =
               result?.details?.ticketDetails?.available)
           : "";
         let totalEntriesCell = document.getElementById(
-          "product-totalEntriesCell",
+          "product-totalEntriesCell"
         );
         totalEntriesCell
           ? (totalEntriesCell.innerText = result?.details?.ticketDetails?.total)
           : "";
         selectedSubscription = result?.details;
         showToast(
-          `Successfully applied for the ${selectedAppliedFor?.productName} giveaway.`,
+          `Successfully applied for the ${selectedAppliedFor?.productName} giveaway.`
         );
       }
     } catch (error) {
@@ -468,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await checkCancelPossible();
         item?.contractId === "" ? (dbData = true) : (dbData = false);
         await getContractDetails(
-          item?.contractId === "" ? item?._id : item?.contractId,
+          item?.contractId === "" ? item?._id : item?.contractId
         );
       };
       actionCell.appendChild(link);
@@ -583,7 +583,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // totalCell.id= 'product-totalCell'
       totalCell.innerText = dbData
         ? `${currencySymbol}${item?.price}`
-        : `${currencySymbol}${(item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue?.amount * item?.node?.quantity).toFixed(2)}`;
+        : `${currencySymbol}${(
+            item?.node?.pricingPolicy?.cycleDiscounts[0]?.adjustmentValue
+              ?.amount * item?.node?.quantity
+          ).toFixed(2)}`;
       tbody.appendChild(tr);
       tr.appendChild(productCell);
       tr.appendChild(priceCell);
@@ -728,7 +731,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const generateActiveDrawCards = () => {
     let mainDiv = document.getElementById("main-active-draws");
     let h3 = document.createElement("h3");
-    h3.innerText = `We have ${activeDraws?.length} active giveaway. You can apply your tickets and enter now!`;
+    // h3.innerText = `We have ${activeDraws?.length} active giveaway. You can apply your tickets and enter now!`
+    if (activeDraws?.length > 0) {
+      h3.innerText = `We have ${activeDraws.length} active giveaway. You can apply your tickets and enter now!`;
+    } else {
+      h3.innerText = "Currently, there are no active giveaways available.";
+    }
     mainDiv.appendChild(h3);
     // let parentCard = document.createElement('div')
     // mainDiv.appendChild(parentCard)
@@ -798,7 +806,7 @@ document.addEventListener("DOMContentLoaded", () => {
       parent.setAttribute("data-type", item.target.getAttribute("data-type"));
       parent.innerText = item.target.innerText;
       let data = activeDraws.filter(
-        (itm) => itm?.title == item.target.innerText,
+        (itm) => itm?.title == item.target.innerText
       );
       selectedAppliedFor = {
         ...selectedAppliedFor,
@@ -1161,7 +1169,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       detailedDiv.innerHTML = `<div id="contract-header" class="contract-header">
   <div id="customer-name">
-    <p>Hi ${dbData ? capitalize(contractDetailShopify?.customerName) : capitalize(contractDetailShopify?.customer?.firstName)}</p>
+    <p>Hi ${
+      dbData
+        ? capitalize(contractDetailShopify?.customerName)
+        : capitalize(contractDetailShopify?.customer?.firstName)
+    }</p>
   </div>
   <div id="contractId">
     <button class="btn" id="cancelBtn">Cancel</button>
@@ -1176,15 +1188,19 @@ document.addEventListener("DOMContentLoaded", () => {
             dbData
               ? capitalize(contractDetailShopify?.billing_policy?.interval)
               : contractDetailShopify?.billingPolicy?.interval?.toLowerCase() ==
-                  "day"
-                ? "Onetime"
-                : capitalize(contractDetailShopify?.billingPolicy?.interval)
+                "day"
+              ? "Onetime"
+              : capitalize(contractDetailShopify?.billingPolicy?.interval)
           }</b>
         </p>
       
         <p class="right-div" id="billingCycle">
           Minimum billing cycles:
-          <b>${dbData ? contractDetailShopify?.billing_policy?.min_cycles : contractDetailShopify?.billingPolicy?.minCycles}</b>
+          <b>${
+            dbData
+              ? contractDetailShopify?.billing_policy?.min_cycles
+              : contractDetailShopify?.billingPolicy?.minCycles
+          }</b>
         </p>
       </div>
       <div id="product-list">
@@ -1194,14 +1210,24 @@ document.addEventListener("DOMContentLoaded", () => {
               <td>Product</td>
               <td>
                 Price
-                (${dbData ? currencyCode : contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
+                (${
+                  dbData
+                    ? currencyCode
+                    : contractDetailShopify?.lines?.edges[0]?.node?.currentPrice
+                        ?.currencyCode
+                })
               </td>
               <td>Applied Entries</td>
               <td>Available Entries</td>
               <td>Total Entries</td>
               <td>
                 Total
-                (${dbData ? currencyCode : contractDetailShopify?.lines?.edges[0]?.node?.currentPrice?.currencyCode})
+                (${
+                  dbData
+                    ? currencyCode
+                    : contractDetailShopify?.lines?.edges[0]?.node?.currentPrice
+                        ?.currencyCode
+                })
               </td>
             </tr>
           </thead>

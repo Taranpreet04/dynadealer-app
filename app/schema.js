@@ -36,7 +36,7 @@ const credentialSchema = new mongoose.Schema(
     shop: { type: String, required: true },
     accessToken: { type: String, required: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const subscriptionContract = new mongoose.Schema(
@@ -61,7 +61,7 @@ const subscriptionContract = new mongoose.Schema(
     nextBillingDate: Date,
     ticketDetails: Object,
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 const membershipSchema = new mongoose.Schema(
   {
@@ -74,7 +74,7 @@ const membershipSchema = new mongoose.Schema(
     sellingPlanId: String,
     sellingPlanName: String,
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 // const raffleProductSchema = new mongoose.Schema({
 //   shop: String,
@@ -115,7 +115,7 @@ const billingSchema = new mongoose.Schema(
     billing_attempt_id: String,
     idempotencyKey: String,
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const ProductSchema = new mongoose.Schema(
@@ -128,7 +128,7 @@ const ProductSchema = new mongoose.Schema(
     subscription_type: String,
     multiplier: String,
   },
-  { _id: false },
+  { _id: false }
 );
 const BonusMultiplierSchema = new mongoose.Schema(
   {
@@ -138,7 +138,7 @@ const BonusMultiplierSchema = new mongoose.Schema(
     isManualMultiplierEnabled: { type: String, default: "false" },
     products: { type: [ProductSchema], default: [] }, // Array of objects with product_id, handle, product_name, product_image, multiplier
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 const manualDataSchema = new mongoose.Schema({
   CustomerID: String,
