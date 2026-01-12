@@ -1,16 +1,18 @@
+import { AreaChart } from "recharts";
 import { cancelContractMail, sendOrderEmail } from "../db.mailcontroller";
 import {
   billingModel,
+  BonusMultiplierModel,
+  manualDataModel,
   planDetailsModel,
   subscriptionContractModel,
   templateModel,
 } from "../schema";
 import fs from "fs";
-
+import path from "path";
 
 export const checkProductSubscription = async (newPlanDetails, id) => {
   try {
-
     let check;
 
     if (id == "create") {
@@ -45,13 +47,9 @@ export const checkProductSubscription = async (newPlanDetails, id) => {
   }
 };
 
-
 export const createPlan = async (admin, newPlanDetail) => {
   const { shop } = admin.rest.session;
-  const newPlanDetails = {
-    ...newPlanDetail,
-    shop: shop,
-  };
+  const newPlanDetails = { ...newPlanDetail, shop: shop };
 
   try {
     const date = newPlanDetails?.offerValidity;
@@ -60,10 +58,7 @@ export const createPlan = async (admin, newPlanDetail) => {
     endIST.setHours(23, 59, 59, 999);
     // endIST = toIST(endIST);
 
-    let dateRange = {
-      start: startIST,
-      end: endIST,
-    };
+    let dateRange = { start: startIST, end: endIST };
 
     let storefrontDescription = {
       dateRange: dateRange,
@@ -86,9 +81,7 @@ export const createPlan = async (admin, newPlanDetail) => {
         pricingPolicy.push({
           fixed: {
             adjustmentType: "PRICE",
-            adjustmentValue: {
-              fixedValue: parseFloat(item?.price),
-            },
+            adjustmentValue: { fixedValue: parseFloat(item?.price) },
           },
         });
       }
@@ -103,9 +96,7 @@ export const createPlan = async (admin, newPlanDetail) => {
         position: 1,
         description: additionData,
         category: "SUBSCRIPTION",
-        inventoryPolicy: {
-          reserve: "ON_FULFILLMENT",
-        },
+        inventoryPolicy: { reserve: "ON_FULFILLMENT" },
         billingPolicy: {
           recurring: {
             interval: item?.purchaseType?.toUpperCase(),
@@ -164,9 +155,7 @@ export const createPlan = async (admin, newPlanDetail) => {
             options: [topOptions],
             sellingPlansToCreate: sellPlan,
           },
-          resources: {
-            productVariantIds: varientIds,
-          },
+          resources: { productVariantIds: varientIds },
         },
       },
     );
@@ -206,18 +195,18 @@ export const createPlan = async (admin, newPlanDetail) => {
   }
 };
 
-export const getAllPlans = async (admin, type = 'other') => {
+export const getAllPlans = async (admin, type = "other") => {
   try {
     const { shop } = admin.rest.session;
-    let planDetails = []
+    let planDetails = [];
     if (type == "membership") {
-      planDetails = await planDetailsModel.find({ shop: shop, raffleType: type }).sort({ createdAt: -1 });
+      planDetails = await planDetailsModel
+        .find({ shop: shop, raffleType: type })
+        .sort({ createdAt: -1 });
     } else {
-      planDetails = await planDetailsModel.find({
-        shop: shop,
-        raffleType: { $ne: "membership" }
-      }).sort({ createdAt: -1 });
-
+      planDetails = await planDetailsModel
+        .find({ shop: shop, raffleType: { $ne: "membership" } })
+        .sort({ createdAt: -1 });
     }
     return { success: true, planDetails };
   } catch (error) {
@@ -231,9 +220,7 @@ export const deletePlanById = async (admin, data) => {
     const { shop } = admin.rest.session;
     const deletingID = data?._id;
 
-    const planId = {
-      id: data?.plan_group_id,
-    };
+    const planId = { id: data?.plan_group_id };
     const response = await admin.graphql(
       `#graphql
                     mutation sellingPlanGroupDelete($id: ID!) {
@@ -245,13 +232,11 @@ export const deletePlanById = async (admin, data) => {
                     }
                 }
             }`,
-      {
-        variables: planId,
-      },
+      { variables: planId },
     );
 
     const result = await response.json();
-    
+
     let deletedPlanId =
       result?.data?.sellingPlanGroupDelete?.deletedSellingPlanGroupId;
     if (deletedPlanId) {
@@ -281,10 +266,7 @@ export const getPlanById = async (admin, id) => {
     const planId = id;
     const data = await planDetailsModel.findOne({ _id: planId });
     return data
-      ? {
-        status: true,
-        response: data,
-      }
+      ? { status: true, response: data }
       : { status: false, response: "Error Fetching data" };
   } catch (err) {
     console.log(err, "err");
@@ -292,7 +274,6 @@ export const getPlanById = async (admin, id) => {
   }
 };
 export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
-
   try {
     const { shop } = admin.rest.session;
     let dbproductlist = data?.dbProducts;
@@ -301,10 +282,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
 
-    let dateRange = {
-      start: startIST,
-      end: endIST,
-    };
+    let dateRange = { start: startIST, end: endIST };
 
     let storefrontDescription = {
       dateRange: dateRange,
@@ -348,9 +326,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         pricingPolicy.push({
           fixed: {
             adjustmentType: "PRICE",
-            adjustmentValue: {
-              fixedValue: parseFloat(item?.price),
-            },
+            adjustmentValue: { fixedValue: parseFloat(item?.price) },
           },
         });
       }
@@ -364,9 +340,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         position: 1,
         description: additionData,
         category: "SUBSCRIPTION",
-        inventoryPolicy: {
-          reserve: "ON_FULFILLMENT",
-        },
+        inventoryPolicy: { reserve: "ON_FULFILLMENT" },
         billingPolicy: {
           recurring: {
             interval: item?.purchaseType?.toUpperCase(),
@@ -393,9 +367,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         pricingPolicy.push({
           fixed: {
             adjustmentType: "PRICE",
-            adjustmentValue: {
-              fixedValue: parseFloat(item?.price),
-            },
+            adjustmentValue: { fixedValue: parseFloat(item?.price) },
           },
         });
       }
@@ -411,9 +383,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
         position: 1,
         description: additionData,
         category: "SUBSCRIPTION",
-        inventoryPolicy: {
-          reserve: "ON_FULFILLMENT",
-        },
+        inventoryPolicy: { reserve: "ON_FULFILLMENT" },
         billingPolicy: {
           recurring: {
             interval: item?.purchaseType?.toUpperCase(),
@@ -495,6 +465,8 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
     let planIds =
       resData?.data?.sellingPlanGroupUpdate?.sellingPlanGroup?.sellingPlans
         ?.edges;
+    console.log(planIds, "pl;anidss-------");
+
     if (planIds) {
       let plansWids = [];
       if (newPlanDetails?.plans && planIds) {
@@ -562,10 +534,7 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
       }
       const query = { _id: ids?.id };
 
-      const update = {
-        ...newData,
-        shop: shop,
-      };
+      const update = { ...newData, shop: shop };
 
       const options = { upsert: true, new: true, useFindAndModify: false };
       const doc = await planDetailsModel.findOneAndUpdate(
@@ -575,19 +544,16 @@ export const updatePlanById = async (admin, ids, newPlanDetails, data) => {
       );
 
       if (doc) {
-        return {
-          success: true,
-          result: "Successfully update plan",
-        };
+        return { success: true, result: "Successfully update plan" };
       } else {
-        return { success: false, error: "Failed to update plan details." };
+        return { success: false, error: "Failed to update plan details1." };
       }
     } else {
-      return { success: false, error: "Failed to update plan details." };
+      return { success: false, error: "Failed to update plan details2." };
     }
   } catch (error) {
     console.error("Error:", error);
-    return { success: false, error: "Failed to update plan details." };
+    return { success: false, error: "Failed to update plan details3." };
   }
 };
 
@@ -639,9 +605,7 @@ export const cancelContract = async (admin, data) => {
                         }
                     }
                 }`;
-    const variables = {
-      subscriptionContractId: data?.id,
-    };
+    const variables = { subscriptionContractId: data?.id };
 
     const response = await admin.graphql(mutationQuery, { variables });
 
@@ -654,18 +618,17 @@ export const cancelContract = async (admin, data) => {
         status: 400,
       };
     } else {
-
       let res = await subscriptionContractModel.findOneAndUpdate(
         { _id: data?.contractDbID },
         { $set: { status: "CANCELLED" } },
         { new: true },
       );
-            
+
       await cancelContractMail({
         customerName: res?.customerName,
         productName: res?.products[0]?.productName,
-        customerEmail: res?.customerEmail
-      })
+        customerEmail: res?.customerEmail,
+      });
 
       return {
         success: true,
@@ -675,42 +638,75 @@ export const cancelContract = async (admin, data) => {
       };
     }
   } catch (error) {
-
     return { success: false, error: "Failed to cancel plan." };
   }
 };
 
-export const getSubscriptions = async (admin, page, search) => {
+// Modified getSubscriptions function based on your existing code structure
+
+export const getSubscriptions = async (
+  admin,
+  page,
+  search,
+  showAllActive = false,
+) => {
   try {
     const { shop } = admin.rest.session;
     let skip = 0;
-    let limitN = 50
-    page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
+    let limitN = 50;
     let total_data = 0;
     let details = [];
-    if (search == "") {
-      details = await subscriptionContractModel
-        .find({ shop }).sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limitN);
-      total_data = await subscriptionContractModel
-        .find({ shop })
-        .countDocuments();
+
+    if (showAllActive) {
+      // When showing all active data, don't use pagination
+      if (search == "") {
+        details = await subscriptionContractModel
+          .find({ shop, status: "ACTIVE" })
+          .sort({ createdAt: -1 });
+        total_data = await subscriptionContractModel
+          .find({ shop, status: "ACTIVE" })
+          .countDocuments();
+      } else {
+        details = await subscriptionContractModel
+          .find({
+            shop: shop,
+            status: "ACTIVE",
+            customerName: { $regex: search, $options: "i" },
+          })
+          .sort({ createdAt: -1 });
+        total_data = await subscriptionContractModel
+          .find({
+            shop: shop,
+            status: "ACTIVE",
+            customerName: { $regex: search, $options: "i" },
+          })
+          .countDocuments();
+      }
     } else {
-      details = await subscriptionContractModel
-        .find({
-          shop: shop,
-          customerName: { $regex: search, $options: "i" },
-        }).sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limitN);
-      total_data = await subscriptionContractModel
-        .find({
-          shop: shop,
-          customerName: { $regex: search, $options: "i" },
-        })
-        .countDocuments();
+      // Regular paginated logic
+      page > 1 ? (skip = (page - 1) * limitN) : (skip = 0);
+
+      if (search == "") {
+        details = await subscriptionContractModel
+          .find({ shop })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limitN);
+        total_data = await subscriptionContractModel
+          .find({ shop })
+          .countDocuments();
+      } else {
+        details = await subscriptionContractModel
+          .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limitN);
+        total_data = await subscriptionContractModel
+          .find({ shop: shop, customerName: { $regex: search, $options: "i" } })
+          .countDocuments();
+      }
     }
+
     return {
       message: "success",
       details: details,
@@ -723,13 +719,80 @@ export const getSubscriptions = async (admin, page, search) => {
   }
 };
 
+// Add this modification to your planController.js file
+
+// export const getSubscriptions = async (admin, page = 1, search = "", showAllActive = false) => {
+//   try {
+//     // Your existing logic here...
+
+//     let query = {};
+//     let limit = 50; // Default page size
+//     let skip = 0;
+
+//     // Add search functionality if needed
+//     if (search) {
+//       query = {
+//         $or: [
+//           { customerName: { $regex: search, $options: 'i' } },
+//           { orderId: { $regex: search, $options: 'i' } },
+//           { customerEmail: { $regex: search, $options: 'i' } }
+//         ]
+//       };
+//     }
+
+//     if (showAllActive) {
+//       // When showing all active data, don't limit results
+//       // Only get ACTIVE status records
+//       query.status = "ACTIVE";
+
+//       const allActiveData = await YourSubscriptionModel.find(query)
+//         .sort({ createdAt: -1 }) // Sort by most recent first
+//         .exec();
+
+//       return {
+//         status: 200,
+//         details: allActiveData,
+//         total: allActiveData.length,
+//         showAllActive: true
+//       };
+//     } else {
+//       // Regular paginated logic
+//       if (page > 1) {
+//         skip = (page - 1) * limit;
+//       }
+
+//       const totalCount = await YourSubscriptionModel.countDocuments(query);
+//       const paginatedData = await YourSubscriptionModel.find(query)
+//         .sort({ createdAt: -1 })
+//         .limit(limit)
+//         .skip(skip)
+//         .exec();
+
+//       return {
+//         status: 200,
+//         details: paginatedData,
+//         total: totalCount,
+//         showAllActive: false
+//       };
+//     }
+
+//   } catch (error) {
+//     console.error("Error in getSubscriptions:", error);
+//     return {
+//       status: 500,
+//       details: [],
+//       total: 0,
+//       error: error.message
+//     };
+//   }
+// };
+
 export const getConstractDetailById = async (admin, id) => {
   const { shop } = admin.rest.session;
   const details = await subscriptionContractModel.findOne({ shop, _id: id });
   // console.log("DB controller contract:", details);
   // return { message: "success", data: details, status: 200 };
   if (details?.contractId) {
-    
     const query = `
               query {
                 subscriptionContract(id: "gid://shopify/SubscriptionContract/${details?.contractId}") {
@@ -934,7 +997,7 @@ export const getCustomerDataByContractId = async (admin, id) => {
             }`;
   const contractResponse = await admin.graphql(query);
   const contractResult = await contractResponse.json();
-  
+
   if (contractResult?.data?.subscriptionContract?.userErrors?.length > 0) {
     return {
       message: "error",
@@ -950,21 +1013,16 @@ export const getCustomerDataByContractId = async (admin, id) => {
 };
 
 export const getExportData = async (admin, data, date) => {
+  console.log(admin, data, date, "data fgrom acionssssssss");
+
   try {
     const startIST = toIST(date.start);
     let endIST = toIST(date.end);
     endIST.setHours(23, 59, 59, 999);
     endIST = toIST(endIST);
-    let dateRange = {
-      $gte: startIST,
-      $lte: endIST,
-    };
+    let dateRange = { $gte: startIST, $lte: endIST };
     const matchingDocuments = await subscriptionContractModel.aggregate([
-      {
-        $match: {
-          "ticketDetails.appliedForDetail.productId": data[0]
-        }
-      },
+      { $match: { "ticketDetails.appliedForDetail.productId": data[0] } },
       {
         $project: {
           _id: 0,
@@ -974,8 +1032,8 @@ export const getExportData = async (admin, data, date) => {
           customerId: 1,
           customerName: 1,
           customerEmail: 1,
-          customerPhone:1,
-          orderHashId:1,
+          customerPhone: 1,
+          orderHashId: 1,
           appliedForDetail: {
             $filter: {
               input: "$ticketDetails.appliedForDetail",
@@ -983,25 +1041,17 @@ export const getExportData = async (admin, data, date) => {
               cond: {
                 $and: [
                   { $eq: ["$$detail.productId", data[0]] },
-                  {
-                    $gte: [
-                      { $toDate: "$$detail.appliedDate" },
-                      startIST
-                    ]
-                  },
-                  {
-                    $lte: [
-                      { $toDate: "$$detail.appliedDate" },
-                      endIST
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
+                  { $gte: [{ $toDate: "$$detail.appliedDate" }, startIST] },
+                  { $lte: [{ $toDate: "$$detail.appliedDate" }, endIST] },
+                ],
+              },
+            },
+          },
+        },
+      },
     ]);
+
+    console.log(matchingDocuments, "documentss----");
 
     return { success: true, data: matchingDocuments };
   } catch (error) {
@@ -1023,8 +1073,11 @@ export const checkMincycleComplete = async (detail) => {
       status: "done",
     });
 
-    let productAr = []
-    let activeDraws = await planDetailsModel.find({ shop: detail?.shop, showOnPortal: true })
+    let productAr = [];
+    let activeDraws = await planDetailsModel.find({
+      shop: detail?.shop,
+      showOnPortal: true,
+    });
     activeDraws.map((item) => {
       item?.products.map((product) => {
         productAr.push({
@@ -1033,9 +1086,9 @@ export const checkMincycleComplete = async (detail) => {
           image: product.product_image,
           raffleType: item?.raffleType,
           spots: item?.spots,
-        })
-      })
-    })
+        });
+      });
+    });
 
     return { message: "success", data, activeDraws: productAr };
   } catch (error) {
@@ -1047,8 +1100,11 @@ export const checkMincycleComplete = async (detail) => {
 export const getLiveRaffle = async (shop) => {
   // const { shop } = admin.rest.session;
   try {
-    let productAr = []
-    let activeDraws = await planDetailsModel.find({ shop: shop, showOnPortal: true })
+    let productAr = [];
+    let activeDraws = await planDetailsModel.find({
+      shop: shop,
+      showOnPortal: true,
+    });
     activeDraws.map((item) => {
       item?.products.map((product) => {
         productAr.push({
@@ -1057,15 +1113,15 @@ export const getLiveRaffle = async (shop) => {
           image: product.product_image,
           raffleType: item?.raffleType,
           spots: item?.spots,
-        })
-      })
-    })
+        });
+      });
+    });
     return { message: "success", activeDraws: productAr };
   } catch (error) {
     console.error("Error processing POST request:", error);
     return { message: "Error processing request", status: 500 };
   }
-}
+};
 export const getAllContracts = async (admin) => {
   try {
     const { shop } = admin.rest.session;
@@ -1082,10 +1138,10 @@ export const getSpecificContract = async (admin, id) => {
     const details = await subscriptionContractModel.findOne({ shop, _id: id });
     return { message: "success", data: details, status: 200 };
   } catch (err) {
-    console.error("Error processing POST request:", error);
+    console.error("Error processing POST request:", err);
     return { message: "Error processing request", status: 500 };
   }
-}
+};
 
 export const setDefaultTemplate = async (shop) => {
   try {
@@ -1105,7 +1161,7 @@ export const setDefaultTemplate = async (shop) => {
             {{footer}}
           </pre>
 
-          `,          
+          `,
       monthlyHtml: `p>Hi {{customerName}},</p>
             <p>Thank you for joining the DynaDealer community and becoming a member!</p>
             <p>Members get automatic monthly entries to win our bikes. Your entries NEVER EXPIRE.</p>
@@ -1344,16 +1400,14 @@ export const updateTemplate = async (admin, data) => {
   }
 };
 
-
-
 export const getSalesOverTime = async (shop, startDate, endDate) => {
   console.log("shop received in getSalesOverTime =>", shop);
 
   const start = new Date(startDate);
   const end = new Date(endDate);
-  end.setHours(23, 59, 59, 999); 
+  end.setHours(23, 59, 59, 999);
 
-  const contracts = await subscriptionContractModel.find({shop});
+  const contracts = await subscriptionContractModel.find({ shop });
 
   const groupedData = {};
 
@@ -1384,7 +1438,6 @@ export const getSalesOverTime = async (shop, startDate, endDate) => {
   return salesData;
 };
 
-
 export const getSubscriptionStats = async (shop) => {
   const allSubs = await subscriptionContractModel.find({ shop });
 
@@ -1392,22 +1445,15 @@ export const getSubscriptionStats = async (shop) => {
   let cancelled = 0;
   let oneTime = 0;
   let active = 0;
-                                      
+
   allSubs.forEach((sub) => {
     if (sub.status === "CANCELLED") cancelled++;
     if (!sub.sellingPlanId) oneTime++;
     if (sub.status === "ACTIVE") active++;
   });
 
-  return {
-    total,
-    cancelled,
-    oneTime,
-    active,
-  };
+  return { total, cancelled, oneTime, active };
 };
-
-  
 
 export const getTotalRevenue = async (shop) => {
   const allSubs = await subscriptionContractModel.find({ shop });
@@ -1421,127 +1467,154 @@ export const getTotalRevenue = async (shop) => {
   return totalRevenue;
 };
 
-
-export const getSubscribersStats = async (shop) => {
+export const getSubscribersStats = async (shopi) => {
+  let shop = "1fbd7d.myshopify.com";
   const now = new Date();
 
-const currentMonthStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1)); // June 1, 00:00:00 UTC
-const currentMonthEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)); // June 30, 23:59:59 UTC
+  const currentMonthStart = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), 1),
+  ); // June 1, 00:00:00 UTC
+  const currentMonthEnd = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
+  ); // June 30, 23:59:59 UTC
 
-const previousMonthStart = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1)); // May 1, 00:00:00 UTC
-const previousMonthEnd = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)); // May 31, 23:59:59 UTC
+  const previousMonthStart = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth() - 1, 1),
+  ); // May 1, 00:00:00 UTC
+  const previousMonthEnd = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999),
+  ); // May 31, 23:59:59 UTC
 
   console.log("Current Month Range:", currentMonthStart, currentMonthEnd);
   console.log("Previous Month Range:", previousMonthStart, previousMonthEnd);
 
   // Current Month
-  const currentCustomerIds = await subscriptionContractModel.distinct("customerId", {
-         
-    shop,
-    createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
-  });
-  console.log("current month ki length---",currentCustomerIds.length)
-  
+  const currentCustomerIds = await subscriptionContractModel.distinct(
+    "customerId",
+    { shop, createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd } },
+  );
+  console.log("current month ki length---", currentCustomerIds.length);
+
+  //      const filePath = path.join(process.cwd(), 'response.json');
+  //  // You can customize the path
+  //   fs.writeFileSync(filePath, JSON.stringify(currentCustomerIds, null, 2), 'utf-8');
   // Previous Month
-  const previousCustomerIds = await subscriptionContractModel.distinct("customerId", {
-    shop,
-    createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
-  });
+  const previousCustomerIds = await subscriptionContractModel.distinct(
+    "customerId",
+    { shop, createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd } },
+  );
 
   const currentCount = currentCustomerIds.length;
   const previousCount = previousCustomerIds.length;
-console.log("Count result:", currentCount);
+  console.log("Count result:", currentCount);
   const change =
-    previousCount === 0 ? null : (((currentCount - previousCount) / previousCount) * 100).toFixed(2);
+    previousCount === 0
+      ? null
+      : (((currentCount - previousCount) / previousCount) * 100).toFixed(2);
 
+  // NEW SUBSCRIBERS
+  const newCustomerIds = currentCustomerIds.filter(
+    (id) => !previousCustomerIds.includes(id),
+  );
 
-    // NEW SUBSCRIBERS
-    const newCustomerIds = currentCustomerIds.filter(
-  (id) => !previousCustomerIds.includes(id)
-);
+  const newSubscribers = newCustomerIds.length;
 
-const newSubscribers = newCustomerIds.length;
-
-    //CANCELLED SUBS
-const cancelledCurrentMonth = await subscriptionContractModel.countDocuments({
+  //CANCELLED SUBS
+  const cancelledCurrentMonth = await subscriptionContractModel.countDocuments({
     shop,
     status: "CANCELLED",
     createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
   });
 
-  const cancelledPreviousMonth = await subscriptionContractModel.countDocuments({
-    shop,
-    status: "CANCELLED",
-    createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
-  });
+  const cancelledPreviousMonth = await subscriptionContractModel.countDocuments(
+    {
+      shop,
+      status: "CANCELLED",
+      createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
+    },
+  );
 
   const cancelledChange =
     cancelledPreviousMonth === 0
       ? null
-      : (((cancelledCurrentMonth - cancelledPreviousMonth) / cancelledPreviousMonth) * 100).toFixed(2);
+      : (
+          ((cancelledCurrentMonth - cancelledPreviousMonth) /
+            cancelledPreviousMonth) *
+          100
+        ).toFixed(2);
 
-      //CHURN RATE
-      
-    const previousSubscribersSet = await subscriptionContractModel.distinct("customerId", {
-    shop,
-    createdAt: { $lte: previousMonthEnd },
-  });
+  //CHURN RATE
 
-  const cancelledCustomersInCurrentMonth = await subscriptionContractModel.distinct("customerId", {
-    shop,
-    status: "CANCELLED",
-    updatedAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
-  });
-
-  const churnedCustomers = cancelledCustomersInCurrentMonth.filter(id =>
-    previousSubscribersSet.includes(id)
+  const previousSubscribersSet = await subscriptionContractModel.distinct(
+    "customerId",
+    { shop, createdAt: { $lte: previousMonthEnd } },
   );
 
+  const cancelledCustomersInCurrentMonth =
+    await subscriptionContractModel.distinct("customerId", {
+      shop,
+      status: "CANCELLED",
+      updatedAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
+    });
+
+  const churnedCustomers = cancelledCustomersInCurrentMonth.filter((id) =>
+    previousSubscribersSet.includes(id),
+  );
 
   const churnRate =
     previousSubscribersSet.length > 0
-      ? ((churnedCustomers.length / previousSubscribersSet.length) * 100).toFixed(2)
+      ? (
+          (churnedCustomers.length / previousSubscribersSet.length) *
+          100
+        ).toFixed(2)
       : "0.00";
 
-       console.log("🔄 CHURN DEBUG");
+  console.log("🔄 CHURN DEBUG");
   console.log("👉 Previous Subscribers Base:", previousSubscribersSet.length);
-  console.log("👉 Cancelled in Current Month:", cancelledCustomersInCurrentMonth.length);
+  console.log(
+    "👉 Cancelled in Current Month:",
+    cancelledCustomersInCurrentMonth.length,
+  );
   console.log("👉 Churned from Base:", churnedCustomers.length);
-  console.log("✅ Churn Rate %:", churnRate);  
+  console.log("✅ Churn Rate %:", churnRate);
 
   //NET GROWTH
-   const netGrowth = newSubscribers - churnedCustomers.length;
+  const netGrowth = newSubscribers - churnedCustomers.length;
   console.log("👉 Net Growth (June):", netGrowth);
 
   //MONTHLY REVENUE
   //current month
   const currentMonthSubs = await subscriptionContractModel.find({
-  shop,
-  "billing_policy.interval": "month",
-  createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
-});
+    shop,
+    "billing_policy.interval": "month",
+    createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
+  });
 
-// PREVIOUS month
-const previousMonthSubs = await subscriptionContractModel.find({
-  shop,
-  "billing_policy.interval": "month",
-  createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
-});
+  // PREVIOUS month
+  const previousMonthSubs = await subscriptionContractModel.find({
+    shop,
+    "billing_policy.interval": "month",
+    createdAt: { $gte: previousMonthStart, $lte: previousMonthEnd },
+  });
 
-const currentMRR  = currentMonthSubs.reduce((sum, sub) => sum + (sub.totalPrice || 0), 0);
-const previousMRR = previousMonthSubs.reduce((sum, sub) => sum + (sub.totalPrice || 0), 0);
+  const currentMRR = currentMonthSubs.reduce(
+    (sum, sub) => sum + (sub.totalPrice || 0),
+    0,
+  );
+  const previousMRR = previousMonthSubs.reduce(
+    (sum, sub) => sum + (sub.totalPrice || 0),
+    0,
+  );
 
-const mrrChange =
-  previousMRR === 0
-    ? "-"
-    : (((currentMRR - previousMRR) / previousMRR) * 100).toFixed(2);
+  const mrrChange =
+    previousMRR === 0
+      ? "-"
+      : (((currentMRR - previousMRR) / previousMRR) * 100).toFixed(2);
 
-console.log("🧾 MRR Current :", currentMRR);
-console.log("🧾 MRR Previous:", previousMRR);
-console.log("📈 MRR Change  :", mrrChange);
+  console.log("🧾 MRR Current :", currentMRR);
+  console.log("🧾 MRR Previous:", previousMRR);
+  console.log("📈 MRR Change  :", mrrChange);
 
-  
-  
   return {
     current: currentCount,
     previous: previousCount,
@@ -1555,29 +1628,31 @@ console.log("📈 MRR Change  :", mrrChange);
     churnRate: Number(churnRate),
     churnMeta: {
       base: previousSubscribersSet.length,
-      cancelled: churnedCustomers.length
+      cancelled: churnedCustomers.length,
     },
-     netSubscriberGrowth: {
+    netSubscriberGrowth: {
       new: newSubscribers,
       churned: churnedCustomers.length,
-      net: netGrowth
+      net: netGrowth,
     },
-     mrr: {
-    current:  currentMRR,                     // number
-    previous: previousMRR,                    // number
-    change:   mrrChange !== null ? `${mrrChange}%` : "-"
-  }
+    mrr: {
+      current: currentMRR, // number
+      previous: previousMRR, // number
+      change: mrrChange !== null ? `${mrrChange}%` : "-",
+    },
   };
 };
 
-
-export const updateDb=async(admin)=>{
-  try{
+export const updateDb = async (admin) => {
+  try {
     const { shop } = admin.rest.session;
-let data= await subscriptionContractModel.find({shop}, {orderId:1, _id:0})
+    let data = await subscriptionContractModel.find(
+      { shop },
+      { orderId: 1, _id: 0 },
+    );
 
-data.forEach(async(item)=>{
-  const query = `{
+    data.forEach(async (item) => {
+      const query = `{
   order(id: "gid://shopify/Order/${item?.orderId}") {
     id
     name
@@ -1594,33 +1669,102 @@ data.forEach(async(item)=>{
   }
 }
 `;
-  const orderRes = await admin.graphql(query);
-  const orderResponse = await orderRes.json();
-  
-    const newData = orderResponse?.data?.order;
-if(newData){
+      const orderRes = await admin.graphql(query);
+      const orderResponse = await orderRes.json();
 
-  const detailUpdate = await subscriptionContractModel.updateMany(
-    { shop, orderId: item?.orderId },
-    {
-      $set: {
-        customerPhone: newData?.customer?.phone || null,
-        orderHashId: newData?.name || null,
-        totalPrice: parseFloat(newData?.totalPrice) || 0,
-      },
-    },
-    { new: true } // returns the updated document
-  );
-}
-
-})
-  return { message: "success" };     
+      const newData = orderResponse?.data?.order;
+      if (newData) {
+        const detailUpdate = await subscriptionContractModel.updateMany(
+          { shop, orderId: item?.orderId },
+          {
+            $set: {
+              customerPhone: newData?.customer?.phone || null,
+              orderHashId: newData?.name || null,
+              totalPrice: parseFloat(newData?.totalPrice) || 0,
+            },
+          },
+          { new: true }, // returns the updated document
+        );
+      }
+    });
+    return { message: "success" };
   } catch (error) {
     console.error("Error processing POST request:", error);
     return { message: "Error processing request", status: 500 };
   }
-}
+};
+export const saveMultiplierData = async (shop, body) => {
+  try {
+    const { isManualEnabled, isAllEnabled, allProductMultiplier, arr } = body;
 
+    console.log(
+      "shop in saveMultiplierData:",
+      shop,
+      isManualEnabled,
+      isAllEnabled,
+    );
+    let products = arr.products;
+
+    let saveData = await BonusMultiplierModel.findOneAndUpdate(
+      { shop },
+      {
+        $set: {
+          isManualMultiplierEnabled: isManualEnabled,
+          isAllProductMultiplierEnabled: isAllEnabled,
+          allProductMultiplier: allProductMultiplier,
+          products: products,
+        },
+      },
+      { upsert: true, new: true },
+    );
+
+    return { message: "success", status: 200 };
+  } catch (error) {
+    console.error("Error processing POST request:", error);
+    return { message: error.message, status: 500 };
+  }
+};
+export const getMultiplierData = async (shop) => {
+  try {
+    const data = await BonusMultiplierModel.findOne({ shop });
+
+    if (!data) {
+      return { message: "No data found", status: 400 };
+    }
+
+    return {
+      message: "success",
+      status: 200,
+      data: {
+        isManualEnabled: data.isManualMultiplierEnabled,
+        isAllEnabled: data.isAllProductMultiplierEnabled,
+        allProductMultiplier: data.allProductMultiplier,
+        products: data.products,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching multiplier data:", error);
+    return { message: error.message, status: 500 };
+  }
+};
+export const getmanualData = async () => {
+  try {
+    const data = await manualDataModel.find();
+
+    if (!data) {
+      return { message: "No data found", status: 404 };
+    }
+
+    return {
+      message: "success",
+      status: 200,
+      data: data,
+    };
+  } catch (error) {
+    console.error("Error fetching multiplier data:", error);
+    return { message: error.message, status: 500 };
+  }
+};
 // export const updateDocument = async (admin) => {
 //   try {
 //     const { shop } = admin.rest.session;
@@ -1682,12 +1826,12 @@ if(newData){
 //             }
 //           }
 //         );
-  
+
 //         console.log("Update successful:", updateResult, billingResult);
 //       }else{
 //         console.log("updated before")
 //       }
-  
+
 //     }
 //     return { message: "Documents updated successfully", status: 200 };
 
@@ -1697,13 +1841,12 @@ if(newData){
 //   }
 // };
 
-
 // export const getOrders = async (admin) => {
 //   try {
 //     const { shop } = admin.rest.session;
 //     let packageOrders = ['#3789', '#3753']
 //     // let normal = ["#3794", '#3778', '#3777', '#3775', '#3772', '#3771', '#3767', '#3766', '#3759', '#3740', '#3729', '#3718', '#3712', '#3682']
-    
+
 //     for (let id of packageOrders) {
 
 //       console.log("id==", id)
@@ -1762,7 +1905,7 @@ if(newData){
 //         let exist = await subscriptionContractModel?.findOne({ shop, orderId: data?.id?.split('gid://shopify/Order/')[1] })
 //         console.log(" exist?.orderId==", exist?.orderId)
 //         let drawIds = [];
-//         let entries =  parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity) 
+//         let entries =  parseInt(35)* Number(data?.lineItems?.nodes[0]?.quantity)
 //         console.log(Number(data?.lineItems?.nodes[0]?.quantity),"entries===",packageOrders.includes(id), entries)
 //         if (!exist) {
 //           for (let i = 0; i < entries; i++) {
@@ -1793,7 +1936,6 @@ if(newData){
 //               },
 //             ],
 //           };
-
 
 //           let contractDetail = await subscriptionContractModel.create({
 //             shop: shop,
@@ -1886,9 +2028,6 @@ if(newData){
 //   }
 // }
 
-
-
-
 //     const query = `{
 //   orders(first: 1) {
 //     edges {
@@ -1930,3 +2069,82 @@ if(newData){
 //     }
 //   }
 // }`;
+
+export const getProductEntries = async (admin, id) => {
+  const query = `
+    query getProduct($id: ID!) {
+      product(id: $id) {
+        options {
+          name
+        }
+        variants(first: 10) {
+          edges {
+            node {
+              selectedOptions {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await admin.graphql(query, {
+      variables: { id },
+    });
+
+    const result = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL Errors:", result.errors);
+      return null;
+    }
+
+    return result.data?.product;
+  } catch (err) {
+    console.error("Error fetching product entries:", err);
+    return null;
+  }
+};
+export function getProductMultiplier(config, productId) {
+  try {
+    let multiplier = 1; // default
+    const id = `gid://shopify/Product/${productId}`;
+
+    // ✅ normalize flags (handle string "true"/"false")
+    const isManualEnabled =
+      config.isManualEnabled === "true" || config.isManualEnabled === true;
+    const isAllEnabled =
+      config.isAllEnabled === "true" || config.isAllEnabled === true;
+
+    // ✅ Priority 1: Manual product multiplier
+    if (isManualEnabled && Array.isArray(config.products)) {
+      const product = config.products.find((p) => p.product_id === id);
+
+      if (product && product.multiplier) {
+        console.log("Manual multiplier found for product:", productId);
+        multiplier = parseFloat(product.multiplier) || 1;
+      }
+
+      // ✅ Priority 2: All product multiplier
+      else if (isAllEnabled && config.allProductMultiplier) {
+        console.log("All multiplier found for product:", productId);
+        multiplier = parseFloat(config.allProductMultiplier) || 1;
+      }
+    }
+
+    // ✅ Manual not enabled → check All
+    else if (isAllEnabled && config.allProductMultiplier) {
+      console.log("Manual not enabled, using All multiplier for:", productId);
+      multiplier = parseFloat(config.allProductMultiplier) || 1;
+    }
+
+    console.log("Final multiplier to apply:", multiplier);
+    return multiplier;
+  } catch (err) {
+    console.error("Error fetching multiplier data:", err);
+    return 1;
+  }
+}

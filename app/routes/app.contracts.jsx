@@ -17,11 +17,17 @@ import {
   Card,
   Link,
   EmptyState,
+  Select,
+  TextField,
 } from "@shopify/polaris";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
-import { getSubscriptions, getExportData , } from "../controllers/planController";
+import {
+  getSubscriptions,
+  getExportData,
+  getmanualData,
+} from "../controllers/planController";
 import TableSkeleton from "../components/tableSkeleton";
 import ContentSkeleton from "../components/contentSkeleton";
 import xlsx from "json-as-xlsx";
@@ -29,13 +35,36 @@ import xlsx from "json-as-xlsx";
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const url = new URL(request.url);
+  const Data = await getmanualData();
+
   const search = url.searchParams.get("search") || "";
-  const page = url.searchParams.get("page") || 1;
-  const planDetails = await getSubscriptions(admin, page, search);
+  const statusFilter = url.searchParams.get("status") || "ACTIVE";
+
+  // Automatically show all active when status is ACTIVE
+  const showAllActive = statusFilter === "ACTIVE";
+  const page = showAllActive ? null : url.searchParams.get("page") || 1;
+
+  const planDetails = await getSubscriptions(
+    admin,
+    page,
+    search,
+    showAllActive
+  );
+
   if (planDetails?.status == 200) {
-    return json({ planDetails: planDetails });
+    return json({
+      planDetails: planDetails,
+      data: Data,
+      showAllActive,
+      statusFilter,
+    });
   }
-  return json({ planDetails: planDetails });
+  return json({
+    planDetails: planDetails,
+    data: Data,
+    showAllActive,
+    statusFilter,
+  });
 };
 
 export default function ContractData() {
@@ -52,6 +81,9 @@ export default function ContractData() {
   const [contentSkel, setContentSkel] = useState(false);
   const [products, setProducts] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("ACTIVE");
+  const [showAllActive, setShowAllActive] = useState(false);
+
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -59,57 +91,81 @@ export default function ContractData() {
     month: currentMonth == 0 ? 11 : currentMonth - 1,
     year: currentMonth == 0 ? currentYear - 1 : currentYear,
   });
+
   const resetToMidnight = (date) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
     return newDate;
   };
+
   const [selectedDates, setSelectedDates] = useState({
     start: resetToMidnight(
-      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
-    ), // Ten days before, reset to midnight
-    end: resetToMidnight(new Date()), // Today, reset to midnight
+      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000)
+    ),
+    end: resetToMidnight(new Date()),
   });
 
   const handleMonthChange = (month, year) => {
     setDate({ month, year });
   };
+
   useEffect(() => {
-    let limit=50
+    let limit = 50;
     shopify.loading(true);
     setTableSkel(true);
+
     loaderData?.planDetails
       ? setTableData(loaderData?.planDetails?.details)
       : "";
     let total = loaderData?.planDetails.total;
     setTotalRows(loaderData?.planDetails.total);
-    let docs = parseInt(total / limit);
-    if (total % limit > 0) {
-      docs = docs + 1;
+    setShowAllActive(loaderData?.showAllActive || false);
+    setStatusFilter(loaderData?.statusFilter || "ACTIVE");
+
+    if (!loaderData?.showAllActive) {
+      let docs = parseInt(total / limit);
+      if (total % limit > 0) {
+        docs = docs + 1;
+      }
+      setTotaldocs(docs);
     }
-    setTotaldocs(docs);
+
     shopify.loading(false);
     setTableSkel(false);
   }, [loaderData]);
 
   useEffect(() => {
     const url = new URL(
-      window.location.origin + location.pathname + location.search,
+      window.location.origin + location.pathname + location.search
     );
     const search = url.searchParams.get("search") || "";
     const page = url.searchParams.get("page") || 1;
+    const status = url.searchParams.get("status") || "ACTIVE";
+
     setPage(page);
     setSearchValue(search);
+    setStatusFilter(status);
+    setShowAllActive(status === "ACTIVE");
   }, []);
+  const handleSearchSubmit = () => {
+    shopify.loading(true);
+    setTableSkel(true);
+
+    const params = new URLSearchParams();
+    params.set("search", searchValue);
+    params.set("status", statusFilter);
+    params.set("page", "1");
+
+    submit(params, { method: "get" });
+  };
 
   useEffect(() => {
     if (actionData?.status) {
       let detail = actionData?.data;
-
       let dataToExport = [];
 
-      detail.map((detail) => {
-        detail?.appliedForDetail[0]?.appliedList.map((data) => {
+      detail.forEach((detail) => {
+        detail?.appliedForDetail[0]?.appliedList.forEach((data) => {
           dataToExport.push({
             drawId: data,
             customerId: detail?.customerId,
@@ -121,7 +177,10 @@ export default function ContractData() {
           });
         });
       });
-      if (dataToExport?.length > 0) {
+
+      const finalExportData = [...dataToExport, ...loaderData?.data?.data];
+
+      if (finalExportData.length > 0) {
         let data = [
           {
             sheet: "tickets",
@@ -133,7 +192,7 @@ export default function ContractData() {
               { label: "Phone", value: "customerPhone" },
               { label: "Draw ID", value: "drawId" },
             ],
-            content: dataToExport,
+            content: finalExportData,
           },
         ];
         let settings = {
@@ -148,19 +207,28 @@ export default function ContractData() {
         shopify.toast.show("No data found", { duration: 5000 });
       }
     }
+
     shopify.loading(false);
     setTableSkel(false);
   }, [actionData]);
+
   const toIST = (dateString) => {
     const date = new Date(dateString);
     const offsetInMinutes = 330;
     return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
   };
+
   function formatISOToDate(isoDate) {
     const date = new Date(isoDate);
-    return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
+    return date.toISOString().split("T")[0];
   }
-  const rows = tableData?.map((itm, index) => [
+
+  const filteredData = tableData?.filter((item) => {
+    if (statusFilter === "All") return true;
+    return item?.status?.toLowerCase() === statusFilter.toLowerCase();
+  });
+
+  const rows = filteredData?.map((itm, index) => [
     <Text>{itm?.orderId}</Text>,
     <Text alignment="center"> {itm?.customerName}</Text>,
     <Text alignment="center"> {itm?.ticketDetails?.total}</Text>,
@@ -170,6 +238,9 @@ export default function ContractData() {
       <Badge tone={itm?.status == "CANCELLED" ? "critical" : "success"}>
         {itm?.status}
       </Badge>
+    </Text>,
+    <Text alignment="center">
+      {itm?.sellingPlanName ? itm?.sellingPlanName : "----"}
     </Text>,
     <Text alignment="center"> {formatISOToDate(toIST(itm?.createdAt))}</Text>,
     <Text as="p" alignment="center">
@@ -210,6 +281,7 @@ export default function ContractData() {
     setPage(Number(page) + 1);
     const params = new URLSearchParams();
     params.set("search", searchValue);
+    params.set("status", statusFilter);
     params.set("page", Number(page) + 1);
     submit(params, {
       method: "get",
@@ -222,7 +294,24 @@ export default function ContractData() {
     setPage(Number(page) - 1);
     const params = new URLSearchParams();
     params.set("search", searchValue);
+    params.set("status", statusFilter);
     params.set("page", Number(page) - 1);
+    submit(params, {
+      method: "get",
+    });
+  };
+
+  // Handle status filter change
+  const handleStatusChange = (value) => {
+    shopify.loading(true);
+    setTableSkel(true);
+    setStatusFilter(value);
+
+    const params = new URLSearchParams();
+    params.set("search", searchValue);
+    params.set("status", value);
+    params.set("page", "1");
+
     submit(params, {
       method: "get",
     });
@@ -255,7 +344,6 @@ export default function ContractData() {
         <ContentSkeleton />
       ) : (
         <Page
-          // fullWidth
           title="Subscribers"
           primaryAction={
             <Button
@@ -267,8 +355,59 @@ export default function ContractData() {
             </Button>
           }
         >
+    <div
+  style={{
+    marginBottom: "16px",
+    display: "flex",
+    gap: "12px",
+    alignItems: "flex-end", // aligns nicely at bottom
+    flexWrap: "wrap", // responsive: wraps on small screens
+  }}
+>
+  <div style={{ flex: 1, minWidth: "240px" }}>
+    <TextField
+      label="Search Customer"
+      labelHidden
+      placeholder="Search by customer name"
+      value={searchValue}
+      onChange={(value) => setSearchValue(value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          handleSearchSubmit();
+        }
+      }}
+    />
+  </div>
+
+  <Button variant="primary" onClick={handleSearchSubmit}>
+    Search
+  </Button>
+
+  <div style={{ minWidth: "180px" }}>
+    <Select
+      label="Filter"
+      labelHidden
+      options={[
+        { label: "Active", value: "ACTIVE" },
+        { label: "One Time", value: "ONETIME" },
+        { label: "All", value: "All" },
+      ]}
+      value={statusFilter}
+      onChange={handleStatusChange}
+    />
+  </div>
+</div>
+
+
+          {/* {statusFilter === "ACTIVE" && (
+              <Badge tone="info">
+                Showing all active records ({filteredData.length} items)
+              </Badge>
+            )}
+          </div> */}
+
           <Card>
-            {tableData.length > 0 ? (
+            {filteredData.length > 0 ? (
               <Card>
                 <DataTable
                   hasZebraStripingOnData
@@ -280,53 +419,57 @@ export default function ContractData() {
                       Order Id
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
-                      {" "}
                       Customer Name
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
-                      {" "}
                       Total Tickets
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
-                      {" "}
                       Applied tickets
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
-                      {" "}
                       Available Tickets
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
-                      {" "}
                       Status
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
-                      {" "}
+                      Plan
+                    </Text>,
+                    <Text variant="headingSm" as="h6" alignment="center">
                       Created At
                     </Text>,
                     <Text variant="headingSm" alignment="center" as="h6">
-                      {" "}
                       Actions
                     </Text>,
                   ]}
                   rows={rows}
                   verticalAlign="middle"
-                  footerContent={`page = ${page} | Showing ${rows.length} of ${totalRows} results`}
-                  pagination={{
-                    hasNext: totaldocs <= page ? false : true,
-                    hasPrevious: page == 1 ? false : true,
-                    onNext: () => {
-                      handleNextPage();
-                    },
-                    onPrevious: () => {
-                      handlePrevPage();
-                    },
-                  }}
+                  footerContent={
+                    statusFilter === "ACTIVE"
+                      ? `Showing all ${filteredData.length} active records`
+                      : `page = ${page} | Showing ${filteredData.length} of ${totalRows} results`
+                  }
+                  pagination={
+                    statusFilter === "ACTIVE"
+                      ? undefined
+                      : {
+                          hasNext: totaldocs <= page ? false : true,
+                          hasPrevious: page == 1 ? false : true,
+                          onNext: () => {
+                            handleNextPage();
+                          },
+                          onPrevious: () => {
+                            handlePrevPage();
+                          },
+                        }
+                  }
                 />
               </Card>
             ) : (
               <Card>
                 <EmptyState
-                  heading="Let's create your first subscription plan."
+                  heading="No Subscriber's data available."
                   image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 ></EmptyState>
               </Card>
