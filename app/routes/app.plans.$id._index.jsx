@@ -889,7 +889,7 @@ export default function CreateUpdatePlan() {
                                           name={title}
                                           source={image}
                                         />
-                                        <Box width="68%">
+                                        <Box width="66%">
                                           <Text
                                             variant="bodyMd"
                                             fontWeight="bold"
