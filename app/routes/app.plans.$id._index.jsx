@@ -89,7 +89,7 @@ export const action = async ({ params, request }) => {
 
     let checkProduct = await checkProductSubscription(
       newPlanDetails,
-      params?.id,
+      params?.id
     );
 
     if (!checkProduct) {
@@ -101,7 +101,7 @@ export const action = async ({ params, request }) => {
           admin,
           { id: params?.id, plan_group_id: plan_group_id },
           newPlanDetails,
-          detail,
+          detail
         );
       }
     }
@@ -189,7 +189,7 @@ export default function CreateUpdatePlan() {
       setSelectedMainProductIds([{ id: loaderData?.products[0]?.product_id }]);
 
       setSelectedSubProductIds(
-        loaderData?.subProducts?.map((product) => ({ id: product.id })),
+        loaderData?.subProducts?.map((product) => ({ id: product.id }))
       );
     } else {
       setPlanDetail({
@@ -197,7 +197,7 @@ export default function CreateUpdatePlan() {
         offerValidity: {
           start: resetToMidnight(new Date()),
           end: resetToMidnight(
-            new Date(new Date().getTime() + 10 * 24 * 60 * 60 * 1000),
+            new Date(new Date().getTime() + 10 * 24 * 60 * 60 * 1000)
           ),
         },
       });
@@ -231,7 +231,7 @@ export default function CreateUpdatePlan() {
     } else if (planDetail?.sellingPlanUpdate && oneTimePlanExist) {
       shopify.toast.show(
         "Please remove the one-time plan, as you intend to upgrade it next month.",
-        { duration: 5000 },
+        { duration: 5000 }
       );
     } else {
       let newPlans = [];
@@ -394,7 +394,7 @@ export default function CreateUpdatePlan() {
 
   const handleDeleteProduct = (id) => {
     let products = planDetail?.products?.filter(
-      (item) => item?.product_id !== id,
+      (item) => item?.product_id !== id
     );
     setPlanDetail({ ...planDetail, products: products });
   };
@@ -422,7 +422,7 @@ export default function CreateUpdatePlan() {
       ) {
         shopify.toast.show(
           "Minimum cycle should be greater than or equal to 1.",
-          { duration: 5000 },
+          { duration: 5000 }
         );
       } else if (newPlan?.price == "" || parseInt(newPlan?.price) <= 0) {
         shopify.toast.show("Price is required", { duration: 5000 });
@@ -468,7 +468,7 @@ export default function CreateUpdatePlan() {
         setMinCycleErr(true);
         shopify.toast.show(
           "Minimum cycle should be greater than or equal to 1.",
-          { duration: 5000 },
+          { duration: 5000 }
         );
       } else if (newPlan?.price == "" || parseInt(newPlan?.price) <= 0) {
         shopify.toast.show("Price is required", { duration: 5000 });
@@ -584,7 +584,7 @@ export default function CreateUpdatePlan() {
 
         // ❌ Remove main product from sub selection
         const filteredProducts = result.filter(
-          (product) => product.id !== mainProductId,
+          (product) => product.id !== mainProductId
         );
 
         if (filteredProducts.length !== result.length) {
@@ -615,7 +615,7 @@ export default function CreateUpdatePlan() {
         }));
 
         setSelectedSubProductIds(
-          limitedProducts.map((product) => ({ id: product.id })),
+          limitedProducts.map((product) => ({ id: product.id }))
         );
       }
     } catch (error) {
@@ -643,7 +643,7 @@ export default function CreateUpdatePlan() {
     }));
 
     setSelectedSubProductIds((prev) =>
-      prev?.filter((itemId) => itemId?.id !== id),
+      prev?.filter((itemId) => itemId?.id !== id)
     );
   };
 
@@ -836,14 +836,15 @@ export default function CreateUpdatePlan() {
                                       name={product_name}
                                       source={product_image}
                                     />
-
-                                    <Text
-                                      variant="bodyMd"
-                                      fontWeight="bold"
-                                      as="h3"
-                                    >
-                                      {product_name}
-                                    </Text>
+                                    <Box width="68%">
+                                      <Text
+                                        variant="bodyMd"
+                                        fontWeight="bold"
+                                        as="h3"
+                                      >
+                                        {product_name}
+                                      </Text>
+                                    </Box>
 
                                     <ButtonGroup>
                                       <Button
@@ -888,14 +889,15 @@ export default function CreateUpdatePlan() {
                                           name={title}
                                           source={image}
                                         />
-
-                                        <Text
-                                          variant="bodyMd"
-                                          fontWeight="bold"
-                                          as="h3"
-                                        >
-                                          {title}
-                                        </Text>
+                                        <Box width="68%">
+                                          <Text
+                                            variant="bodyMd"
+                                            fontWeight="bold"
+                                            as="h3"
+                                          >
+                                            {title}
+                                          </Text>
+                                        </Box>
 
                                         <ButtonGroup>
                                           <Button
@@ -1087,7 +1089,7 @@ export default function CreateUpdatePlan() {
               <Modal
                 open={sellingPlanModal}
                 onClose={() => {
-                  (setSellingPlanModal(false), setDeleteSellingPlan(""));
+                  setSellingPlanModal(false), setDeleteSellingPlan("");
                 }}
                 title={"Delete Selling Plan?"}
                 primaryAction={{
@@ -1102,7 +1104,7 @@ export default function CreateUpdatePlan() {
                       }
                       if (planDetail?.plans?.length > 0) {
                         let data = planDetail.plans.filter(
-                          (plan) => plan?.name !== deleteSellingPlan?.name,
+                          (plan) => plan?.name !== deleteSellingPlan?.name
                         );
                         setPlanDetail({ ...planDetail, plans: data });
                       }

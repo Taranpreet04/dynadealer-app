@@ -1,4 +1,5 @@
 import { planDetailsModel } from "../schema";
+import { json } from '@remix-run/node';
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -16,21 +17,35 @@ export const loader = async ({ request }) => {
     const shop = url.searchParams.get("shop");
     const name = url.searchParams.get("pageName");
 
+    console.log("url ====>>>>  ",url)
+    console.log("shop ====>>>>  ",shop)
+    console.log("name ====>>>>  ",name)
+
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers });
     }
 
+    console.log("------------111111111111---------------------")
+
     if (!shop) {
-      return Response.json(
+      return json(
         { error: "Missing required shop parameter" },
         { status: 400, headers },
       );
     }
 
+    console.log("------------22222222222---------------------")
+
+
     const { session } = await unauthenticated.admin(shop);
 
+
+    console.log("------------session---------------------")
+    console.log("------------session?.shop---------------------",session?.shop)
+
+
     if (!session?.shop) {
-      return Response.json(
+      return json(
         { error: "Unauthorized shop access" },
         { status: 401, headers },
       );
@@ -38,7 +53,9 @@ export const loader = async ({ request }) => {
 
     const result = await planDetailsModel.find({ shop, name }).lean();
 
-    return Response.json(
+    console.log("result =====>>",result)
+
+    return json(
       {
         success: true,
         data: result,
@@ -48,7 +65,7 @@ export const loader = async ({ request }) => {
   } catch (error) {
     console.error("Loader error:", error);
 
-    return Response.json(
+    return json(
       { success: false, error: "Internal Server Error" },
       { status: 500, headers },
     );
