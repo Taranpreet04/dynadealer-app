@@ -38,19 +38,8 @@ export const loader = async ({ request }) => {
   // console.log(Data, "Data----->");
 
   const search = url.searchParams.get("search") || "";
-  const statusFilter = url.searchParams.get("status") || "ACTIVE";
-
-  // Automatically show all active when status is ACTIVE
-  const showAllActive = statusFilter === "ACTIVE";
-  const page = showAllActive ? null : url.searchParams.get("page") || 1;
-
-  const planDetails = await getSubscriptions(
-    admin,
-    page,
-    search,
-    showAllActive
-  );
-
+  const page = url.searchParams.get("page") || 1;
+  const planDetails = await getSubscriptions(admin, page, search);
   if (planDetails?.status == 200) {
     return json({ planDetails: planDetails, data: Data });
   }
@@ -86,10 +75,9 @@ export default function ContractData() {
     newDate.setHours(0, 0, 0, 0);
     return newDate;
   };
-
   const [selectedDates, setSelectedDates] = useState({
     start: resetToMidnight(
-      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000)
+      new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000),
     ), // Ten days before, reset to midnight
     end: resetToMidnight(new Date()), // Today, reset to midnight
   });
@@ -97,56 +85,33 @@ export default function ContractData() {
   const handleMonthChange = (month, year) => {
     setDate({ month, year });
   };
-
   useEffect(() => {
     let limit = 50;
     shopify.loading(true);
     setTableSkel(true);
-
     loaderData?.planDetails
       ? setTableData(loaderData?.planDetails?.details)
       : "";
     let total = loaderData?.planDetails.total;
     setTotalRows(loaderData?.planDetails.total);
-    setShowAllActive(loaderData?.showAllActive || false);
-    setStatusFilter(loaderData?.statusFilter || "ACTIVE");
-
-    if (!loaderData?.showAllActive) {
-      let docs = parseInt(total / limit);
-      if (total % limit > 0) {
-        docs = docs + 1;
-      }
-      setTotaldocs(docs);
+    let docs = parseInt(total / limit);
+    if (total % limit > 0) {
+      docs = docs + 1;
     }
-
+    setTotaldocs(docs);
     shopify.loading(false);
     setTableSkel(false);
   }, [loaderData]);
 
   useEffect(() => {
     const url = new URL(
-      window.location.origin + location.pathname + location.search
+      window.location.origin + location.pathname + location.search,
     );
     const search = url.searchParams.get("search") || "";
     const page = url.searchParams.get("page") || 1;
-    const status = url.searchParams.get("status") || "ACTIVE";
-
     setPage(page);
     setSearchValue(search);
-    setStatusFilter(status);
-    setShowAllActive(status === "ACTIVE");
   }, []);
-  const handleSearchSubmit = () => {
-    shopify.loading(true);
-    setTableSkel(true);
-
-    const params = new URLSearchParams();
-    params.set("search", searchValue);
-    params.set("status", statusFilter);
-    params.set("page", "1");
-
-    submit(params, { method: "get" });
-  };
 
   useEffect(() => {
     if (actionData?.status) {
@@ -209,10 +174,9 @@ export default function ContractData() {
     const offsetInMinutes = 330;
     return new Date(date.getTime() - offsetInMinutes * 60 * 1000);
   };
-
   function formatISOToDate(isoDate) {
     const date = new Date(isoDate);
-    return date.toISOString().split("T")[0];
+    return date.toISOString().split("T")[0]; // Extracts YYYY-MM-DD
   }
   const filteredData = tableData?.filter((item) => {
     if (statusFilter === "All") return true;
@@ -240,7 +204,7 @@ export default function ContractData() {
         url={`/app/contract/${itm?._id}`}
         prefetch="viewport"
         onClick={() => {
-          shopify.loading(true), setContentSkel(true);
+          (shopify.loading(true), setContentSkel(true));
         }}
       >
         <svg
@@ -273,7 +237,6 @@ export default function ContractData() {
     setPage(Number(page) + 1);
     const params = new URLSearchParams();
     params.set("search", searchValue);
-    params.set("status", statusFilter);
     params.set("page", Number(page) + 1);
     submit(params, {
       method: "get",
@@ -286,24 +249,7 @@ export default function ContractData() {
     setPage(Number(page) - 1);
     const params = new URLSearchParams();
     params.set("search", searchValue);
-    params.set("status", statusFilter);
     params.set("page", Number(page) - 1);
-    submit(params, {
-      method: "get",
-    });
-  };
-
-  // Handle status filter change
-  const handleStatusChange = (value) => {
-    shopify.loading(true);
-    setTableSkel(true);
-    setStatusFilter(value);
-
-    const params = new URLSearchParams();
-    params.set("search", searchValue);
-    params.set("status", value);
-    params.set("page", "1");
-
     submit(params, {
       method: "get",
     });
@@ -336,6 +282,7 @@ export default function ContractData() {
         <ContentSkeleton />
       ) : (
         <Page
+          // fullWidth
           title="Subscribers"
           primaryAction={
             <Button
@@ -371,18 +318,23 @@ export default function ContractData() {
                       Order Id
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
+                      {" "}
                       Customer Name
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
+                      {" "}
                       Total Tickets
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
+                      {" "}
                       Applied tickets
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
+                      {" "}
                       Available Tickets
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
+                      {" "}
                       Status
                     </Text>,
                     <Text variant="headingSm" as="h6" alignment="center">
@@ -394,6 +346,7 @@ export default function ContractData() {
                       Created At
                     </Text>,
                     <Text variant="headingSm" alignment="center" as="h6">
+                      {" "}
                       Actions
                     </Text>,
                   ]}
