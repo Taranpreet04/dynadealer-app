@@ -283,6 +283,7 @@ export default function CreateUpdatePlan() {
       filter: {
         draft: false,
         variants: false,
+        hidden: false
       },
       multiple: true,
       selectionIds: ids,
@@ -531,6 +532,7 @@ export default function CreateUpdatePlan() {
         filter: {
           draft: false,
           variants: false,
+          hidden: false
         },
         multiple: allowMultiple,
         selectionIds: preSelectedIds,
@@ -760,14 +762,14 @@ export default function CreateUpdatePlan() {
                             style={{ display: "flex", alignItems: "flex-end" }}
                           >
                             <Text as="h2" variant="headingSm">
-                              How much spots per person can have?
+                              How many total spots are there in the giveaway?
                             </Text>
                           </Grid.Cell>
                           <Grid.Cell
                             columnSpan={{ xs: 3, sm: 3, md: 3, lg: 3, xl: 3 }}
                           >
                             <TextField
-                              label="How much spots per person can have?"
+                              label="How many total spots are there in the giveaway?"
                               type="number"
                               labelHidden
                               value={planDetail?.spots || 1}

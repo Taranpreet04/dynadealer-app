@@ -525,7 +525,7 @@ case "SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS":
                 name: name,
               },
               {
-                $inc: { spots: -qty },
+                $inc: { purchasedSpots: qty },
               },
             );
 
@@ -538,7 +538,7 @@ case "SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS":
                   name: name,
                 },
                 {
-                  $inc: { spots: -qty },
+                  $inc: { purchasedSpots: qty },
                 },
               );
 

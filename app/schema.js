@@ -9,6 +9,10 @@ const planDetailsSchema = new mongoose.Schema(
     futureEntries: Number,
     raffleType: String,
     spots: Number,
+    purchasedSpots: {
+      type: Number,
+      default: 0          
+    },
     plans: Object,
     showOnPortal: Boolean,
     products: Object,
