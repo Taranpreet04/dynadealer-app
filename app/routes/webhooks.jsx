@@ -701,6 +701,8 @@ export const action = async ({ request }) => {
               applied: false,
             });
 
+            sendOrderEmail(contractDetail);
+
             console.log("succesfully===== match value ====");
           }else{
               console.log("======== regular product =======");
@@ -778,7 +780,7 @@ export const action = async ({ request }) => {
 
               console.log("✅ Else flow completed successfully");
 
-                          // Create contract
+            // Create contract
             const contractDetail = await subscriptionContractModel.create({
               shop,
               orderId: payload?.id,
@@ -860,6 +862,8 @@ export const action = async ({ request }) => {
               renewal_date: currentDate,
               applied: false,
             });
+
+            sendOrderEmail(contractDetail);
 
           }
 
