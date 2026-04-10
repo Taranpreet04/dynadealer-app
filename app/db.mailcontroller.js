@@ -28,17 +28,17 @@ export async function sendOrderEmail(data) {
     });
     const rows = data?.drawIds
       ?.map(
-        (id) => `<tr>
-        <td>${data?.customerName}</td>
-        <td>${id}</td>
+        (item, index) => `<tr>
+        <td>${index + 1}</td>
+        <td>${item}</td>
     </tr>`,
       )
       .join(" ");
 
-    let drawIdsList = `<table>
+    let drawIdsList = `<table border="1">
         <thead>   
             <tr>
-                <th>Customer Name</th>
+                <th>Sr.no</th>
                 <th>Entry Number</th>
             </tr>
         </thead>
